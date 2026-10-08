@@ -1,0 +1,13 @@
+# Cold-starts Gym Freak. iOS runs the Release build; on Android the debug build is a dev client,
+# so it is opened on the Metro bundle (adb reverse tcp:8081) instead of the dev launcher.
+appId: com.gymfreak.app
+---
+- runFlow:
+    when: { platform: iOS }
+    commands:
+      - launchApp
+- runFlow:
+    when: { platform: Android }
+    commands:
+      - stopApp
+      - openLink: "gymfreak://expo-development-client/?url=http%3A%2F%2Flocalhost%3A8081"

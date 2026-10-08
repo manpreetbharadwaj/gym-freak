@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+
+# Expo / Metro
+.expo/
+dist/
+web-build/
+*.tsbuildinfo
+.metro-health-check*
+
+# Native projects are committed: they carry hand-made changes (launch screen, icons, entitlements,
+# Info.plist, MainActivity) that `npx expo prebuild` would not reproduce. Only their build output is ignored.
+/ios/Pods/
+/ios/build/
+/ios/.xcode.env.local
+**/xcuserdata/
+*.xcuserstate
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/app/.cxx/
+/android/local.properties
+/android/.kotlin/
+
+# Build output
+*.apk
+*.aab
+*.ipa
+*.xcarchive
+build/
+
+# Environment & secrets (copy .env.example to .env.local)
+.env
+.env.*
+!.env.example
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+
+# Test artefacts & scratch
+.maestro/screenshots/
+*.log
+coverage/
+tmp/
+scratch/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.test-build/
+
+# Local image-processing work and original-asset backups (not app source)
+/artifacts/
+/asset-backup-originals/

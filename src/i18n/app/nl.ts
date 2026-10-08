@@ -1,0 +1,98 @@
+import type { Translation } from '../types';
+
+/** App screens (everything after onboarding). Merged over `nl.ts`. */
+export const nlApp: Translation = {
+  common: { save: 'Opslaan', cancel: 'Annuleren', close: 'Sluiten', seeAll: 'Alles bekijken', min: 'min', reps: 'herh.', sec: 'sec', sets: 'sets', edit: 'Bewerken', on: 'Aan', off: 'Uit', showPassword: 'Wachtwoord tonen', hidePassword: 'Wachtwoord verbergen' },
+  auth: {
+    signUpTitle: 'Maak je account', signUpBody: 'Bewaar je schema en begin vandaag met trainen.',
+    signInTitle: 'Welkom terug', signInBody: 'Ga verder waar je gebleven was.',
+    firstName: 'Voornaam', lastName: 'Achternaam (optioneel)', email: 'E-mail', password: 'Wachtwoord', confirmPassword: 'Wachtwoord bevestigen', passwordHint: 'Minstens 8 tekens',
+    signIn: 'Inloggen', signUp: 'Account maken', forgot: 'Wachtwoord vergeten?', noAccount: 'Nieuw bij Gym Freak?', haveAccount: 'Heb je al een account?', switchToSignUp: 'Maak er een', switchToSignIn: 'Inloggen',
+    forgotTitle: 'Wachtwoord herstellen', forgotBody: 'Vul je e-mailadres in en we sturen je een link.', sendLink: 'Link versturen', linkSent: 'Als er een account met dit e-mailadres bestaat, is de link onderweg. Check je inbox.', backToSignIn: 'Terug naar inloggen',
+    resetTitle: 'Kies een nieuw wachtwoord', resetBody: 'Minstens 8 tekens.', newPassword: 'Nieuw wachtwoord', savePassword: 'Wachtwoord opslaan', passwordUpdated: 'Wachtwoord bijgewerkt. Log in met je nieuwe wachtwoord.',
+    verifyTitle: 'Bevestig je e-mail', verifyBody: 'We hebben een bevestigingslink gestuurd naar {email}. Open hem op deze telefoon om je account te bevestigen.', verified: 'E-mail bevestigd. Je bent klaar!', verifyLater: 'Later doen', checked: 'Ik heb bevestigd',
+    phoneSoon: 'Inloggen met telefoonnummer komt binnenkort.', terms: 'Door verder te gaan ga je akkoord met onze Voorwaarden en ons Privacybeleid.',
+    errors: { required: 'Vul alle velden in.', email: 'Vul een geldig e-mailadres in.', passwordLength: 'Gebruik minstens 8 tekens.', mismatch: 'Wachtwoorden komen niet overeen.', invalid: 'E-mail of wachtwoord onjuist.', exists: 'Er bestaat al een account met dit e-mailadres. Probeer in te loggen.', network: 'Je lijkt offline. Controleer je verbinding.', generic: 'Er ging iets mis. Probeer het opnieuw.', tokenInvalid: 'Deze link is ongeldig of verlopen.', rateLimited: 'Te veel pogingen. Wacht een minuut.' },
+  },
+  states: { errorTitle: 'Er ging iets mis', network: 'Je lijkt offline. Controleer je verbinding en probeer het opnieuw.', generic: 'Dit kan nu niet worden geladen.', locked: 'Dit hoort bij Gym Freak Pro.', retry: 'Opnieuw proberen' },
+  catalog: {
+    muscles: { chest: 'Borst', back: 'Rug', shoulders: 'Schouders', biceps: 'Biceps', triceps: 'Triceps', legs: 'Benen', glutes: 'Bilspieren', core: 'Core', cardio: 'Cardio', mobility: 'Mobiliteit', 'full-body': 'Hele lichaam' },
+    difficulty: { beginner: 'Beginner', intermediate: 'Gevorderd', advanced: 'Expert' },
+    modes: { strength: 'Kracht', bodyweight_reps: 'Lichaamsgewicht', timed: 'Op tijd' },
+  },
+  nav: { Home: 'Home', Workout: 'Training', Explore: 'Ontdek', Progress: 'Voortgang', Profile: 'Profiel' },
+  home: {
+    goodMorning: 'Goedemorgen', goodAfternoon: 'Goedemiddag', goodEvening: 'Goedenavond',
+    todaysWorkout: 'Training van vandaag', nextUp: 'Hierna', exercises: '{count} oefeningen', start: 'Training starten',
+    unfinished: 'Onafgemaakte training', resume: 'Hervatten',
+    restDay: 'Rustdag', restBody: 'Herstel hoort bij het schema. Zin om te bewegen? Probeer een mobiliteitssessie.',
+    noPlan: 'Je schema komt eraan', noPlanBody: 'Bekijk de trainingen en begin wanneer je wilt.', browse: 'Trainingen bekijken',
+    stories: 'Deze week', recommended: 'Aanbevolen voor jou',
+    thisWeek: 'Deze week', workouts: 'Trainingen', time: 'Tijd', streak: 'Reeks', days: 'dagen',
+    trialBanner: 'Nog {days} dagen gratis proberen', trialCta: 'Bekijk Pro',
+  },
+  plan: { title: 'Mijn trainingsschema', subtitle: 'Jouw week, rond jou gepland.', today: 'Vandaag', upcoming: 'Gepland', completed: 'Voltooid', rest: 'Rust', missed: 'Gemist', notStarted: 'Vóór de start', assignedByCoach: 'Gekozen door je coach', restDay: 'Rust en herstel', allWorkouts: 'Alle trainingen', noPlan: 'Nog geen schema', noPlanBody: 'Je coach heeft nog geen schema toegewezen. Kies hieronder een training.', day: 'Dag {number}' },
+  workout: { overview: 'Overzicht', exercises: 'Oefeningen', equipment: 'Materiaal', start: 'Training starten', resume: 'Training hervatten', locked: 'Ontgrendel met Pro', lockedBody: 'Deze training hoort bij Gym Freak Pro.', minutes: '{count} min', exerciseCount: '{count} oefeningen' },
+  exercise: {
+    target: 'Doelspier', secondary: 'Secundair', equipment: 'Materiaal', difficulty: 'Niveau',
+    howTo: 'Uitvoering', formTips: 'Techniektips', mistakes: 'Veelgemaakte fouten', breathing: 'Ademhaling', prescription: 'Sets en herhalingen',
+    sets: 'Sets', reps: 'Herh.', rest: 'Rust', duration: 'Duur', favorite: 'Bewaren', favorited: 'Bewaard', addToWorkout: 'Aan training toevoegen', replace: 'Oefening vervangen', usedIn: 'Komt voor in',
+    lockedTitle: 'Pro-oefening', lockedBody: 'Upgrade om de uitleg en de volledige demonstratie te ontgrendelen.', addSoon: 'Eigen trainingen komen binnenkort.', none: 'Geen',
+    noActiveWorkout: 'Start eerst een training, dan kun je deze oefening aan de sessie van vandaag toevoegen.', addedToSession: 'Alleen voor deze sessie toegevoegd aan “{name}”.', openWorkout: 'Training openen',
+  },
+  player: {
+    exerciseOf: 'Oefening {current} van {total}', setOf: 'Set {current} / {total}', target: 'Doel', repsTarget: '{count} herh.', secondsTarget: '{count} sec',
+    completeSet: 'Set voltooien', skip: 'Overslaan', replace: 'Vervangen', info: 'Info', previous: 'Vorige', next: 'Volgende',
+    rest: 'RUST', addTime: '+15 sec', skipRest: 'Rust overslaan', upNext: 'Hierna', lastSet: 'Laatste set!',
+    quitTitle: 'Training beëindigen?', quitBody: 'Voltooide sets tellen niet mee voor je voortgang.', quit: 'Training beëindigen', keepGoing: 'Doorgaan',
+    finish: 'Training afronden', starting: 'Je training wordt klaargezet…', replaceTitle: 'Oefening wisselen', noAlternatives: 'Geen vergelijkbare oefeningen beschikbaar.',
+    speechRestOver: 'Rust voorbij. Volgende set.', speechNext: 'Volgende oefening: {name}', speechDone: 'Training voltooid. Goed gedaan!', startTimer: 'Start', pauseTimer: 'Pauze', timerDone: 'Klaar',
+    saving: 'Je training wordt opgeslagen…', saveFailed: 'Deze set kon niet worden opgeslagen. We proberen het opnieuw.', restNotification: 'Rust voorbij. Tijd voor je volgende set!',
+    addExercise: 'Oefening toevoegen', addTitle: 'Aan deze training toevoegen', addHint: 'Alleen voor de sessie van vandaag: je schema blijft hetzelfde.', added: '{name} toegevoegd', replaced: 'Gewisseld naar {name}', addedBadge: 'Toegevoegd', swappedBadge: 'Gewisseld',
+    editFailed: 'Deze wijziging kon niet worden opgeslagen. Controleer je verbinding en probeer het opnieuw.',
+    conflictTitle: 'Je hebt een onafgemaakte training', conflictBody: '“{name}” is {when} gestart en nog niet afgerond.', resumeOther: 'Hervatten', discardStart: 'Weggooien en deze starten',
+  },
+  complete: {
+    title: 'Training voltooid', subtitle: 'Goed gedaan!', duration: 'Duur', exercises: 'Oefeningen', sets: 'Sets', calories: 'kcal (schatting)',
+    achievements: 'Prestaties behaald', share: 'Delen', done: 'Klaar', shareMessage: 'Net {name} afgerond in Gym Freak: {sets} sets in {minutes} min 💪',
+  },
+  progress: {
+    title: 'Voortgang', subtitle: 'Elke sessie telt.', weekly: 'Weekactiviteit', monthly: 'Maandactiviteit', streak: 'Trainingsreeks', days: 'dagen', day: 'dag', bestDay: 'Ga zo door!', startStreak: 'Train vandaag om een reeks te starten.',
+    time: 'Trainingstijd', completed: 'Voltooide trainingen', sets: 'Sets', muscles: 'Verdeling per spiergroep', history: 'Oefeningsgeschiedenis', achievements: 'Prestaties',
+    noHistory: 'Nog geen trainingen', noHistoryBody: 'Rond je eerste training af om je voortgang te volgen.', setsCount: '{count} sets', comingSoon: 'Binnenkort', future: 'Lichaamsgewicht, maten en krachtontwikkeling', unlocked: 'Ontgrendeld', locked: 'Vergrendeld',
+    longest: 'Langste reeks: {count} dagen', records: 'Persoonlijke records', recordWeight: '{weight} kg × {reps}', recordReps: '{reps} herh.', topExercises: 'Meest getraind', sessionsCount: '{count} trainingen',
+  },
+  explore: {
+    title: 'Ontdek', subtitle: 'De juiste beweging voor elke spier.', search: 'Oefeningen zoeken', all: 'Alle', filters: 'Filters', muscle: 'Spiergroep', equipment: 'Materiaal', difficulty: 'Niveau', type: 'Soort training',
+    apply: 'Resultaten tonen', reset: 'Wissen', noResults: 'Geen oefeningen gevonden met deze filters.', results: '{count} oefeningen', workouts: 'Trainingen', exercises: 'Oefeningen',
+  },
+  profile: {
+    title: 'Profiel', myPreferences: 'Mijn trainingsvoorkeuren', subscription: 'Mijn abonnement', achievements: 'Prestaties', favorites: 'Favorieten', history: 'Trainingsgeschiedenis',
+    settings: 'Instellingen', language: 'Taal', notifications: 'Meldingen', privacy: 'Privacy', terms: 'Voorwaarden', help: 'Help', logout: 'Uitloggen', logoutConfirm: 'Uitloggen bij Gym Freak?',
+    goal: 'Doel', experience: 'Ervaring', days: 'Trainingsdagen', duration: 'Sessieduur', location: 'Locatie', equipment: 'Materiaal', height: 'Lengte', weight: 'Gewicht',
+    units: 'Eenheden', metric: 'Metrisch', imperial: 'Imperiaal', restTimer: 'Rusttimer', audioCues: 'Gesproken aanwijzingen', audioCuesBody: 'Gesproken tips tijdens de rust',
+    version: 'Gym Freak · Versie {version}', noFavorites: 'Nog geen favorieten', noFavoritesBody: 'Tik op het hartje bij een oefening om hem hier te bewaren.', emailUnverified: 'E-mail niet bevestigd', verify: 'Bevestigen',
+    perWeek: '{count} dagen / week', saved: 'Voorkeuren opgeslagen',
+  },
+  notifications: {
+    title: 'Meldingen', master: 'Meldingen toestaan', masterBody: 'Herinneringen en updates van Gym Freak',
+    workoutReminders: 'Trainingsherinneringen', reminderTime: 'Tijd van herinnering', streak: 'Reeksherinneringen', weeklyChallenge: 'Weekuitdaging', newContent: 'Nieuwe trainingen', stories: 'Verhalen en coachtips', trialEnding: 'Einde proefperiode', achievements: 'Prestaties', streakBody: 'Motivatie om je reeks vol te houden',
+    denied: 'Meldingen voor Gym Freak staan uit in de systeeminstellingen.', openSettings: 'Instellingen openen', reminderTitle: 'Tijd om te trainen 💪', reminderBody: 'Je training van vandaag wacht op je.',
+  },
+  subscription: {
+    title: 'Gym Freak Pro', heroTitle: 'Start je gratis proefperiode van {days} dagen', heroBody: 'Alles wat je nodig hebt om slimmer te trainen en sterker te worden.',
+    trialActive: 'Je gratis proefperiode loopt', trialEnds: 'Gratis tot {date}', premiumActive: 'Je hebt Pro', premiumUntil: 'Actief tot {date}', expired: 'Je proefperiode is voorbij', expiredBody: 'Upgrade om je premium trainingen en schema’s te houden.', free: 'Gratis abonnement', freeBody: 'Upgrade wanneer je wilt om alles te ontgrendelen.',
+    benefits: ['Premium trainingen', 'Persoonlijke schema’s', 'Uitgebreide oefeningenbibliotheek', 'Voortgang bijhouden', 'Exclusieve wekelijkse content'],
+    continue: 'Doorgaan', upgrade: 'Upgrade naar Pro', continueFree: 'Doorgaan met gratis', unavailable: 'In-app aankopen komen binnenkort. Je kunt dan hier upgraden.', restore: 'Aankopen herstellen', terms: 'Altijd opzegbaar. Betaling via de App Store of Google Play.',
+    startTrial: 'Start gratis proefperiode van {days} dagen', trialNote: 'Geen betaling nodig. Eén gratis proefperiode per account.', trialFailed: 'Je proefperiode kon niet starten. Probeer het opnieuw.', storePrice: 'Prijs in de {store}', storeCharges: 'De {store} rekent {price}.', storeDiscountNote: 'De {store} rekent {price}. Deze korting kan nog niet worden toegepast op aankopen via de store.', deviceRegionNote: 'Prijzen voor {country} (op basis van de regio van je apparaat). De store bevestigt de definitieve prijs bij het afrekenen.', purchasePending: 'Je aankoop wacht op goedkeuring. Pro wordt ontgrendeld zodra de store deze bevestigt.', purchaseUnverified: 'Je aankoop is gelukt, maar we konden hem nog niet bevestigen. Gebruik zo meteen Aankopen herstellen.', restored: 'Aankopen hersteld.', nothingToRestore: 'Geen aankopen om te herstellen op dit account.',
+  },
+  stories: {
+    categories: { 'weekly-challenge': 'Uitdaging', 'coach-tips': 'Coachtips', 'new-workouts': 'Nieuw', nutrition: 'Voeding', motivation: 'Motivatie', 'bonus-workout': 'Bonus', 'new-exercise': 'Oefening' },
+    locked: 'Ontgrendel dit verhaal met Pro.',
+  },
+  legal: {
+    privacyBody: 'Gym Freak bewaart je trainingsgegevens in je HealthyMe-account. Je kunt op elk moment een export of verwijdering van je gegevens aanvragen via de privacy-instellingen van HealthyMe of via support.',
+    termsBody: 'Gym Freak geeft algemeen fitnessadvies en is geen medisch advies. Raadpleeg een arts voordat je met een nieuw programma begint en stop met elke oefening die pijn doet.',
+    helpBody: 'Vragen of feedback? Neem contact op met het team via HealthyMe-support, dan reageren we zo snel mogelijk.',
+  },
+};

@@ -1,0 +1,98 @@
+import type { Translation } from '../types';
+
+/** App screens (everything after onboarding). Merged over `es.ts`. */
+export const esApp: Translation = {
+  common: { save: 'Guardar', cancel: 'Cancelar', close: 'Cerrar', seeAll: 'Ver todo', min: 'min', reps: 'reps', sec: 's', sets: 'series', edit: 'Editar', on: 'Sí', off: 'No', showPassword: 'Mostrar contraseña', hidePassword: 'Ocultar contraseña' },
+  auth: {
+    signUpTitle: 'Crea tu cuenta', signUpBody: 'Guarda tu plan y empieza a entrenar hoy.',
+    signInTitle: 'Hola de nuevo', signInBody: 'Continúa justo donde lo dejaste.',
+    firstName: 'Nombre', lastName: 'Apellido (opcional)', email: 'Correo electrónico', password: 'Contraseña', confirmPassword: 'Confirmar contraseña', passwordHint: 'Al menos 8 caracteres',
+    signIn: 'Iniciar sesión', signUp: 'Crear cuenta', forgot: '¿Olvidaste tu contraseña?', noAccount: '¿Nuevo en Gym Freak?', haveAccount: '¿Ya tienes cuenta?', switchToSignUp: 'Crea una', switchToSignIn: 'Inicia sesión',
+    forgotTitle: 'Restablece tu contraseña', forgotBody: 'Introduce tu correo y te enviaremos un enlace.', sendLink: 'Enviar enlace', linkSent: 'Si existe una cuenta con ese correo, el enlace va de camino. Revisa tu bandeja de entrada.', backToSignIn: 'Volver a iniciar sesión',
+    resetTitle: 'Elige una contraseña nueva', resetBody: 'Usa al menos 8 caracteres.', newPassword: 'Contraseña nueva', savePassword: 'Guardar contraseña', passwordUpdated: 'Contraseña actualizada. Inicia sesión con la nueva.',
+    verifyTitle: 'Verifica tu correo', verifyBody: 'Enviamos un enlace de confirmación a {email}. Ábrelo en este teléfono para verificar tu cuenta.', verified: 'Correo verificado. ¡Todo listo!', verifyLater: 'Lo haré más tarde', checked: 'Ya lo verifiqué',
+    phoneSoon: 'El inicio de sesión con teléfono llegará pronto.', terms: 'Al continuar aceptas nuestros Términos y la Política de privacidad.',
+    errors: { required: 'Completa todos los campos.', email: 'Introduce un correo válido.', passwordLength: 'Usa al menos 8 caracteres.', mismatch: 'Las contraseñas no coinciden.', invalid: 'Correo o contraseña incorrectos.', exists: 'Ya existe una cuenta con este correo. Prueba a iniciar sesión.', network: 'Parece que no tienes conexión. Revísala.', generic: 'Algo salió mal. Inténtalo de nuevo.', tokenInvalid: 'Este enlace no es válido o ha caducado.', rateLimited: 'Demasiados intentos. Espera un minuto.' },
+  },
+  states: { errorTitle: 'Algo salió mal', network: 'Parece que no tienes conexión. Revísala e inténtalo de nuevo.', generic: 'No pudimos cargar esto ahora.', locked: 'Esto forma parte de Gym Freak Pro.', retry: 'Reintentar' },
+  catalog: {
+    muscles: { chest: 'Pecho', back: 'Espalda', shoulders: 'Hombros', biceps: 'Bíceps', triceps: 'Tríceps', legs: 'Piernas', glutes: 'Glúteos', core: 'Core', cardio: 'Cardio', mobility: 'Movilidad', 'full-body': 'Cuerpo completo' },
+    difficulty: { beginner: 'Principiante', intermediate: 'Intermedio', advanced: 'Avanzado' },
+    modes: { strength: 'Fuerza', bodyweight_reps: 'Peso corporal', timed: 'Por tiempo' },
+  },
+  nav: { Home: 'Inicio', Workout: 'Entreno', Explore: 'Explorar', Progress: 'Progreso', Profile: 'Perfil' },
+  home: {
+    goodMorning: 'Buenos días', goodAfternoon: 'Buenas tardes', goodEvening: 'Buenas noches',
+    todaysWorkout: 'Entreno de hoy', nextUp: 'Siguiente', exercises: '{count} ejercicios', start: 'Empezar entreno',
+    unfinished: 'Entreno sin terminar', resume: 'Continuar',
+    restDay: 'Día de descanso', restBody: 'Recuperar también es parte del plan. ¿Te apetece moverte? Prueba una sesión de movilidad.',
+    noPlan: 'Tu plan está en camino', noPlanBody: 'Explora entrenos y empieza cuando quieras.', browse: 'Ver entrenos',
+    stories: 'Esta semana', recommended: 'Recomendado para ti',
+    thisWeek: 'Esta semana', workouts: 'Entrenos', time: 'Tiempo', streak: 'Racha', days: 'días',
+    trialBanner: 'Te quedan {days} días de prueba gratis', trialCta: 'Ver Pro',
+  },
+  plan: { title: 'Mi plan de entrenamiento', subtitle: 'Tu semana, pensada para ti.', today: 'Hoy', upcoming: 'Próximo', completed: 'Hecho', rest: 'Descanso', missed: 'Perdido', notStarted: 'Antes del inicio', assignedByCoach: 'Elegido por tu entrenador', restDay: 'Descansa y recupera', allWorkouts: 'Todos los entrenos', noPlan: 'Aún no tienes plan', noPlanBody: 'Tu entrenador aún no te ha asignado un plan. Elige cualquier entreno de abajo.', day: 'Día {number}' },
+  workout: { overview: 'Resumen', exercises: 'Ejercicios', equipment: 'Material', start: 'Empezar entreno', resume: 'Continuar entreno', locked: 'Desbloquear con Pro', lockedBody: 'Este entreno forma parte de Gym Freak Pro.', minutes: '{count} min', exerciseCount: '{count} ejercicios' },
+  exercise: {
+    target: 'Objetivo', secondary: 'Secundarios', equipment: 'Material', difficulty: 'Dificultad',
+    howTo: 'Cómo hacerlo', formTips: 'Consejos de técnica', mistakes: 'Errores comunes', breathing: 'Respiración', prescription: 'Series y reps',
+    sets: 'Series', reps: 'Reps', rest: 'Descanso', duration: 'Duración', favorite: 'Guardar', favorited: 'Guardado', addToWorkout: 'Añadir al entreno', replace: 'Cambiar ejercicio', usedIn: 'Aparece en',
+    lockedTitle: 'Ejercicio Pro', lockedBody: 'Mejora a Pro para ver las instrucciones y la demostración completa.', addSoon: 'Los entrenos personalizados llegarán pronto.', none: 'Ninguno',
+    noActiveWorkout: 'Empieza primero un entreno; después podrás añadir este ejercicio a la sesión de hoy.', addedToSession: 'Añadido a «{name}» solo para esta sesión.', openWorkout: 'Abrir entreno',
+  },
+  player: {
+    exerciseOf: 'Ejercicio {current} de {total}', setOf: 'Serie {current} / {total}', target: 'Objetivo', repsTarget: '{count} reps', secondsTarget: '{count} s',
+    completeSet: 'Completar serie', skip: 'Saltar', replace: 'Cambiar', info: 'Info', previous: 'Anterior', next: 'Siguiente',
+    rest: 'DESCANSO', addTime: '+15 s', skipRest: 'Saltar descanso', upNext: 'A continuación', lastSet: '¡Última serie!',
+    quitTitle: '¿Terminar este entreno?', quitBody: 'Las series completadas no contarán para tu progreso.', quit: 'Terminar entreno', keepGoing: 'Seguir',
+    finish: 'Finalizar entreno', starting: 'Preparando tu entreno…', replaceTitle: 'Cambiar ejercicio', noAlternatives: 'No hay ejercicios similares disponibles.',
+    speechRestOver: 'Fin del descanso. Siguiente serie.', speechNext: 'Siguiente ejercicio: {name}', speechDone: 'Entreno completado. ¡Buen trabajo!', startTimer: 'Iniciar', pauseTimer: 'Pausa', timerDone: 'Hecho',
+    saving: 'Guardando tu entreno…', saveFailed: 'No pudimos guardar esta serie. Lo volveremos a intentar.', restNotification: 'Fin del descanso. ¡Toca la siguiente serie!',
+    addExercise: 'Añadir ejercicio', addTitle: 'Añadir a este entreno', addHint: 'Solo para la sesión de hoy: tu plan no cambia.', added: '{name} añadido', replaced: 'Cambiado a {name}', addedBadge: 'Añadido', swappedBadge: 'Cambiado',
+    editFailed: 'No se pudo guardar el cambio. Revisa tu conexión e inténtalo de nuevo.',
+    conflictTitle: 'Tienes un entreno sin terminar', conflictBody: '«{name}» empezó {when} y aún no ha terminado.', resumeOther: 'Continuarlo', discardStart: 'Descartarlo y empezar este',
+  },
+  complete: {
+    title: 'Entreno completado', subtitle: '¡Buen trabajo!', duration: 'Duración', exercises: 'Ejercicios', sets: 'Series', calories: 'kcal aprox.',
+    achievements: 'Logros desbloqueados', share: 'Compartir', done: 'Listo', shareMessage: 'Acabo de terminar {name} en Gym Freak: {sets} series en {minutes} min 💪',
+  },
+  progress: {
+    title: 'Progreso', subtitle: 'Cada sesión cuenta.', weekly: 'Actividad semanal', monthly: 'Actividad mensual', streak: 'Racha de entrenos', days: 'días', day: 'día', bestDay: '¡Sigue así!', startStreak: 'Entrena hoy para empezar una racha.',
+    time: 'Tiempo de entreno', completed: 'Entrenos completados', sets: 'Series', muscles: 'Reparto por grupo muscular', history: 'Historial de ejercicios', achievements: 'Logros',
+    noHistory: 'Aún no hay entrenos', noHistoryBody: 'Termina tu primer entreno para empezar a medir tu progreso.', setsCount: '{count} series', comingSoon: 'Próximamente', future: 'Peso corporal, medidas y evolución de fuerza', unlocked: 'Desbloqueado', locked: 'Bloqueado',
+    longest: 'Racha más larga: {count} días', records: 'Récords personales', recordWeight: '{weight} kg × {reps}', recordReps: '{reps} reps', topExercises: 'Más entrenados', sessionsCount: '{count} entrenos',
+  },
+  explore: {
+    title: 'Explorar', subtitle: 'Encuentra el movimiento ideal para cada músculo.', search: 'Buscar ejercicios', all: 'Todos', filters: 'Filtros', muscle: 'Grupo muscular', equipment: 'Material', difficulty: 'Dificultad', type: 'Tipo de entreno',
+    apply: 'Ver resultados', reset: 'Restablecer', noResults: 'Ningún ejercicio coincide con estos filtros.', results: '{count} ejercicios', workouts: 'Entrenos', exercises: 'Ejercicios',
+  },
+  profile: {
+    title: 'Perfil', myPreferences: 'Mis preferencias de entreno', subscription: 'Mi suscripción', achievements: 'Logros', favorites: 'Favoritos', history: 'Historial de entrenos',
+    settings: 'Ajustes', language: 'Idioma', notifications: 'Notificaciones', privacy: 'Privacidad', terms: 'Términos', help: 'Ayuda', logout: 'Cerrar sesión', logoutConfirm: '¿Cerrar sesión en Gym Freak?',
+    goal: 'Objetivo', experience: 'Experiencia', days: 'Días de entreno', duration: 'Duración de la sesión', location: 'Lugar', equipment: 'Material', height: 'Altura', weight: 'Peso',
+    units: 'Unidades', metric: 'Métrico', imperial: 'Imperial', restTimer: 'Temporizador de descanso', audioCues: 'Indicaciones de voz', audioCuesBody: 'Avisos hablados durante el descanso',
+    version: 'Gym Freak · Versión {version}', noFavorites: 'Aún no hay favoritos', noFavoritesBody: 'Toca el corazón de cualquier ejercicio para guardarlo aquí.', emailUnverified: 'Correo sin verificar', verify: 'Verificar',
+    perWeek: '{count} días / semana', saved: 'Preferencias guardadas',
+  },
+  notifications: {
+    title: 'Notificaciones', master: 'Permitir notificaciones', masterBody: 'Recordatorios y novedades de Gym Freak',
+    workoutReminders: 'Recordatorios de entreno', reminderTime: 'Hora del recordatorio', streak: 'Recordatorios de racha', weeklyChallenge: 'Reto semanal', newContent: 'Entrenos nuevos', stories: 'Historias y consejos', trialEnding: 'Fin de la prueba', achievements: 'Logros', streakBody: 'Motivación para mantener tu racha',
+    denied: 'Las notificaciones de Gym Freak están desactivadas en los ajustes del sistema.', openSettings: 'Abrir ajustes', reminderTitle: 'Hora de entrenar 💪', reminderBody: 'Tu entreno de hoy te está esperando.',
+  },
+  subscription: {
+    title: 'Gym Freak Pro', heroTitle: 'Empieza tu prueba gratis de {days} días', heroBody: 'Todo lo que necesitas para entrenar mejor y ganar fuerza.',
+    trialActive: 'Tu prueba gratis está activa', trialEnds: 'Gratis hasta el {date}', premiumActive: 'Tienes Pro', premiumUntil: 'Activo hasta el {date}', expired: 'Tu prueba ha terminado', expiredBody: 'Mejora para conservar tus entrenos y planes premium.', free: 'Plan gratuito', freeBody: 'Mejora cuando quieras para desbloquearlo todo.',
+    benefits: ['Entrenos premium', 'Planes personalizados', 'Biblioteca de ejercicios avanzada', 'Seguimiento del progreso', 'Contenido semanal exclusivo'],
+    continue: 'Continuar', upgrade: 'Mejorar a Pro', continueFree: 'Seguir con el plan gratuito', unavailable: 'Las compras en la app llegarán pronto. Podrás mejorar aquí mismo.', restore: 'Restaurar compras', terms: 'Cancela cuando quieras. Se factura a través de App Store o Google Play.',
+    startTrial: 'Empezar prueba gratis de {days} días', trialNote: 'Sin pago. Una prueba gratis por cuenta.', trialFailed: 'No pudimos iniciar tu prueba. Inténtalo de nuevo.', storePrice: 'Precio en {store}', storeCharges: '{store} cobrará {price}.', storeDiscountNote: '{store} cobrará {price}. Este descuento aún no se puede aplicar a compras en la tienda.', deviceRegionNote: 'Precios para {country} (según la región de tu dispositivo). La tienda confirma el precio final al pagar.', purchasePending: 'Tu compra está pendiente de aprobación. Pro se activará en cuanto la tienda la confirme.', purchaseUnverified: 'Tu compra se realizó, pero aún no hemos podido confirmarla. Usa Restaurar compras en un momento.', restored: 'Compras restauradas.', nothingToRestore: 'No hay compras para restaurar en esta cuenta.',
+  },
+  stories: {
+    categories: { 'weekly-challenge': 'Reto', 'coach-tips': 'Consejos', 'new-workouts': 'Nuevo', nutrition: 'Nutrición', motivation: 'Motivación', 'bonus-workout': 'Extra', 'new-exercise': 'Ejercicio' },
+    locked: 'Desbloquea esta historia con Pro.',
+  },
+  legal: {
+    privacyBody: 'Gym Freak guarda tus datos de entreno en tu cuenta de HealthyMe. Puedes pedir una exportación o la eliminación de tus datos en cualquier momento desde los ajustes de privacidad de HealthyMe o contactando con soporte.',
+    termsBody: 'Gym Freak ofrece orientación general de fitness y no es consejo médico. Consulta a un médico antes de empezar un programa nuevo y detén cualquier ejercicio que te cause dolor.',
+    helpBody: '¿Preguntas o comentarios? Contacta con el equipo a través del soporte de HealthyMe y te responderemos.',
+  },
+};

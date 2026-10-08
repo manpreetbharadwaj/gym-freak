@@ -1,0 +1,98 @@
+import type { Translation } from '../types';
+
+/** App screens (everything after onboarding). Merged over `ar.ts`. Arabic renders right-to-left. */
+export const arApp: Translation = {
+  common: { save: 'حفظ', cancel: 'إلغاء', close: 'إغلاق', seeAll: 'عرض الكل', min: 'د', reps: 'تكرار', sec: 'ث', sets: 'مجموعات', edit: 'تعديل', on: 'تشغيل', off: 'إيقاف', showPassword: 'إظهار كلمة المرور', hidePassword: 'إخفاء كلمة المرور' },
+  auth: {
+    signUpTitle: 'أنشئ حسابك', signUpBody: 'احفظ خطتك وابدأ التمرين اليوم.',
+    signInTitle: 'مرحبًا بعودتك', signInBody: 'تابع من حيث توقفت.',
+    firstName: 'الاسم الأول', lastName: 'اسم العائلة (اختياري)', email: 'البريد الإلكتروني', password: 'كلمة المرور', confirmPassword: 'تأكيد كلمة المرور', passwordHint: '8 أحرف على الأقل',
+    signIn: 'تسجيل الدخول', signUp: 'إنشاء حساب', forgot: 'نسيت كلمة المرور؟', noAccount: 'جديد على Gym Freak؟', haveAccount: 'لديك حساب بالفعل؟', switchToSignUp: 'أنشئ حسابًا', switchToSignIn: 'سجّل الدخول',
+    forgotTitle: 'إعادة تعيين كلمة المرور', forgotBody: 'أدخل بريدك الإلكتروني وسنرسل لك رابطًا.', sendLink: 'إرسال الرابط', linkSent: 'إذا كان هناك حساب بهذا البريد، فالرابط في طريقه إليك. تحقّق من صندوق الوارد.', backToSignIn: 'العودة لتسجيل الدخول',
+    resetTitle: 'اختر كلمة مرور جديدة', resetBody: '8 أحرف على الأقل.', newPassword: 'كلمة المرور الجديدة', savePassword: 'حفظ كلمة المرور', passwordUpdated: 'تم تحديث كلمة المرور. سجّل الدخول بالكلمة الجديدة.',
+    verifyTitle: 'أكّد بريدك الإلكتروني', verifyBody: 'أرسلنا رابط تأكيد إلى {email}. افتحه على هذا الهاتف لتأكيد حسابك.', verified: 'تم تأكيد البريد. كل شيء جاهز!', verifyLater: 'لاحقًا', checked: 'لقد أكّدته',
+    phoneSoon: 'تسجيل الدخول برقم الهاتف قريبًا.', terms: 'بالمتابعة فإنك توافق على الشروط وسياسة الخصوصية.',
+    errors: { required: 'يرجى ملء جميع الحقول.', email: 'أدخل بريدًا إلكترونيًا صحيحًا.', passwordLength: 'استخدم 8 أحرف على الأقل.', mismatch: 'كلمتا المرور غير متطابقتين.', invalid: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.', exists: 'يوجد حساب بهذا البريد بالفعل. جرّب تسجيل الدخول.', network: 'يبدو أنك غير متصل. تحقّق من الاتصال.', generic: 'حدث خطأ ما. حاول مرة أخرى.', tokenInvalid: 'هذا الرابط غير صالح أو منتهي الصلاحية.', rateLimited: 'محاولات كثيرة جدًا. انتظر دقيقة.' },
+  },
+  states: { errorTitle: 'حدث خطأ ما', network: 'يبدو أنك غير متصل. تحقّق من الاتصال وحاول مرة أخرى.', generic: 'تعذّر التحميل الآن.', locked: 'هذا جزء من Gym Freak Pro.', retry: 'إعادة المحاولة' },
+  catalog: {
+    muscles: { chest: 'الصدر', back: 'الظهر', shoulders: 'الأكتاف', biceps: 'العضلة ذات الرأسين', triceps: 'العضلة ثلاثية الرؤوس', legs: 'الساقان', glutes: 'الألوية', core: 'الجذع', cardio: 'كارديو', mobility: 'المرونة', 'full-body': 'الجسم كاملًا' },
+    difficulty: { beginner: 'مبتدئ', intermediate: 'متوسط', advanced: 'متقدّم' },
+    modes: { strength: 'قوة', bodyweight_reps: 'وزن الجسم', timed: 'بالوقت' },
+  },
+  nav: { Home: 'الرئيسية', Workout: 'التمرين', Explore: 'استكشاف', Progress: 'التقدّم', Profile: 'الملف' },
+  home: {
+    goodMorning: 'صباح الخير', goodAfternoon: 'نهارك سعيد', goodEvening: 'مساء الخير',
+    todaysWorkout: 'تمرين اليوم', nextUp: 'التالي', exercises: '{count} تمارين', start: 'ابدأ التمرين',
+    unfinished: 'تمرين غير مكتمل', resume: 'متابعة',
+    restDay: 'يوم راحة', restBody: 'التعافي جزء من الخطة. تريد الحركة؟ جرّب جلسة مرونة.',
+    noPlan: 'خطتك في الطريق', noPlanBody: 'تصفّح التمارين وابدأ متى شئت.', browse: 'تصفّح التمارين',
+    stories: 'هذا الأسبوع', recommended: 'مقترح لك',
+    thisWeek: 'هذا الأسبوع', workouts: 'التمارين', time: 'الوقت', streak: 'السلسلة', days: 'أيام',
+    trialBanner: 'تبقّى {days} أيام من تجربتك المجانية', trialCta: 'اكتشف Pro',
+  },
+  plan: { title: 'خطة تدريبي', subtitle: 'أسبوعك، مُخطّط من أجلك.', today: 'اليوم', upcoming: 'قادم', completed: 'مكتمل', rest: 'راحة', missed: 'فائت', notStarted: 'قبل البداية', assignedByCoach: 'اختارها مدربك', restDay: 'راحة وتعافٍ', allWorkouts: 'كل التمارين', noPlan: 'لا توجد خطة بعد', noPlanBody: 'لم يحدّد مدربك خطة بعد. اختر أي تمرين أدناه.', day: 'اليوم {number}' },
+  workout: { overview: 'نظرة عامة', exercises: 'التمارين', equipment: 'المعدات', start: 'ابدأ التمرين', resume: 'تابع التمرين', locked: 'افتحه مع Pro', lockedBody: 'هذا التمرين جزء من Gym Freak Pro.', minutes: '{count} د', exerciseCount: '{count} تمارين' },
+  exercise: {
+    target: 'العضلة المستهدفة', secondary: 'عضلات مساعدة', equipment: 'المعدات', difficulty: 'الصعوبة',
+    howTo: 'طريقة الأداء', formTips: 'نصائح الأداء', mistakes: 'أخطاء شائعة', breathing: 'التنفّس', prescription: 'المجموعات والتكرارات',
+    sets: 'المجموعات', reps: 'التكرارات', rest: 'الراحة', duration: 'المدة', favorite: 'حفظ', favorited: 'محفوظ', addToWorkout: 'أضف إلى التمرين', replace: 'استبدال التمرين', usedIn: 'موجود في',
+    lockedTitle: 'تمرين Pro', lockedBody: 'اشترك في Pro لفتح التعليمات والعرض الكامل.', addSoon: 'التمارين المخصّصة قريبًا.', none: 'لا شيء',
+    noActiveWorkout: 'ابدأ تمرينًا أولًا، ثم يمكنك إضافة هذا التمرين إلى جلسة اليوم.', addedToSession: 'أُضيف إلى «{name}» لهذه الجلسة فقط.', openWorkout: 'فتح التمرين',
+  },
+  player: {
+    exerciseOf: 'التمرين {current} من {total}', setOf: 'المجموعة {current} / {total}', target: 'الهدف', repsTarget: '{count} تكرار', secondsTarget: '{count} ث',
+    completeSet: 'إنهاء المجموعة', skip: 'تخطٍّ', replace: 'استبدال', info: 'معلومات', previous: 'السابق', next: 'التالي',
+    rest: 'راحة', addTime: '+15 ث', skipRest: 'تخطَّ الراحة', upNext: 'التالي', lastSet: 'المجموعة الأخيرة!',
+    quitTitle: 'إنهاء هذا التمرين؟', quitBody: 'لن تُحتسب المجموعات المكتملة في تقدّمك.', quit: 'إنهاء التمرين', keepGoing: 'تابع',
+    finish: 'إنهاء التمرين', starting: 'جارٍ تجهيز تمرينك…', replaceTitle: 'تبديل التمرين', noAlternatives: 'لا توجد تمارين مشابهة متاحة.',
+    speechRestOver: 'انتهت الراحة. المجموعة التالية.', speechNext: 'التمرين التالي: {name}', speechDone: 'اكتمل التمرين. عمل رائع!', startTimer: 'ابدأ', pauseTimer: 'إيقاف مؤقت', timerDone: 'تم',
+    saving: 'جارٍ حفظ تمرينك…', saveFailed: 'تعذّر حفظ هذه المجموعة. ستتم إعادة المحاولة.', restNotification: 'انتهت الراحة. حان وقت المجموعة التالية!',
+    addExercise: 'إضافة تمرين', addTitle: 'أضف إلى هذا التمرين', addHint: 'لجلسة اليوم فقط — تبقى خطتك كما هي.', added: 'تمت إضافة {name}', replaced: 'تم التبديل إلى {name}', addedBadge: 'مضاف', swappedBadge: 'مُبدَّل',
+    editFailed: 'تعذّر حفظ هذا التغيير. تحقّق من الاتصال وحاول مرة أخرى.',
+    conflictTitle: 'لديك تمرين غير مكتمل', conflictBody: 'بدأ «{name}» {when} ولم ينتهِ بعد.', resumeOther: 'متابعته', discardStart: 'تجاهله وبدء هذا التمرين',
+  },
+  complete: {
+    title: 'اكتمل التمرين', subtitle: 'عمل رائع!', duration: 'المدة', exercises: 'التمارين', sets: 'المجموعات', calories: 'سعرات تقديرية',
+    achievements: 'إنجازات جديدة', share: 'مشاركة', done: 'تم', shareMessage: 'أنهيت للتو {name} على Gym Freak: {sets} مجموعات في {minutes} دقيقة 💪',
+  },
+  progress: {
+    title: 'التقدّم', subtitle: 'كل جلسة تُحتسب.', weekly: 'النشاط الأسبوعي', monthly: 'النشاط الشهري', streak: 'سلسلة التمارين', days: 'أيام', day: 'يوم', bestDay: 'استمر هكذا!', startStreak: 'تمرّن اليوم لتبدأ سلسلة.',
+    time: 'وقت التمرين', completed: 'التمارين المكتملة', sets: 'المجموعات', muscles: 'توزيع المجموعات العضلية', history: 'سجل التمارين', achievements: 'الإنجازات',
+    noHistory: 'لا توجد تمارين بعد', noHistoryBody: 'أنهِ تمرينك الأول لتبدأ متابعة تقدّمك.', setsCount: '{count} مجموعات', comingSoon: 'قريبًا', future: 'وزن الجسم والقياسات وتطوّر القوة', unlocked: 'مفتوح', locked: 'مقفل',
+    longest: 'أطول سلسلة: {count} أيام', records: 'الأرقام الشخصية', recordWeight: '{weight} كغ × {reps}', recordReps: '{reps} تكرار', topExercises: 'الأكثر تمرينًا', sessionsCount: '{count} تمارين',
+  },
+  explore: {
+    title: 'استكشاف', subtitle: 'الحركة المناسبة لكل عضلة.', search: 'ابحث عن تمرين', all: 'الكل', filters: 'عوامل التصفية', muscle: 'المجموعة العضلية', equipment: 'المعدات', difficulty: 'الصعوبة', type: 'نوع التمرين',
+    apply: 'عرض النتائج', reset: 'إعادة تعيين', noResults: 'لا توجد تمارين مطابقة لهذه الخيارات.', results: '{count} تمارين', workouts: 'التمارين', exercises: 'الحركات',
+  },
+  profile: {
+    title: 'الملف الشخصي', myPreferences: 'تفضيلات التدريب', subscription: 'اشتراكي', achievements: 'الإنجازات', favorites: 'المفضّلة', history: 'سجل التمارين',
+    settings: 'الإعدادات', language: 'اللغة', notifications: 'الإشعارات', privacy: 'الخصوصية', terms: 'الشروط', help: 'المساعدة', logout: 'تسجيل الخروج', logoutConfirm: 'تسجيل الخروج من Gym Freak؟',
+    goal: 'الهدف', experience: 'الخبرة', days: 'أيام التدريب', duration: 'مدة الجلسة', location: 'المكان', equipment: 'المعدات', height: 'الطول', weight: 'الوزن',
+    units: 'الوحدات', metric: 'متري', imperial: 'إمبراطوري', restTimer: 'مؤقّت الراحة', audioCues: 'الإرشادات الصوتية', audioCuesBody: 'تنبيهات صوتية أثناء الراحة',
+    version: 'Gym Freak · الإصدار {version}', noFavorites: 'لا توجد مفضّلة بعد', noFavoritesBody: 'اضغط على القلب في أي تمرين لحفظه هنا.', emailUnverified: 'البريد غير مؤكَّد', verify: 'تأكيد',
+    perWeek: '{count} أيام / أسبوع', saved: 'تم حفظ التفضيلات',
+  },
+  notifications: {
+    title: 'الإشعارات', master: 'السماح بالإشعارات', masterBody: 'تذكيرات وتحديثات من Gym Freak',
+    workoutReminders: 'تذكيرات التمرين', reminderTime: 'وقت التذكير', streak: 'تذكيرات السلسلة', weeklyChallenge: 'التحدّي الأسبوعي', newContent: 'تمارين جديدة', stories: 'القصص ونصائح المدرب', trialEnding: 'انتهاء التجربة', achievements: 'الإنجازات', streakBody: 'تحفيز للحفاظ على سلسلتك',
+    denied: 'إشعارات Gym Freak متوقفة في إعدادات النظام.', openSettings: 'فتح الإعدادات', reminderTitle: 'حان وقت التمرين 💪', reminderBody: 'تمرين اليوم بانتظارك.',
+  },
+  subscription: {
+    title: 'Gym Freak Pro', heroTitle: 'ابدأ تجربتك المجانية لمدة {days} أيام', heroBody: 'كل ما تحتاجه لتتمرّن بذكاء وتزداد قوة.',
+    trialActive: 'تجربتك المجانية مفعّلة', trialEnds: 'مجانًا حتى {date}', premiumActive: 'أنت مشترك في Pro', premiumUntil: 'مفعّل حتى {date}', expired: 'انتهت تجربتك', expiredBody: 'اشترك للاحتفاظ بالتمارين والخطط المميّزة.', free: 'الخطة المجانية', freeBody: 'اشترك متى شئت لفتح كل شيء.',
+    benefits: ['تمارين مميّزة', 'خطط مخصّصة', 'مكتبة تمارين متقدّمة', 'متابعة التقدّم', 'محتوى أسبوعي حصري'],
+    continue: 'متابعة', upgrade: 'الترقية إلى Pro', continueFree: 'المتابعة بالخطة المجانية', unavailable: 'الشراء داخل التطبيق قريبًا. ستتمكّن من الترقية من هنا.', restore: 'استعادة المشتريات', terms: 'ألغِ في أي وقت. تتم الفوترة عبر App Store أو Google Play.',
+    startTrial: 'ابدأ تجربة مجانية لمدة {days} أيام', trialNote: 'لا حاجة للدفع. تجربة مجانية واحدة لكل حساب.', trialFailed: 'تعذّر بدء التجربة. حاول مرة أخرى.', storePrice: 'السعر في {store}', storeCharges: 'سيحصّل {store} مبلغ {price}.', storeDiscountNote: 'سيحصّل {store} مبلغ {price}. لا يمكن تطبيق هذا الخصم على مشتريات المتجر بعد.', deviceRegionNote: 'الأسعار لـ {country} (حسب منطقة جهازك). يؤكد المتجر السعر النهائي عند الدفع.', purchasePending: 'عملية الشراء بانتظار الموافقة. سيتم فتح Pro فور تأكيد المتجر لها.', purchaseUnverified: 'تمت عملية الشراء لكننا لم نتمكن من تأكيدها بعد. استخدم استعادة المشتريات بعد قليل.', restored: 'تمت استعادة المشتريات.', nothingToRestore: 'لا توجد مشتريات لاستعادتها في هذا الحساب.',
+  },
+  stories: {
+    categories: { 'weekly-challenge': 'تحدٍّ', 'coach-tips': 'نصائح المدرب', 'new-workouts': 'جديد', nutrition: 'التغذية', motivation: 'تحفيز', 'bonus-workout': 'إضافي', 'new-exercise': 'تمرين' },
+    locked: 'افتح هذه القصة مع Pro.',
+  },
+  legal: {
+    privacyBody: 'يحفظ Gym Freak بيانات تمرينك في حسابك على HealthyMe. يمكنك طلب تصدير بياناتك أو حذفها في أي وقت من إعدادات الخصوصية في HealthyMe أو بالتواصل مع الدعم.',
+    termsBody: 'يقدّم Gym Freak إرشادات لياقة عامة وليس نصيحة طبية. استشر طبيبًا قبل بدء برنامج تدريبي جديد، وتوقّف عن أي تمرين يسبّب الألم.',
+    helpBody: 'لديك أسئلة أو ملاحظات؟ تواصل مع الفريق عبر دعم HealthyMe وسنرد عليك.',
+  },
+};

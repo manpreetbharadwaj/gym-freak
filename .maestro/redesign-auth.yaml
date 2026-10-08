@@ -1,0 +1,83 @@
+# Run after redesign-onboarding on the same disposable QA simulator.
+# EMAIL and PASSWORD must be supplied externally for a fresh test-only account.
+appId: com.gymfreak.app
+---
+- assertVisible: "Create your account"
+- scrollUntilVisible: { element: "Create Account", direction: DOWN }
+- tapOn: "Create Account"
+- assertVisible: "Please fill in every field."
+- scrollUntilVisible: { element: { id: "auth-first-name" }, direction: UP }
+- tapOn: { id: "auth-first-name" }
+- inputText: "Visual QA"
+- tapOn: { id: "auth-email" }
+- inputText: "not-an-email"
+- pressKey: Enter
+- scrollUntilVisible: { element: "Create Account", direction: DOWN }
+- tapOn: "Create Account"
+- assertVisible: "Enter a valid email address."
+- scrollUntilVisible: { element: { id: "auth-email" }, direction: UP }
+- tapOn: { id: "auth-email" }
+- eraseText
+- inputText: ${EMAIL}
+- pressKey: Enter
+- scrollUntilVisible: { element: { id: "auth-password-reveal" }, direction: DOWN }
+- tapOn: { id: "auth-password-reveal" }
+- tapOn: { id: "auth-password" }
+- inputText: ${PASSWORD}
+- pressKey: Enter
+- tapOn: { id: "auth-password-reveal" }
+- scrollUntilVisible: { element: { id: "auth-confirm-password-reveal" }, direction: DOWN }
+- tapOn: { id: "auth-confirm-password-reveal" }
+- tapOn: { id: "auth-confirm-password" }
+- inputText: "mismatch"
+- pressKey: Enter
+- tapOn: { id: "auth-confirm-password-reveal" }
+- scrollUntilVisible: { element: "Create Account", direction: DOWN }
+- tapOn: "Create Account"
+- assertVisible: "Passwords do not match."
+- scrollUntilVisible: { element: { id: "auth-confirm-password" }, direction: UP }
+- tapOn: { id: "auth-confirm-password-reveal" }
+- tapOn: { id: "auth-confirm-password" }
+- eraseText
+- inputText: ${PASSWORD}
+- pressKey: Enter
+- tapOn: { id: "auth-confirm-password-reveal" }
+- scrollUntilVisible: { element: "Create Account", direction: DOWN }
+- tapOn: "Create Account"
+- extendedWaitUntil: { visible: "Verify your email", timeout: 30000 }
+- takeScreenshot: ${SCREENSHOTS}/17-verify
+- tapOn: "I’ll do this later"
+- extendedWaitUntil: { visible: "Your plan is ready", timeout: 30000 }
+- assertVisible: "4 days / week"
+- takeScreenshot: ${SCREENSHOTS}/18-plan-ready
+- tapOn: "Let’s Go"
+- tapOn: { text: "Continue with free plan", optional: true }
+- extendedWaitUntil: { visible: "Profile", timeout: 30000 }
+- tapOn: "Profile"
+- scrollUntilVisible: { element: "Log Out", direction: DOWN }
+- tapOn: "Log Out"
+- tapOn: { text: "Log Out", index: 1, optional: true }
+- extendedWaitUntil: { visible: "Welcome back", timeout: 15000 }
+- takeScreenshot: ${SCREENSHOTS}/19-sign-in
+- tapOn: "Forgot password?"
+- assertVisible: "Reset your password"
+- tapOn: { id: "auth-email" }
+- eraseText
+- inputText: ${EMAIL}
+- pressKey: Enter
+- tapOn: "Send Reset Link"
+- extendedWaitUntil: { visible: "If an account exists.*", timeout: 30000 }
+- takeScreenshot: ${SCREENSHOTS}/20-reset-link-sent
+- tapOn: "Back to sign in"
+- tapOn: { id: "auth-password-reveal" }
+- tapOn: { id: "auth-password" }
+- inputText: ${PASSWORD}
+- pressKey: Enter
+- tapOn: { id: "auth-password-reveal" }
+- tapOn: "Sign In"
+- extendedWaitUntil: { visible: "Profile", timeout: 30000 }
+- stopApp
+- launchApp
+- extendedWaitUntil: { visible: "Profile", timeout: 20000 }
+- tapOn: "Profile"
+- assertVisible: "Visual QA.*"

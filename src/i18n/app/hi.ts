@@ -1,0 +1,98 @@
+import type { Translation } from '../types';
+
+/** App screens (everything after onboarding). Merged over `hi.ts`. */
+export const hiApp: Translation = {
+  common: { save: 'सहेजें', cancel: 'रद्द करें', close: 'बंद करें', seeAll: 'सभी देखें', min: 'मिनट', reps: 'रेप्स', sec: 'से.', sets: 'सेट', edit: 'बदलें', on: 'चालू', off: 'बंद', showPassword: 'पासवर्ड दिखाएँ', hidePassword: 'पासवर्ड छिपाएँ' },
+  auth: {
+    signUpTitle: 'अपना खाता बनाएँ', signUpBody: 'अपना प्लान सहेजें और आज ही ट्रेनिंग शुरू करें।',
+    signInTitle: 'फिर से स्वागत है', signInBody: 'जहाँ छोड़ा था, वहीं से शुरू करें।',
+    firstName: 'पहला नाम', lastName: 'उपनाम (वैकल्पिक)', email: 'ईमेल', password: 'पासवर्ड', confirmPassword: 'पासवर्ड की पुष्टि करें', passwordHint: 'कम से कम 8 अक्षर',
+    signIn: 'साइन इन करें', signUp: 'खाता बनाएँ', forgot: 'पासवर्ड भूल गए?', noAccount: 'Gym Freak पर नए हैं?', haveAccount: 'पहले से खाता है?', switchToSignUp: 'नया बनाएँ', switchToSignIn: 'साइन इन करें',
+    forgotTitle: 'पासवर्ड रीसेट करें', forgotBody: 'अपना ईमेल डालें, हम आपको रीसेट लिंक भेजेंगे।', sendLink: 'रीसेट लिंक भेजें', linkSent: 'अगर इस ईमेल से कोई खाता है, तो लिंक भेज दिया गया है। अपना इनबॉक्स देखें।', backToSignIn: 'साइन इन पर लौटें',
+    resetTitle: 'नया पासवर्ड चुनें', resetBody: 'कम से कम 8 अक्षर रखें।', newPassword: 'नया पासवर्ड', savePassword: 'पासवर्ड सहेजें', passwordUpdated: 'पासवर्ड बदल गया। नए पासवर्ड से साइन इन करें।',
+    verifyTitle: 'अपना ईमेल सत्यापित करें', verifyBody: 'हमने {email} पर पुष्टि लिंक भेजा है। खाता सत्यापित करने के लिए इसे इसी फ़ोन पर खोलें।', verified: 'ईमेल सत्यापित हो गया। सब तैयार है!', verifyLater: 'बाद में करूँगा', checked: 'मैंने सत्यापित कर लिया',
+    phoneSoon: 'फ़ोन नंबर से साइन इन जल्द आ रहा है।', terms: 'आगे बढ़कर आप हमारी शर्तों और गोपनीयता नीति से सहमत होते हैं।',
+    errors: { required: 'कृपया सभी फ़ील्ड भरें।', email: 'सही ईमेल पता डालें।', passwordLength: 'कम से कम 8 अक्षर इस्तेमाल करें।', mismatch: 'पासवर्ड मेल नहीं खाते।', invalid: 'ईमेल या पासवर्ड गलत है।', exists: 'इस ईमेल से खाता पहले से है। साइन इन करके देखें।', network: 'लगता है आप ऑफ़लाइन हैं। कनेक्शन जाँचें।', generic: 'कुछ गड़बड़ हुई। फिर से कोशिश करें।', tokenInvalid: 'यह लिंक अमान्य है या इसकी अवधि खत्म हो गई है।', rateLimited: 'बहुत ज़्यादा कोशिशें। एक मिनट रुकें।' },
+  },
+  states: { errorTitle: 'कुछ गड़बड़ हुई', network: 'लगता है आप ऑफ़लाइन हैं। कनेक्शन जाँचकर फिर कोशिश करें।', generic: 'अभी यह लोड नहीं हो सका।', locked: 'यह Gym Freak Pro का हिस्सा है।', retry: 'फिर कोशिश करें' },
+  catalog: {
+    muscles: { chest: 'छाती', back: 'पीठ', shoulders: 'कंधे', biceps: 'बाइसेप्स', triceps: 'ट्राइसेप्स', legs: 'पैर', glutes: 'ग्लूट्स', core: 'कोर', cardio: 'कार्डियो', mobility: 'मोबिलिटी', 'full-body': 'पूरा शरीर' },
+    difficulty: { beginner: 'शुरुआती', intermediate: 'मध्यम', advanced: 'एडवांस्ड' },
+    modes: { strength: 'स्ट्रेंथ', bodyweight_reps: 'बॉडीवेट', timed: 'समय-आधारित' },
+  },
+  nav: { Home: 'होम', Workout: 'वर्कआउट', Explore: 'एक्सप्लोर', Progress: 'प्रगति', Profile: 'प्रोफ़ाइल' },
+  home: {
+    goodMorning: 'सुप्रभात', goodAfternoon: 'नमस्कार', goodEvening: 'शुभ संध्या',
+    todaysWorkout: 'आज का वर्कआउट', nextUp: 'अगला', exercises: '{count} एक्सरसाइज़', start: 'वर्कआउट शुरू करें',
+    unfinished: 'अधूरा वर्कआउट', resume: 'जारी रखें',
+    restDay: 'आराम का दिन', restBody: 'रिकवरी भी प्लान का हिस्सा है। हिलना-डुलना चाहते हैं? मोबिलिटी सेशन आज़माएँ।',
+    noPlan: 'आपका प्लान आ रहा है', noPlanBody: 'वर्कआउट देखें और जब चाहें शुरू करें।', browse: 'वर्कआउट देखें',
+    stories: 'इस हफ़्ते', recommended: 'आपके लिए सुझाए गए',
+    thisWeek: 'इस हफ़्ते', workouts: 'वर्कआउट', time: 'समय', streak: 'स्ट्रीक', days: 'दिन',
+    trialBanner: 'आपके फ़्री ट्रायल में {days} दिन बाकी हैं', trialCta: 'Pro देखें',
+  },
+  plan: { title: 'मेरा ट्रेनिंग प्लान', subtitle: 'आपका हफ़्ता, आपके हिसाब से।', today: 'आज', upcoming: 'आने वाला', completed: 'पूरा', rest: 'आराम', missed: 'छूटा', notStarted: 'शुरुआत से पहले', assignedByCoach: 'आपके कोच ने चुना', restDay: 'आराम और रिकवरी', allWorkouts: 'सभी वर्कआउट', noPlan: 'अभी कोई प्लान नहीं', noPlanBody: 'आपके कोच ने अभी प्लान नहीं दिया है। नीचे से कोई भी वर्कआउट चुनें।', day: 'दिन {number}' },
+  workout: { overview: 'झलक', exercises: 'एक्सरसाइज़', equipment: 'उपकरण', start: 'वर्कआउट शुरू करें', resume: 'वर्कआउट जारी रखें', locked: 'Pro से अनलॉक करें', lockedBody: 'यह वर्कआउट Gym Freak Pro का हिस्सा है।', minutes: '{count} मिनट', exerciseCount: '{count} एक्सरसाइज़' },
+  exercise: {
+    target: 'मुख्य मांसपेशी', secondary: 'सहायक', equipment: 'उपकरण', difficulty: 'कठिनाई',
+    howTo: 'कैसे करें', formTips: 'फ़ॉर्म टिप्स', mistakes: 'आम गलतियाँ', breathing: 'साँस', prescription: 'सेट और रेप्स',
+    sets: 'सेट', reps: 'रेप्स', rest: 'आराम', duration: 'अवधि', favorite: 'सहेजें', favorited: 'सहेजा गया', addToWorkout: 'वर्कआउट में जोड़ें', replace: 'एक्सरसाइज़ बदलें', usedIn: 'इनमें शामिल',
+    lockedTitle: 'Pro एक्सरसाइज़', lockedBody: 'निर्देश और पूरा डेमो देखने के लिए Pro लें।', addSoon: 'अपने खुद के वर्कआउट जल्द आ रहे हैं।', none: 'कोई नहीं',
+    noActiveWorkout: 'पहले कोई वर्कआउट शुरू करें — फिर आप यह एक्सरसाइज़ आज के सेशन में जोड़ सकेंगे।', addedToSession: 'सिर्फ़ इस सेशन के लिए “{name}” में जोड़ा गया।', openWorkout: 'वर्कआउट खोलें',
+  },
+  player: {
+    exerciseOf: 'एक्सरसाइज़ {current} / {total}', setOf: 'सेट {current} / {total}', target: 'लक्ष्य', repsTarget: '{count} रेप्स', secondsTarget: '{count} से.',
+    completeSet: 'सेट पूरा करें', skip: 'छोड़ें', replace: 'बदलें', info: 'जानकारी', previous: 'पिछला', next: 'अगला',
+    rest: 'आराम', addTime: '+15 से.', skipRest: 'आराम छोड़ें', upNext: 'अगला', lastSet: 'आखिरी सेट!',
+    quitTitle: 'यह वर्कआउट खत्म करें?', quitBody: 'पूरे किए सेट आपकी प्रगति में नहीं गिने जाएँगे।', quit: 'वर्कआउट खत्म करें', keepGoing: 'जारी रखें',
+    finish: 'वर्कआउट पूरा करें', starting: 'आपका वर्कआउट तैयार हो रहा है…', replaceTitle: 'एक्सरसाइज़ बदलें', noAlternatives: 'कोई मिलती-जुलती एक्सरसाइज़ उपलब्ध नहीं।',
+    speechRestOver: 'आराम खत्म। अगला सेट।', speechNext: 'अगली एक्सरसाइज़: {name}', speechDone: 'वर्कआउट पूरा। बहुत बढ़िया!', startTimer: 'शुरू', pauseTimer: 'रोकें', timerDone: 'हो गया',
+    saving: 'आपका वर्कआउट सहेजा जा रहा है…', saveFailed: 'यह सेट सहेजा नहीं जा सका। फिर कोशिश होगी।', restNotification: 'आराम खत्म। अगले सेट का समय!',
+    addExercise: 'एक्सरसाइज़ जोड़ें', addTitle: 'इस वर्कआउट में जोड़ें', addHint: 'सिर्फ़ आज के सेशन के लिए — आपका प्लान वैसा ही रहेगा।', added: '{name} जोड़ा गया', replaced: '{name} से बदला गया', addedBadge: 'जोड़ा गया', swappedBadge: 'बदला गया',
+    editFailed: 'यह बदलाव सहेजा नहीं जा सका। कनेक्शन जाँचकर फिर कोशिश करें।',
+    conflictTitle: 'आपका एक वर्कआउट अधूरा है', conflictBody: '“{name}” {when} शुरू हुआ था और अभी पूरा नहीं हुआ है।', resumeOther: 'उसे जारी रखें', discardStart: 'उसे हटाकर यह शुरू करें',
+  },
+  complete: {
+    title: 'वर्कआउट पूरा', subtitle: 'बहुत बढ़िया!', duration: 'अवधि', exercises: 'एक्सरसाइज़', sets: 'सेट', calories: 'अनुमानित kcal',
+    achievements: 'अनलॉक हुई उपलब्धियाँ', share: 'शेयर करें', done: 'हो गया', shareMessage: 'मैंने अभी Gym Freak पर {name} पूरा किया: {minutes} मिनट में {sets} सेट 💪',
+  },
+  progress: {
+    title: 'प्रगति', subtitle: 'हर सेशन मायने रखता है।', weekly: 'साप्ताहिक गतिविधि', monthly: 'मासिक गतिविधि', streak: 'वर्कआउट स्ट्रीक', days: 'दिन', day: 'दिन', bestDay: 'ऐसे ही जारी रखें!', startStreak: 'स्ट्रीक शुरू करने के लिए आज ट्रेनिंग करें।',
+    time: 'ट्रेनिंग समय', completed: 'पूरे वर्कआउट', sets: 'सेट', muscles: 'मांसपेशी समूह के हिसाब से', history: 'एक्सरसाइज़ इतिहास', achievements: 'उपलब्धियाँ',
+    noHistory: 'अभी कोई वर्कआउट नहीं', noHistoryBody: 'प्रगति देखने के लिए अपना पहला वर्कआउट पूरा करें।', setsCount: '{count} सेट', comingSoon: 'जल्द आ रहा है', future: 'शरीर का वज़न, माप और ताकत का रुझान', unlocked: 'अनलॉक', locked: 'लॉक',
+    longest: 'सबसे लंबी स्ट्रीक: {count} दिन', records: 'पर्सनल रिकॉर्ड', recordWeight: '{weight} kg × {reps}', recordReps: '{reps} रेप्स', topExercises: 'सबसे ज़्यादा की गई', sessionsCount: '{count} वर्कआउट',
+  },
+  explore: {
+    title: 'एक्सप्लोर', subtitle: 'हर मांसपेशी के लिए सही मूव खोजें।', search: 'एक्सरसाइज़ खोजें', all: 'सभी', filters: 'फ़िल्टर', muscle: 'मांसपेशी समूह', equipment: 'उपकरण', difficulty: 'कठिनाई', type: 'वर्कआउट प्रकार',
+    apply: 'नतीजे दिखाएँ', reset: 'रीसेट', noResults: 'इन फ़िल्टर से कोई एक्सरसाइज़ नहीं मिली।', results: '{count} एक्सरसाइज़', workouts: 'वर्कआउट', exercises: 'एक्सरसाइज़',
+  },
+  profile: {
+    title: 'प्रोफ़ाइल', myPreferences: 'मेरी ट्रेनिंग पसंद', subscription: 'मेरी सदस्यता', achievements: 'उपलब्धियाँ', favorites: 'पसंदीदा', history: 'वर्कआउट इतिहास',
+    settings: 'सेटिंग्स', language: 'भाषा', notifications: 'सूचनाएँ', privacy: 'गोपनीयता', terms: 'शर्तें', help: 'मदद', logout: 'लॉग आउट', logoutConfirm: 'Gym Freak से लॉग आउट करें?',
+    goal: 'लक्ष्य', experience: 'अनुभव', days: 'ट्रेनिंग के दिन', duration: 'सेशन की लंबाई', location: 'जगह', equipment: 'उपकरण', height: 'लंबाई', weight: 'वज़न',
+    units: 'इकाइयाँ', metric: 'मीट्रिक', imperial: 'इंपीरियल', restTimer: 'रेस्ट टाइमर', audioCues: 'आवाज़ संकेत', audioCuesBody: 'आराम के दौरान बोले गए संकेत',
+    version: 'Gym Freak · संस्करण {version}', noFavorites: 'अभी कोई पसंदीदा नहीं', noFavoritesBody: 'किसी एक्सरसाइज़ को यहाँ सहेजने के लिए दिल पर टैप करें।', emailUnverified: 'ईमेल सत्यापित नहीं', verify: 'सत्यापित करें',
+    perWeek: '{count} दिन / हफ़्ता', saved: 'पसंद सहेजी गई',
+  },
+  notifications: {
+    title: 'सूचनाएँ', master: 'सूचनाओं की अनुमति दें', masterBody: 'Gym Freak से रिमाइंडर और अपडेट',
+    workoutReminders: 'वर्कआउट रिमाइंडर', reminderTime: 'रिमाइंडर का समय', streak: 'स्ट्रीक रिमाइंडर', weeklyChallenge: 'साप्ताहिक चैलेंज', newContent: 'नए वर्कआउट', stories: 'स्टोरीज़ और कोच टिप्स', trialEnding: 'ट्रायल खत्म होना', achievements: 'उपलब्धियाँ', streakBody: 'स्ट्रीक बनाए रखने की प्रेरणा',
+    denied: 'सिस्टम सेटिंग्स में Gym Freak की सूचनाएँ बंद हैं।', openSettings: 'सेटिंग्स खोलें', reminderTitle: 'ट्रेनिंग का समय 💪', reminderBody: 'आज का वर्कआउट आपका इंतज़ार कर रहा है।',
+  },
+  subscription: {
+    title: 'Gym Freak Pro', heroTitle: '{days} दिन का फ़्री ट्रायल शुरू करें', heroBody: 'बेहतर ट्रेनिंग और ज़्यादा ताकत के लिए सब कुछ।',
+    trialActive: 'आपका फ़्री ट्रायल चालू है', trialEnds: '{date} तक मुफ़्त', premiumActive: 'आप Pro पर हैं', premiumUntil: '{date} तक सक्रिय', expired: 'आपका ट्रायल खत्म हो गया', expiredBody: 'प्रीमियम वर्कआउट और प्लान रखने के लिए Pro लें।', free: 'फ़्री प्लान', freeBody: 'सब कुछ अनलॉक करने के लिए कभी भी Pro लें।',
+    benefits: ['प्रीमियम वर्कआउट', 'पर्सनलाइज़्ड प्लान', 'एडवांस्ड एक्सरसाइज़ लाइब्रेरी', 'प्रगति ट्रैकिंग', 'हर हफ़्ते खास कंटेंट'],
+    continue: 'जारी रखें', upgrade: 'Pro लें', continueFree: 'फ़्री प्लान के साथ जारी रखें', unavailable: 'इन-ऐप खरीदारी जल्द आ रही है। आप यहीं से Pro ले सकेंगे।', restore: 'खरीदारी बहाल करें', terms: 'कभी भी रद्द करें। बिलिंग App Store या Google Play से।',
+    startTrial: '{days} दिन का फ़्री ट्रायल शुरू करें', trialNote: 'कोई भुगतान नहीं। हर खाते पर एक फ़्री ट्रायल।', trialFailed: 'ट्रायल शुरू नहीं हो सका। फिर कोशिश करें।', storePrice: '{store} पर कीमत', storeCharges: '{store} {price} चार्ज करेगा।', storeDiscountNote: '{store} {price} चार्ज करेगा। यह छूट अभी स्टोर खरीदारी पर लागू नहीं हो सकती।', deviceRegionNote: '{country} के लिए कीमतें (आपके डिवाइस के क्षेत्र के अनुसार)। अंतिम कीमत की पुष्टि स्टोर चेकआउट पर करता है।', purchasePending: 'आपकी खरीदारी मंज़ूरी के लिए लंबित है। स्टोर की पुष्टि होते ही Pro अनलॉक हो जाएगा।', purchaseUnverified: 'आपकी खरीदारी हो गई, पर हम अभी इसकी पुष्टि नहीं कर पाए। थोड़ी देर में खरीदारी पुनर्स्थापित करें का उपयोग करें।', restored: 'खरीदारी पुनर्स्थापित हो गई।', nothingToRestore: 'इस खाते में पुनर्स्थापित करने के लिए कोई खरीदारी नहीं है।',
+  },
+  stories: {
+    categories: { 'weekly-challenge': 'चैलेंज', 'coach-tips': 'कोच टिप्स', 'new-workouts': 'नया', nutrition: 'पोषण', motivation: 'प्रेरणा', 'bonus-workout': 'बोनस', 'new-exercise': 'एक्सरसाइज़' },
+    locked: 'यह स्टोरी Pro से अनलॉक करें।',
+  },
+  legal: {
+    privacyBody: 'Gym Freak आपका ट्रेनिंग डेटा आपके HealthyMe खाते में रखता है। आप HealthyMe की गोपनीयता सेटिंग्स से या सपोर्ट से संपर्क करके कभी भी अपने डेटा का एक्सपोर्ट या उसे हटाने का अनुरोध कर सकते हैं।',
+    termsBody: 'Gym Freak सामान्य फ़िटनेस मार्गदर्शन देता है, यह चिकित्सा सलाह नहीं है। नया ट्रेनिंग प्रोग्राम शुरू करने से पहले डॉक्टर से सलाह लें और दर्द देने वाली कोई भी एक्सरसाइज़ रोक दें।',
+    helpBody: 'सवाल या सुझाव? HealthyMe सपोर्ट के ज़रिए टीम से संपर्क करें, हम जवाब देंगे।',
+  },
+};

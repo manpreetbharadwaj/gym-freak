@@ -1,0 +1,133 @@
+# End-to-end tap-through against the real HealthyMe API (EXPO_PUBLIC_GYM_DATA_MODE=api).
+# Fresh install → intro → language → onboarding → sign-up → plan → trial → workout → logout → login.
+# Run: maestro test -e EMAIL=e2e+$(date +%s)@gymfreak.local .maestro/full-journey.yaml
+appId: com.gymfreak.app
+env:
+  PASSWORD: CorrectHorse2026!
+---
+# Uses a Release build (no dev menu / Metro): npx expo run:ios --configuration Release
+- extendedWaitUntil: { visible: "Training Built Around You", timeout: 60000 }
+- tapOn: "Next"                                        # intro slides
+- tapOn: "Next"
+- tapOn: "Next"
+- tapOn: "Let’s Go"
+- extendedWaitUntil: { visible: "Choose Your Language", timeout: 20000 }
+- tapOn: "Continue in.*"                               # language
+- takeScreenshot: 01-onboarding-goal
+- tapOn: "Build Muscle"
+- tapOn: "That’s My Goal"
+- tapOn: "Beginner"
+- tapOn: "Continue"
+- tapOn: "Gym"
+- tapOn: "Continue"
+- tapOn: "Set My Week"
+- tapOn: "30-45 min"
+- tapOn: "Continue"                                    # duration
+- tapOn: "Dumbbells"
+- tapOn: "Barbell"
+- tapOn: "Bench"
+- tapOn: "Continue"                                    # equipment
+- takeScreenshot: 02-onboarding-age
+- tapOn: "Continue"                                    # age (default value)
+- tapOn: { text: "Skip", optional: true }              # height
+- tapOn: { text: "Skip", optional: true }              # weight
+- tapOn: "Prefer not to say"
+- tapOn: "Build My Plan"
+- takeScreenshot: 03-sign-up
+- tapOn: { id: "auth-first-name" }
+- inputText: "Maestro"
+- hideKeyboard                                   # Android only exposes on-screen fields
+- tapOn: { id: "auth-email" }
+- inputText: ${EMAIL}
+- hideKeyboard                                   # the keyboard covers the lower fields
+# Reveal the password fields first: XCTest can't type into iOS secure fields reliably.
+- tapOn: { id: "auth-password-reveal" }
+- tapOn: { id: "auth-confirm-password-reveal" }
+- tapOn: { id: "auth-password" }
+- inputText: ${PASSWORD}
+- hideKeyboard
+- tapOn: { id: "auth-confirm-password" }
+- inputText: ${PASSWORD}
+- runFlow:                                       # dismiss the keyboard: iOS via a static title, Android via back
+    when: { platform: iOS }
+    commands:
+      - tapOn: "Create your account"
+- runFlow:
+    when: { platform: Android }
+    commands:
+      - hideKeyboard
+- tapOn: "Create Account"
+- tapOn: { text: "I’ll do this later", optional: true }
+- extendedWaitUntil: { visible: "Let’s Go", timeout: 30000 }
+- takeScreenshot: 04-plan-ready
+- tapOn: "Let’s Go"
+- extendedWaitUntil: { visible: "Start [0-9]+-day free trial", timeout: 20000 }
+- takeScreenshot: 05-trial-offer
+- waitForAnimationToEnd
+- tapOn: "Start [0-9]+-day free trial"
+- extendedWaitUntil: { visible: "Today’s Workout|Next Up", timeout: 30000 }
+- takeScreenshot: 06-home
+- assertVisible: ".*days left in your free trial.*"           # trial is active (server-side)
+- tapOn: { text: "Workout", index: 0 }                       # plan tab: works on any weekday
+- extendedWaitUntil: { visible: "My Training Plan", timeout: 20000 }
+- takeScreenshot: 06b-plan
+- scrollUntilVisible: { element: "Push Day", direction: DOWN }
+- scroll                                               # lift it clear of the floating tab bar
+- tapOn: "Push Day"
+- tapOn: "Start Workout"
+- extendedWaitUntil: { visible: "Complete Set", timeout: 30000 }
+- extendedWaitUntil: { notVisible: "GET READY|Get ready", timeout: 15000 }    # 3-2-1-GO countdown
+- takeScreenshot: 07-player
+- tapOn: "Complete Set"
+- tapOn: { text: "Skip Rest", optional: true }
+- tapOn: "Complete Set"
+- tapOn: { text: "Skip Rest", optional: true }
+- scrollUntilVisible: { element: { text: ".*Add exercise.*" }, direction: DOWN, visibilityPercentage: 50 }
+- tapOn: ".*Add exercise.*"
+- takeScreenshot: 08-add-exercise
+- tapOn: { text: "Search", index: 0 }
+- inputText: "Plank"
+- tapOn: { text: "Plank", index: 1 }               # the result row (index 0 is the search field)
+- extendedWaitUntil: { visible: ".*Finish Workout · 2/19.*", timeout: 20000 }   # Push Day 16 sets + 3 Plank sets (session only)
+- scrollUntilVisible: { element: { text: ".*Finish Workout.*" }, direction: DOWN, visibilityPercentage: 50 }
+- tapOn: ".*Finish Workout.*"
+- extendedWaitUntil: { visible: "Workout Complete", timeout: 30000 }
+- takeScreenshot: 09-complete
+- tapOn: "Done"
+- runFlow:                                             # a tap during the screen’s entrance can be dropped
+    when: { visible: "Workout Complete" }
+    commands:
+      - tapOn: "Done"
+- tapOn: { text: "Not Now", optional: true }
+- tapOn: { text: "Progress", index: 0 }
+- takeScreenshot: 10-progress
+- tapOn: "Profile"
+- scrollUntilVisible: { element: { text: ".*Log Out.*" }, direction: DOWN, visibilityPercentage: 50 }
+- scroll                                               # keep the row clear of the system navigation bar
+- tapOn: ".*Log Out.*"
+- extendedWaitUntil: { visible: "Log out of Gym Freak\\?", timeout: 10000 }
+- tapOn: "Log Out"                                   # confirmation alert (the row behind it is hidden while it shows)
+- extendedWaitUntil: { visible: "Sign In|Welcome back", timeout: 20000 }
+- tapOn: { text: "Sign in", optional: true }
+- tapOn: { id: "auth-email" }
+- inputText: ${EMAIL}
+- hideKeyboard
+- tapOn: { id: "auth-password-reveal" }
+- tapOn: { id: "auth-password" }
+- inputText: ${PASSWORD}
+- tapOn: "Welcome back"
+- tapOn: "Sign In"
+- extendedWaitUntil: { visible: "Today’s Workout|Next Up|.*Save password.*|Samsung Pass", timeout: 30000 }
+- extendedWaitUntil: { visible: ".*Save password.*|Samsung Pass", timeout: 6000, optional: true }   # these sheets slide in after Home
+- runFlow:                                             # iOS / Android autofill may offer to save the password
+    when: { visible: ".*Save password.*" }
+    commands:
+      - tapOn: "Not Now|Never"
+- runFlow:                                             # Samsung devices: Samsung Pass save sheet
+    when: { visible: "Samsung Pass" }
+    commands:
+      - tapOn: "Cancel"
+- extendedWaitUntil: { visible: "Today’s Workout|Next Up", timeout: 30000 }
+- tapOn: { text: "Progress", index: 0 }
+- scrollUntilVisible: { element: { text: "Push Day|Leg Builder|Pull Day|.*(Push Day|Leg Builder|Pull Day).*" }, direction: DOWN, visibilityPercentage: 50 }   # finished workout is in history after re-login
+- takeScreenshot: 11-progress-after-relogin

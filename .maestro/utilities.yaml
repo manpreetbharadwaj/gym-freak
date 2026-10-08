@@ -1,0 +1,108 @@
+# Free utilities (Settings → Utilities): Water Intake and Stopwatch. Needs a signed-in account
+# (run after full-journey.yaml). Screenshots + log timestamps are used to check stopwatch accuracy.
+appId: com.gymfreak.app
+---
+- runFlow: launch-app.yaml
+- extendedWaitUntil: { visible: "Ready to crush your workout\\?", timeout: 30000 }
+- tapOn: { text: "Profile", index: 0 }
+- extendedWaitUntil: { visible: "SUBSCRIPTION", timeout: 6000, optional: true }
+- runFlow:                                             # a tab tap right after launch can be dropped
+    when: { notVisible: "SUBSCRIPTION" }
+    commands:
+      - tapOn: { text: "Profile", index: 0 }
+- scrollUntilVisible: { element: { text: ".*Water Intake.*" }, direction: DOWN, visibilityPercentage: 50 }
+- scroll
+- takeScreenshot: u00-settings-utilities
+- tapOn: ".*Water Intake.*"
+
+# ── Water ─────────────────────────────────────────────────────────────
+- extendedWaitUntil: { visible: "Quick add", timeout: 10000 }
+- repeat:                                              # reruns: undo anything logged earlier today
+    while: { visible: "Undo .*" }
+    commands:
+      - tapOn: "Undo .*"
+- assertVisible: "0.0 L / .*"
+- takeScreenshot: u01-water-empty
+- tapOn: "Add 250 ml of water"
+- assertVisible: "0.25 L / .*"
+- tapOn: "Add 500 ml of water"
+- assertVisible: "0.75 L / .*"
+- tapOn: "Undo \\+500 ml"
+- assertVisible: "0.25 L / .*"
+- tapOn: "Add a custom amount"
+- extendedWaitUntil: { visible: "Amount \\(ml\\)", timeout: 5000 }
+- inputText: "330"
+- tapOn: "Add a custom amount"                        # dismiss the number pad (iOS has no return key) via the static title
+- tapOn: "Add"
+- assertVisible: "0.58 L / .*"
+- takeScreenshot: u02-water-added
+- scrollUntilVisible: { element: { text: ".*3000 ml.*" }, direction: DOWN, visibilityPercentage: 50 }
+- tapOn: ".*3000 ml.*"
+- assertVisible: "0.58 L / 3.0 L"
+- scrollUntilVisible: { element: { id: "water-reminders" }, direction: DOWN, visibilityPercentage: 50 }
+- scroll
+- runFlow:                                             # turn reminders on (reruns: already on)
+    when: { notVisible: "Start: .*" }
+    commands:
+      - tapOn: { id: "water-reminders" }
+      - tapOn: { text: "Allow", optional: true }       # first-time notification permission
+- extendedWaitUntil: { visible: "Start: .*", timeout: 10000 }
+- tapOn: ".*Every 1 h.*"
+- tapOn: "Start: .*"
+- tapOn: "9:00.AM"                                     # iOS puts a narrow no-break space before AM
+- assertVisible: "Start: 9:00.AM"
+- takeScreenshot: u03-water-reminders
+- scrollUntilVisible: { element: { text: "Last 7 days" }, direction: DOWN, visibilityPercentage: 50 }
+- scroll
+- takeScreenshot: u04-water-history
+- tapOn: "Back"
+
+# ── Stopwatch ─────────────────────────────────────────────────────────
+- scrollUntilVisible: { element: { text: ".*Stopwatch.*" }, direction: DOWN, visibilityPercentage: 50 }
+- tapOn: ".*Stopwatch.*"
+- extendedWaitUntil: { visible: "Start", timeout: 10000 }
+- assertVisible: "Elapsed time 00:00.00"
+- takeScreenshot: s01-ready
+- tapOn: "Start"
+- extendedWaitUntil: { visible: "never-shown-marker", timeout: 2500, optional: true }
+- tapOn: "Lap"
+- extendedWaitUntil: { visible: "never-shown-marker", timeout: 1500, optional: true }
+- tapOn: "Lap"
+- tapOn: "Pause"
+- extendedWaitUntil: { visible: "Resume", timeout: 5000 }
+- assertVisible: "Reset"
+- assertVisible: ".*Lap 2.*"
+- takeScreenshot: s02-paused-two-laps
+- tapOn: "Resume"
+# Leave the screen while running, come back
+- tapOn: "Back"
+- extendedWaitUntil: { visible: "never-shown-marker", timeout: 3000, optional: true }
+- tapOn: ".*Stopwatch.*"
+- assertVisible: "RUNNING"
+- takeScreenshot: s03-after-navigation
+# Background the app, then return
+- pressKey: home
+- extendedWaitUntil: { visible: "never-shown-marker", timeout: 6000, optional: true }
+- launchApp: { stopApp: false }
+- extendedWaitUntil: { visible: "RUNNING", timeout: 10000 }
+- takeScreenshot: s04-after-background
+# Kill the app; the stopwatch restores from storage and keeps counting
+- runFlow: launch-app.yaml                            # stop + cold start
+- extendedWaitUntil: { visible: "Ready to crush your workout\\?", timeout: 30000 }
+- tapOn: { text: "Profile", index: 0 }
+- extendedWaitUntil: { visible: "SUBSCRIPTION", timeout: 6000, optional: true }
+- runFlow:                                             # a tab tap right after launch can be dropped
+    when: { notVisible: "SUBSCRIPTION" }
+    commands:
+      - tapOn: { text: "Profile", index: 0 }
+- scrollUntilVisible: { element: { text: ".*Stopwatch.*" }, direction: DOWN, visibilityPercentage: 50 }
+- tapOn: ".*Stopwatch.*"
+- assertVisible: "RUNNING"
+- assertVisible: ".*Lap 2.*"
+- tapOn: "Pause"
+- extendedWaitUntil: { visible: "Resume", timeout: 5000 }
+- takeScreenshot: s05-after-restart-paused
+- tapOn: "Reset"
+- assertVisible: "Elapsed time 00:00.00"
+- assertVisible: "Tap Lap while the stopwatch runs to record splits."
+- takeScreenshot: s06-reset

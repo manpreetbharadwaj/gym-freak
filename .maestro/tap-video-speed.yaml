@@ -1,0 +1,11 @@
+# Taps the “Speed” pill in the player video’s bottom bar. Position per platform.
+appId: com.gymfreak.app
+---
+- runFlow:
+    when: { platform: iOS }
+    commands:
+      - tapOn: { point: "70%,51%", retryTapIfNoChange: false, waitToSettleTimeoutMs: 200 }   # iPhone 17 Pro
+- runFlow:
+    when: { platform: Android }
+    commands:
+      - tapOn: { point: "66%,49%", retryTapIfNoChange: false, waitToSettleTimeoutMs: 200 }   # Galaxy S22 (360×780 dp)

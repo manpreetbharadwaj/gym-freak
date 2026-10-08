@@ -1,0 +1,98 @@
+import type { Translation } from '../types';
+
+/** App screens (everything after onboarding). Merged over `ja.ts`. */
+export const jaApp: Translation = {
+  common: { save: '保存', cancel: 'キャンセル', close: '閉じる', seeAll: 'すべて見る', min: '分', reps: '回', sec: '秒', sets: 'セット', edit: '編集', on: 'オン', off: 'オフ', showPassword: 'パスワードを表示', hidePassword: 'パスワードを隠す' },
+  auth: {
+    signUpTitle: 'アカウントを作成', signUpBody: 'プランを保存して、今日からトレーニングを始めましょう。',
+    signInTitle: 'おかえりなさい', signInBody: '前回の続きから始めましょう。',
+    firstName: '名', lastName: '姓（任意）', email: 'メールアドレス', password: 'パスワード', confirmPassword: 'パスワード（確認）', passwordHint: '8文字以上',
+    signIn: 'ログイン', signUp: 'アカウントを作成', forgot: 'パスワードをお忘れですか？', noAccount: 'Gym Freak は初めてですか？', haveAccount: 'すでにアカウントをお持ちですか？', switchToSignUp: '作成する', switchToSignIn: 'ログイン',
+    forgotTitle: 'パスワードの再設定', forgotBody: 'メールアドレスを入力すると、再設定用のリンクをお送りします。', sendLink: 'リンクを送信', linkSent: 'このメールアドレスのアカウントがあれば、リンクを送信しました。受信トレイをご確認ください。', backToSignIn: 'ログインに戻る',
+    resetTitle: '新しいパスワードを設定', resetBody: '8文字以上にしてください。', newPassword: '新しいパスワード', savePassword: 'パスワードを保存', passwordUpdated: 'パスワードを更新しました。新しいパスワードでログインしてください。',
+    verifyTitle: 'メールアドレスの確認', verifyBody: '{email} に確認リンクを送信しました。このスマートフォンで開いて確認してください。', verified: 'メールアドレスを確認しました。準備完了です！', verifyLater: 'あとで確認する', checked: '確認しました',
+    phoneSoon: '電話番号でのログインは近日対応予定です。', terms: '続行すると、利用規約とプライバシーポリシーに同意したことになります。',
+    errors: { required: 'すべての項目を入力してください。', email: '有効なメールアドレスを入力してください。', passwordLength: '8文字以上にしてください。', mismatch: 'パスワードが一致しません。', invalid: 'メールアドレスまたはパスワードが正しくありません。', exists: 'このメールアドレスのアカウントは既に存在します。ログインしてください。', network: 'オフラインのようです。接続を確認してください。', generic: '問題が発生しました。もう一度お試しください。', tokenInvalid: 'このリンクは無効か、期限切れです。', rateLimited: '試行回数が多すぎます。1分ほどお待ちください。' },
+  },
+  states: { errorTitle: '問題が発生しました', network: 'オフラインのようです。接続を確認してもう一度お試しください。', generic: '現在読み込めません。', locked: 'これは Gym Freak Pro の機能です。', retry: '再試行' },
+  catalog: {
+    muscles: { chest: '胸', back: '背中', shoulders: '肩', biceps: '上腕二頭筋', triceps: '上腕三頭筋', legs: '脚', glutes: 'お尻', core: '体幹', cardio: '有酸素', mobility: 'モビリティ', 'full-body': '全身' },
+    difficulty: { beginner: '初級', intermediate: '中級', advanced: '上級' },
+    modes: { strength: '筋力', bodyweight_reps: '自重', timed: 'タイム' },
+  },
+  nav: { Home: 'ホーム', Workout: 'ワークアウト', Explore: '探す', Progress: '記録', Profile: 'プロフィール' },
+  home: {
+    goodMorning: 'おはようございます', goodAfternoon: 'こんにちは', goodEvening: 'こんばんは',
+    todaysWorkout: '今日のワークアウト', nextUp: '次の予定', exercises: '{count}種目', start: 'ワークアウト開始',
+    unfinished: '未完了のワークアウト', resume: '再開',
+    restDay: '休息日', restBody: '回復もプランの一部です。体を動かしたいならモビリティを試しましょう。',
+    noPlan: 'プランを準備中です', noPlanBody: 'ワークアウトを見て、好きなときに始めましょう。', browse: 'ワークアウトを見る',
+    stories: '今週のトピック', recommended: 'あなたへのおすすめ',
+    thisWeek: '今週', workouts: 'ワークアウト', time: '時間', streak: '連続', days: '日',
+    trialBanner: '無料トライアル残り{days}日', trialCta: 'Proを見る',
+  },
+  plan: { title: 'トレーニングプラン', subtitle: 'あなたに合わせた1週間。', today: '今日', upcoming: '予定', completed: '完了', rest: '休息', missed: '未実施', notStarted: '開始前', assignedByCoach: 'コーチが選んだプラン', restDay: '休息と回復', allWorkouts: 'すべてのワークアウト', noPlan: 'プランはまだありません', noPlanBody: 'コーチがまだプランを設定していません。下から好きなワークアウトを選んでください。', day: '{number}日目' },
+  workout: { overview: '概要', exercises: '種目', equipment: '器具', start: 'ワークアウト開始', resume: 'ワークアウトを再開', locked: 'Proで解除', lockedBody: 'このワークアウトは Gym Freak Pro 限定です。', minutes: '{count}分', exerciseCount: '{count}種目' },
+  exercise: {
+    target: 'メイン', secondary: 'サブ', equipment: '器具', difficulty: '難易度',
+    howTo: 'やり方', formTips: 'フォームのコツ', mistakes: 'よくある間違い', breathing: '呼吸', prescription: 'セットと回数',
+    sets: 'セット', reps: '回数', rest: '休憩', duration: '時間', favorite: '保存', favorited: '保存済み', addToWorkout: 'ワークアウトに追加', replace: '種目を変更', usedIn: '含まれるワークアウト',
+    lockedTitle: 'Pro種目', lockedBody: 'Proにアップグレードすると、手順とデモをすべて見られます。', addSoon: 'カスタムワークアウトは近日公開予定です。', none: 'なし',
+    noActiveWorkout: '先にワークアウトを開始すると、今日のセッションにこの種目を追加できます。', addedToSession: 'このセッションだけ「{name}」に追加しました。', openWorkout: 'ワークアウトを開く',
+  },
+  player: {
+    exerciseOf: '種目 {current} / {total}', setOf: 'セット {current} / {total}', target: '目標', repsTarget: '{count}回', secondsTarget: '{count}秒',
+    completeSet: 'セット完了', skip: 'スキップ', replace: '変更', info: '詳細', previous: '前へ', next: '次へ',
+    rest: '休憩', addTime: '+15秒', skipRest: '休憩をスキップ', upNext: '次', lastSet: 'ラストセット！',
+    quitTitle: 'ワークアウトを終了しますか？', quitBody: '完了したセットは記録に反映されません。', quit: '終了する', keepGoing: '続ける',
+    finish: 'ワークアウトを完了', starting: 'ワークアウトを準備中…', replaceTitle: '種目を入れ替え', noAlternatives: '似た種目が見つかりません。',
+    speechRestOver: '休憩終了。次のセットです。', speechNext: '次の種目：{name}', speechDone: 'ワークアウト完了。お疲れさまでした！', startTimer: 'スタート', pauseTimer: '一時停止', timerDone: '完了',
+    saving: 'ワークアウトを保存中…', saveFailed: 'このセットを保存できませんでした。自動で再試行します。', restNotification: '休憩終了。次のセットを始めましょう！',
+    addExercise: '種目を追加', addTitle: 'このワークアウトに追加', addHint: '今日のセッションだけに追加されます。プランは変わりません。', added: '{name}を追加しました', replaced: '{name}に変更しました', addedBadge: '追加', swappedBadge: '変更',
+    editFailed: '変更を保存できませんでした。接続を確認してもう一度お試しください。',
+    conflictTitle: '未完了のワークアウトがあります', conflictBody: '「{name}」は{when}に開始され、まだ完了していません。', resumeOther: '再開する', discardStart: '破棄してこちらを開始',
+  },
+  complete: {
+    title: 'ワークアウト完了', subtitle: 'お疲れさまでした！', duration: '時間', exercises: '種目', sets: 'セット', calories: '推定kcal',
+    achievements: '獲得した実績', share: '共有', done: '完了', shareMessage: 'Gym Freak で {name} を完了：{minutes}分で{sets}セット 💪',
+  },
+  progress: {
+    title: '記録', subtitle: '毎回のセッションが力になる。', weekly: '週間アクティビティ', monthly: '月間アクティビティ', streak: '連続トレーニング', days: '日', day: '日', bestDay: 'その調子！', startStreak: '今日トレーニングして連続記録を始めましょう。',
+    time: 'トレーニング時間', completed: '完了したワークアウト', sets: 'セット', muscles: '部位別の内訳', history: '種目の履歴', achievements: '実績',
+    noHistory: 'まだワークアウトがありません', noHistoryBody: '最初のワークアウトを完了すると記録が始まります。', setsCount: '{count}セット', comingSoon: '近日公開', future: '体重・サイズ・筋力の推移', unlocked: '獲得済み', locked: '未獲得',
+    longest: '最長連続：{count}日', records: '自己ベスト', recordWeight: '{weight} kg × {reps}', recordReps: '{reps}回', topExercises: 'よく行う種目', sessionsCount: '{count}回',
+  },
+  explore: {
+    title: '探す', subtitle: 'すべての部位にぴったりの動きを。', search: '種目を検索', all: 'すべて', filters: 'フィルター', muscle: '部位', equipment: '器具', difficulty: '難易度', type: 'ワークアウトの種類',
+    apply: '結果を表示', reset: 'リセット', noResults: '条件に合う種目がありません。', results: '{count}種目', workouts: 'ワークアウト', exercises: '種目',
+  },
+  profile: {
+    title: 'プロフィール', myPreferences: 'トレーニング設定', subscription: 'サブスクリプション', achievements: '実績', favorites: 'お気に入り', history: 'ワークアウト履歴',
+    settings: '設定', language: '言語', notifications: '通知', privacy: 'プライバシー', terms: '利用規約', help: 'ヘルプ', logout: 'ログアウト', logoutConfirm: 'Gym Freak からログアウトしますか？',
+    goal: '目標', experience: '経験', days: 'トレーニング日数', duration: 'セッション時間', location: '場所', equipment: '器具', height: '身長', weight: '体重',
+    units: '単位', metric: 'メートル法', imperial: 'ヤード・ポンド法', restTimer: '休憩タイマー', audioCues: '音声ガイド', audioCuesBody: '休憩中の音声案内',
+    version: 'Gym Freak · バージョン {version}', noFavorites: 'お気に入りはまだありません', noFavoritesBody: '種目のハートをタップするとここに保存されます。', emailUnverified: 'メール未確認', verify: '確認する',
+    perWeek: '週{count}日', saved: '設定を保存しました',
+  },
+  notifications: {
+    title: '通知', master: '通知を許可', masterBody: 'Gym Freak からのリマインダーとお知らせ',
+    workoutReminders: 'ワークアウトのリマインダー', reminderTime: 'リマインダーの時刻', streak: '連続記録のリマインダー', weeklyChallenge: '週間チャレンジ', newContent: '新しいワークアウト', stories: 'ストーリーとコーチのヒント', trialEnding: 'トライアル終了', achievements: '実績', streakBody: '連続記録を続けるための励まし',
+    denied: 'システム設定で Gym Freak の通知がオフになっています。', openSettings: '設定を開く', reminderTitle: 'トレーニングの時間です 💪', reminderBody: '今日のワークアウトが待っています。',
+  },
+  subscription: {
+    title: 'Gym Freak Pro', heroTitle: '{days}日間の無料トライアルを始めよう', heroBody: '賢く鍛えて強くなるためのすべてがここに。',
+    trialActive: '無料トライアル中', trialEnds: '{date}まで無料', premiumActive: 'Pro をご利用中', premiumUntil: '{date}まで有効', expired: 'トライアルは終了しました', expiredBody: 'プレミアムのワークアウトとプランを続けるにはアップグレードしてください。', free: '無料プラン', freeBody: 'いつでもアップグレードしてすべて解除できます。',
+    benefits: ['プレミアムワークアウト', 'パーソナルプラン', '充実した種目ライブラリ', '進捗トラッキング', '毎週の限定コンテンツ'],
+    continue: '続ける', upgrade: 'Pro にアップグレード', continueFree: '無料プランで続ける', unavailable: 'アプリ内購入は近日対応予定です。ここからアップグレードできるようになります。', restore: '購入を復元', terms: 'いつでも解約可能。App Store または Google Play で請求されます。',
+    startTrial: '{days}日間の無料トライアルを開始', trialNote: 'お支払いは不要です。無料トライアルは1アカウント1回まで。', trialFailed: 'トライアルを開始できませんでした。もう一度お試しください。', storePrice: '{store}での価格', storeCharges: '{store}で{price}が請求されます。', storeDiscountNote: '{store}で{price}が請求されます。この割引はストアでの購入にはまだ適用できません。', deviceRegionNote: '{country}の価格です（端末の地域設定による）。最終価格は購入時にストアで確定します。', purchasePending: '購入は承認待ちです。ストアで確認され次第Proが有効になります。', purchaseUnverified: '購入は完了しましたが、まだ確認できていません。少し後で「購入を復元」をお試しください。', restored: '購入を復元しました。', nothingToRestore: 'このアカウントで復元できる購入はありません。',
+  },
+  stories: {
+    categories: { 'weekly-challenge': 'チャレンジ', 'coach-tips': 'コーチのヒント', 'new-workouts': '新着', nutrition: '栄養', motivation: 'モチベーション', 'bonus-workout': 'ボーナス', 'new-exercise': '種目' },
+    locked: 'このストーリーは Pro で解除できます。',
+  },
+  legal: {
+    privacyBody: 'Gym Freak はトレーニングデータを HealthyMe アカウントに保存します。HealthyMe のプライバシー設定またはサポートへの連絡で、いつでもデータのエクスポートや削除を依頼できます。',
+    termsBody: 'Gym Freak は一般的なフィットネス情報を提供するもので、医療上の助言ではありません。新しいプログラムを始める前に医師に相談し、痛みを感じる運動は中止してください。',
+    helpBody: 'ご質問やご意見は HealthyMe サポートからチームへお寄せください。',
+  },
+};

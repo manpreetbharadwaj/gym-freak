@@ -1,0 +1,7 @@
+# iOS asks “Open in “Gym Freak”?” for custom-scheme links opened from outside the app; tap Open.
+appId: com.gymfreak.app
+---
+- runFlow:
+    when: { platform: iOS, visible: "Open in .*" }
+    commands:
+      - tapOn: { point: "68%,54%" }

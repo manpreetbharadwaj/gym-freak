@@ -1,0 +1,85 @@
+# Workout player + Rest screen checks. Needs a signed-in account (run after full-journey.yaml).
+# Verifies: countdown, playback speed (incl. while paused), back 5 s, forward 10 s, mute, fullscreen,
+# +15 sec and Skip Rest. Screenshots record the video clock so speed / seek changes can be read off.
+appId: com.gymfreak.app
+---
+- runFlow: launch-app.yaml                                            # signed in: opens on Home
+- extendedWaitUntil: { visible: "Ready to crush your workout\\?", timeout: 30000 }
+- tapOn: { text: "Workout", index: 0 }
+- extendedWaitUntil: { visible: "My Training Plan", timeout: 20000 }
+- scrollUntilVisible: { element: "Push Day", direction: DOWN }
+- scroll
+- tapOn: "Push Day"
+- tapOn: { text: "Start Workout|Resume.*", waitToSettleTimeoutMs: 100 }   # don’t sit out the 3 s countdown
+- extendedWaitUntil: { visible: "GET READY|Get ready", timeout: 3000, optional: true }   # 3-2-1-GO lasts ~3 s; often gone before Maestro looks
+- takeScreenshot: p01-countdown
+- extendedWaitUntil: { notVisible: "GET READY|Get ready", timeout: 15000 }
+- extendedWaitUntil: { visible: "Complete Set", timeout: 10000 }
+
+# Playback speed while playing. Controls auto-hide after 3 s of playback and the clock re-renders
+# 4×/s, so while playing we tap by position right after a reveal (tap-video-*.yaml hold the positions).
+- extendedWaitUntil: { notVisible: "Pause video", timeout: 8000 }      # controls faded out while playing
+- takeScreenshot: p02-controls-hidden
+- runFlow: tap-video-centre.yaml         # tap the picture: controls come back
+- runFlow: tap-video-speed.yaml        # “Speed 1×”
+- extendedWaitUntil: { visible: "0.25×, .*", timeout: 5000 }
+- takeScreenshot: p03-speed-sheet
+- tapOn: "0.25×, .*"
+- takeScreenshot: p04-quarter-speed-a
+- extendedWaitUntil: { visible: "never-shown-marker", timeout: 4000, optional: true }   # 4 s of wall time
+- extendedWaitUntil: { notVisible: "Pause video", timeout: 8000 }      # let the controls fade out again
+- runFlow: tap-video-centre.yaml         # reveal…
+- runFlow: tap-video-centre.yaml         # …then pause (no checks in between)
+- takeScreenshot: p05-quarter-speed-b                                   # clock should have moved ~1 s, not ~4 s
+- assertVisible: "Play video"
+- assertVisible: "Playback Speed: 0.25×"                                # the 0.25× choice stuck through play → pause
+
+# Paused: the screen is static, so ordinary element taps work from here
+- takeScreenshot: p06-paused
+- tapOn: "Back 5 seconds"
+- takeScreenshot: p07-back-5
+- tapOn: "Forward 10 seconds"
+- takeScreenshot: p08-forward-10
+- assertVisible: "0:06 / 0:06"                                        # forward 10 s clamps to the 6 s clip
+- tapOn: "Back 5 seconds"
+- assertVisible: "0:0[01] / 0:06"                                     # 6 − 5 = 1 (Android lands ~0.98 s)
+- takeScreenshot: p08b-back-5-from-end
+- tapOn: "Playback Speed: 0.25×"
+- tapOn: "0.5×, .*"
+- assertVisible: "Playback Speed: 0.5×"
+- assertVisible: "Play video"                                           # speed change kept it paused
+- tapOn: "Unmute"
+- assertVisible: "Mute"
+- tapOn: "Mute"
+- assertVisible: "Unmute"
+- takeScreenshot: p09-paused-half-speed
+
+# Fullscreen (native player), then back
+- tapOn: "Full screen"
+- extendedWaitUntil: { visible: "never-shown-marker", timeout: 2500, optional: true }
+- takeScreenshot: p10-fullscreen
+- runFlow:
+    when: { platform: Android }
+    commands:
+      - back
+- runFlow:
+    when: { platform: iOS }
+    commands:
+      - tapOn: { text: "Done|Close|Exit full screen|Exit Full Screen", optional: true }
+      - runFlow:
+          when: { notVisible: "Complete Set" }
+          commands:
+            - swipe: { direction: DOWN, duration: 400 }                 # AVPlayerViewController swipe-to-dismiss
+- extendedWaitUntil: { visible: "Complete Set", timeout: 10000 }
+
+# Rest screen: +15 sec and Skip Rest
+- tapOn: "Complete Set"
+- extendedWaitUntil: { visible: "Catch your breath.*", timeout: 10000 }
+- assertVisible: "NEXT"
+- assertVisible: ".*Exercise [0-9]+ of [0-9]+.*"
+- takeScreenshot: p11-rest
+- tapOn: "\\+15 sec"
+- takeScreenshot: p12-rest-plus-15
+- tapOn: "Skip Rest"
+- extendedWaitUntil: { visible: "Complete Set", timeout: 10000 }
+- takeScreenshot: p13-after-rest

@@ -1,0 +1,11 @@
+# Taps the centre of the player video (play/pause, or reveal hidden controls). Position per platform.
+appId: com.gymfreak.app
+---
+- runFlow:
+    when: { platform: iOS }
+    commands:
+      - tapOn: { point: "49%,32%", retryTapIfNoChange: false, waitToSettleTimeoutMs: 200 }   # iPhone 17 Pro
+- runFlow:
+    when: { platform: Android }
+    commands:
+      - tapOn: { point: "50%,30%", retryTapIfNoChange: false, waitToSettleTimeoutMs: 200 }   # Galaxy S22 (360×780 dp)

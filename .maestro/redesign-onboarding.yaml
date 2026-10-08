@@ -1,0 +1,73 @@
+# Run only on a disposable QA simulator: this flow resets that app's local data.
+# Supply SCREENSHOTS as a relative subfolder (e.g. shots). No backend/auth data is reset.
+appId: com.gymfreak.app
+---
+- launchApp: { clearState: true }
+- extendedWaitUntil: { visible: "Training Built Around You", timeout: 60000 }
+- takeScreenshot: ${SCREENSHOTS}/01-intro-personalized
+- tapOn: "Next"
+- assertVisible: "See Every Move Clearly"
+- takeScreenshot: ${SCREENSHOTS}/02-intro-guidance
+- tapOn: "Next"
+- assertVisible: "Progress You Can Actually See"
+- takeScreenshot: ${SCREENSHOTS}/03-intro-progress
+- tapOn: "Next"
+- assertVisible: "Small Wins. Every Week."
+- takeScreenshot: ${SCREENSHOTS}/04-intro-consistency
+- tapOn: "Let’s Go"
+- extendedWaitUntil: { visible: "Choose Your Language", timeout: 10000 }
+- tapOn: "Search language"
+- inputText: "zzznomatch"
+- assertVisible: "No language matches.*"
+- eraseText
+- inputText: "English"
+- tapOn: "English, English"
+- pressKey: Enter
+- takeScreenshot: ${SCREENSHOTS}/05-language
+- tapOn: "Continue in English"
+- assertVisible: { text: "That’s My Goal", enabled: false }
+- tapOn: "Build Muscle"
+- takeScreenshot: ${SCREENSHOTS}/06-goal
+- tapOn: "That’s My Goal"
+- tapOn: "Beginner"
+- takeScreenshot: ${SCREENSHOTS}/07-experience
+- tapOn: "Back"
+- assertVisible: { text: "That’s My Goal", enabled: true }
+- tapOn: "That’s My Goal"
+- tapOn: "Continue"
+- tapOn: "Gym"
+- takeScreenshot: ${SCREENSHOTS}/08-location
+- tapOn: "Continue"
+- tapOn: "4 days / week"
+- takeScreenshot: ${SCREENSHOTS}/09-days
+- tapOn: "Set My Week"
+- tapOn: "30-45 min"
+- takeScreenshot: ${SCREENSHOTS}/10-duration
+- tapOn: "Continue"
+- assertVisible: { text: "Continue", enabled: false }
+- tapOn: "Dumbbells"
+- tapOn: "Barbell"
+- tapOn: "Dumbbells"
+- tapOn: "Dumbbells"
+- scrollUntilVisible: { element: "Bench", direction: DOWN }
+- tapOn: "Bench"
+- takeScreenshot: ${SCREENSHOTS}/11-equipment
+- tapOn: "Continue"
+- assertVisible: "How old are you?"
+- takeScreenshot: ${SCREENSHOTS}/12-age
+- tapOn: "Continue"
+- assertVisible: "How tall are you?"
+- takeScreenshot: ${SCREENSHOTS}/13-height
+- tapOn: "Continue"
+- assertVisible: "What’s your weight?"
+- takeScreenshot: ${SCREENSHOTS}/14-weight
+- tapOn: "Continue"
+- tapOn: "Prefer not to say"
+- takeScreenshot: ${SCREENSHOTS}/15-gender
+- tapOn: "Build My Plan"
+- assertVisible: "Create your account"
+- takeScreenshot: ${SCREENSHOTS}/16-create-account
+# Relaunch proves that a completed draft resumes at signup rather than losing answers.
+- stopApp
+- launchApp
+- extendedWaitUntil: { visible: "Create your account", timeout: 15000 }

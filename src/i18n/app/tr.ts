@@ -1,0 +1,98 @@
+import type { Translation } from '../types';
+
+/** App screens (everything after onboarding). Merged over `tr.ts`. */
+export const trApp: Translation = {
+  common: { save: 'Kaydet', cancel: 'İptal', close: 'Kapat', seeAll: 'Tümünü gör', min: 'dk', reps: 'tekrar', sec: 'sn', sets: 'set', edit: 'Düzenle', on: 'Açık', off: 'Kapalı', showPassword: 'Şifreyi göster', hidePassword: 'Şifreyi gizle' },
+  auth: {
+    signUpTitle: 'Hesabını oluştur', signUpBody: 'Planını kaydet ve bugün antrenmana başla.',
+    signInTitle: 'Tekrar hoş geldin', signInBody: 'Kaldığın yerden devam et.',
+    firstName: 'Ad', lastName: 'Soyad (isteğe bağlı)', email: 'E-posta', password: 'Şifre', confirmPassword: 'Şifreyi onayla', passwordHint: 'En az 8 karakter',
+    signIn: 'Giriş yap', signUp: 'Hesap oluştur', forgot: 'Şifreni mi unuttun?', noAccount: 'Gym Freak’te yeni misin?', haveAccount: 'Zaten hesabın var mı?', switchToSignUp: 'Hesap oluştur', switchToSignIn: 'Giriş yap',
+    forgotTitle: 'Şifreni sıfırla', forgotBody: 'E-postanı gir, sana bir sıfırlama bağlantısı gönderelim.', sendLink: 'Bağlantı gönder', linkSent: 'Bu e-postaya ait bir hesap varsa bağlantı yolda. Gelen kutunu kontrol et.', backToSignIn: 'Girişe dön',
+    resetTitle: 'Yeni bir şifre seç', resetBody: 'En az 8 karakter olsun.', newPassword: 'Yeni şifre', savePassword: 'Şifreyi kaydet', passwordUpdated: 'Şifre güncellendi. Yeni şifrenle giriş yap.',
+    verifyTitle: 'E-postanı doğrula', verifyBody: '{email} adresine bir onay bağlantısı gönderdik. Hesabını doğrulamak için bu telefonda aç.', verified: 'E-posta doğrulandı. Her şey hazır!', verifyLater: 'Sonra yaparım', checked: 'Doğruladım',
+    phoneSoon: 'Telefon numarasıyla giriş yakında geliyor.', terms: 'Devam ederek Koşullarımızı ve Gizlilik Politikamızı kabul edersin.',
+    errors: { required: 'Lütfen tüm alanları doldur.', email: 'Geçerli bir e-posta adresi gir.', passwordLength: 'En az 8 karakter kullan.', mismatch: 'Şifreler eşleşmiyor.', invalid: 'E-posta veya şifre hatalı.', exists: 'Bu e-postayla bir hesap zaten var. Giriş yapmayı dene.', network: 'Çevrimdışı görünüyorsun. Bağlantını kontrol et.', generic: 'Bir şeyler ters gitti. Tekrar dene.', tokenInvalid: 'Bu bağlantı geçersiz veya süresi dolmuş.', rateLimited: 'Çok fazla deneme. Bir dakika bekle.' },
+  },
+  states: { errorTitle: 'Bir şeyler ters gitti', network: 'Çevrimdışı görünüyorsun. Bağlantını kontrol edip tekrar dene.', generic: 'Bu şu anda yüklenemedi.', locked: 'Bu, Gym Freak Pro’nun bir parçası.', retry: 'Tekrar dene' },
+  catalog: {
+    muscles: { chest: 'Göğüs', back: 'Sırt', shoulders: 'Omuz', biceps: 'Biseps', triceps: 'Triseps', legs: 'Bacak', glutes: 'Kalça', core: 'Karın', cardio: 'Kardiyo', mobility: 'Mobilite', 'full-body': 'Tüm vücut' },
+    difficulty: { beginner: 'Başlangıç', intermediate: 'Orta', advanced: 'İleri' },
+    modes: { strength: 'Kuvvet', bodyweight_reps: 'Vücut ağırlığı', timed: 'Süreli' },
+  },
+  nav: { Home: 'Ana sayfa', Workout: 'Antrenman', Explore: 'Keşfet', Progress: 'İlerleme', Profile: 'Profil' },
+  home: {
+    goodMorning: 'Günaydın', goodAfternoon: 'Tünaydın', goodEvening: 'İyi akşamlar',
+    todaysWorkout: 'Bugünün antrenmanı', nextUp: 'Sıradaki', exercises: '{count} egzersiz', start: 'Antrenmana başla',
+    unfinished: 'Yarım kalan antrenman', resume: 'Devam et',
+    restDay: 'Dinlenme günü', restBody: 'Toparlanma da planın bir parçası. Hareket etmek mi istiyorsun? Bir mobilite seansı dene.',
+    noPlan: 'Planın yolda', noPlanBody: 'Antrenmanlara göz at, hazır olduğunda başla.', browse: 'Antrenmanlara göz at',
+    stories: 'Bu hafta', recommended: 'Senin için önerilenler',
+    thisWeek: 'Bu hafta', workouts: 'Antrenman', time: 'Süre', streak: 'Seri', days: 'gün',
+    trialBanner: 'Ücretsiz denemende {days} gün kaldı', trialCta: 'Pro’yu gör',
+  },
+  plan: { title: 'Antrenman planım', subtitle: 'Haftan, sana göre planlandı.', today: 'Bugün', upcoming: 'Yaklaşan', completed: 'Tamamlandı', rest: 'Dinlenme', missed: 'Kaçırıldı', notStarted: 'Başlangıçtan önce', assignedByCoach: 'Koçun tarafından seçildi', restDay: 'Dinlen ve toparlan', allWorkouts: 'Tüm antrenmanlar', noPlan: 'Henüz plan yok', noPlanBody: 'Koçun henüz bir plan atamadı. Aşağıdan bir antrenman seç.', day: '{number}. gün' },
+  workout: { overview: 'Genel bakış', exercises: 'Egzersizler', equipment: 'Ekipman', start: 'Antrenmana başla', resume: 'Antrenmana devam et', locked: 'Pro ile aç', lockedBody: 'Bu antrenman Gym Freak Pro’nun bir parçası.', minutes: '{count} dk', exerciseCount: '{count} egzersiz' },
+  exercise: {
+    target: 'Hedef', secondary: 'İkincil', equipment: 'Ekipman', difficulty: 'Zorluk',
+    howTo: 'Nasıl yapılır', formTips: 'Form ipuçları', mistakes: 'Sık yapılan hatalar', breathing: 'Nefes', prescription: 'Set ve tekrar',
+    sets: 'Set', reps: 'Tekrar', rest: 'Dinlenme', duration: 'Süre', favorite: 'Kaydet', favorited: 'Kaydedildi', addToWorkout: 'Antrenmana ekle', replace: 'Egzersizi değiştir', usedIn: 'Yer aldığı antrenmanlar',
+    lockedTitle: 'Pro egzersiz', lockedBody: 'Talimatları ve tam gösterimi açmak için Pro’ya geç.', addSoon: 'Kişisel antrenmanlar yakında geliyor.', none: 'Yok',
+    noActiveWorkout: 'Önce bir antrenman başlat; sonra bu egzersizi bugünkü seansa ekleyebilirsin.', addedToSession: 'Yalnızca bu seans için “{name}” antrenmanına eklendi.', openWorkout: 'Antrenmanı aç',
+  },
+  player: {
+    exerciseOf: 'Egzersiz {current} / {total}', setOf: 'Set {current} / {total}', target: 'Hedef', repsTarget: '{count} tekrar', secondsTarget: '{count} sn',
+    completeSet: 'Seti tamamla', skip: 'Atla', replace: 'Değiştir', info: 'Bilgi', previous: 'Önceki', next: 'Sonraki',
+    rest: 'DİNLENME', addTime: '+15 sn', skipRest: 'Dinlenmeyi atla', upNext: 'Sıradaki', lastSet: 'Son set!',
+    quitTitle: 'Antrenmanı bitir?', quitBody: 'Tamamladığın setler ilerlemene sayılmaz.', quit: 'Antrenmanı bitir', keepGoing: 'Devam et',
+    finish: 'Antrenmanı tamamla', starting: 'Antrenmanın hazırlanıyor…', replaceTitle: 'Egzersizi değiştir', noAlternatives: 'Benzer egzersiz bulunamadı.',
+    speechRestOver: 'Dinlenme bitti. Sıradaki set.', speechNext: 'Sıradaki egzersiz: {name}', speechDone: 'Antrenman tamamlandı. Harika iş!', startTimer: 'Başlat', pauseTimer: 'Duraklat', timerDone: 'Bitti',
+    saving: 'Antrenmanın kaydediliyor…', saveFailed: 'Bu set kaydedilemedi. Tekrar denenecek.', restNotification: 'Dinlenme bitti. Sıradaki sete geç!',
+    addExercise: 'Egzersiz ekle', addTitle: 'Bu antrenmana ekle', addHint: 'Yalnızca bugünkü seans için; planın değişmez.', added: '{name} eklendi', replaced: '{name} ile değiştirildi', addedBadge: 'Eklendi', swappedBadge: 'Değiştirildi',
+    editFailed: 'Bu değişiklik kaydedilemedi. Bağlantını kontrol edip tekrar dene.',
+    conflictTitle: 'Yarım kalan bir antrenmanın var', conflictBody: '“{name}” {when} başladı ve henüz bitmedi.', resumeOther: 'Ona devam et', discardStart: 'Onu sil ve bunu başlat',
+  },
+  complete: {
+    title: 'Antrenman tamamlandı', subtitle: 'Harika iş!', duration: 'Süre', exercises: 'Egzersiz', sets: 'Set', calories: 'Tahmini kcal',
+    achievements: 'Açılan başarımlar', share: 'Paylaş', done: 'Bitti', shareMessage: 'Gym Freak’te {name} antrenmanını bitirdim: {minutes} dakikada {sets} set 💪',
+  },
+  progress: {
+    title: 'İlerleme', subtitle: 'Her seans önemli.', weekly: 'Haftalık aktivite', monthly: 'Aylık aktivite', streak: 'Antrenman serisi', days: 'gün', day: 'gün', bestDay: 'Böyle devam!', startStreak: 'Seri başlatmak için bugün antrenman yap.',
+    time: 'Antrenman süresi', completed: 'Tamamlanan antrenmanlar', sets: 'Set', muscles: 'Kas grubu dağılımı', history: 'Egzersiz geçmişi', achievements: 'Başarımlar',
+    noHistory: 'Henüz antrenman yok', noHistoryBody: 'İlerlemeni takip etmek için ilk antrenmanını bitir.', setsCount: '{count} set', comingSoon: 'Yakında', future: 'Vücut ağırlığı, ölçüler ve güç gelişimi', unlocked: 'Açıldı', locked: 'Kilitli',
+    longest: 'En uzun seri: {count} gün', records: 'Kişisel rekorlar', recordWeight: '{weight} kg × {reps}', recordReps: '{reps} tekrar', topExercises: 'En çok çalışılanlar', sessionsCount: '{count} antrenman',
+  },
+  explore: {
+    title: 'Keşfet', subtitle: 'Her kas için doğru hareketi bul.', search: 'Egzersiz ara', all: 'Tümü', filters: 'Filtreler', muscle: 'Kas grubu', equipment: 'Ekipman', difficulty: 'Zorluk', type: 'Antrenman türü',
+    apply: 'Sonuçları göster', reset: 'Sıfırla', noResults: 'Bu filtrelere uyan egzersiz yok.', results: '{count} egzersiz', workouts: 'Antrenmanlar', exercises: 'Egzersizler',
+  },
+  profile: {
+    title: 'Profil', myPreferences: 'Antrenman tercihlerim', subscription: 'Aboneliğim', achievements: 'Başarımlar', favorites: 'Favoriler', history: 'Antrenman geçmişi',
+    settings: 'Ayarlar', language: 'Dil', notifications: 'Bildirimler', privacy: 'Gizlilik', terms: 'Koşullar', help: 'Yardım', logout: 'Çıkış yap', logoutConfirm: 'Gym Freak’ten çıkış yapılsın mı?',
+    goal: 'Hedef', experience: 'Deneyim', days: 'Antrenman günleri', duration: 'Seans süresi', location: 'Konum', equipment: 'Ekipman', height: 'Boy', weight: 'Kilo',
+    units: 'Birimler', metric: 'Metrik', imperial: 'İngiliz', restTimer: 'Dinlenme sayacı', audioCues: 'Sesli yönlendirme', audioCuesBody: 'Dinlenme sırasında sesli uyarılar',
+    version: 'Gym Freak · Sürüm {version}', noFavorites: 'Henüz favori yok', noFavoritesBody: 'Bir egzersizi buraya kaydetmek için kalbe dokun.', emailUnverified: 'E-posta doğrulanmadı', verify: 'Doğrula',
+    perWeek: 'Haftada {count} gün', saved: 'Tercihler kaydedildi',
+  },
+  notifications: {
+    title: 'Bildirimler', master: 'Bildirimlere izin ver', masterBody: 'Gym Freak’ten hatırlatmalar ve haberler',
+    workoutReminders: 'Antrenman hatırlatmaları', reminderTime: 'Hatırlatma saati', streak: 'Seri hatırlatmaları', weeklyChallenge: 'Haftalık meydan okuma', newContent: 'Yeni antrenmanlar', stories: 'Hikâyeler ve koç ipuçları', trialEnding: 'Denemenin bitişi', achievements: 'Başarımlar', streakBody: 'Serini sürdürmen için motivasyon',
+    denied: 'Gym Freak bildirimleri sistem ayarlarında kapalı.', openSettings: 'Ayarları aç', reminderTitle: 'Antrenman zamanı 💪', reminderBody: 'Bugünkü antrenmanın seni bekliyor.',
+  },
+  subscription: {
+    title: 'Gym Freak Pro', heroTitle: '{days} günlük ücretsiz denemeni başlat', heroBody: 'Daha akıllı antrenman ve daha fazla güç için ihtiyacın olan her şey.',
+    trialActive: 'Ücretsiz denemen aktif', trialEnds: '{date} tarihine kadar ücretsiz', premiumActive: 'Pro kullanıyorsun', premiumUntil: '{date} tarihine kadar aktif', expired: 'Denemen sona erdi', expiredBody: 'Premium antrenmanlarını ve planlarını korumak için Pro’ya geç.', free: 'Ücretsiz plan', freeBody: 'Her şeyi açmak için istediğin zaman Pro’ya geç.',
+    benefits: ['Premium antrenmanlar', 'Kişisel planlar', 'Gelişmiş egzersiz kütüphanesi', 'İlerleme takibi', 'Haftalık özel içerik'],
+    continue: 'Devam et', upgrade: 'Pro’ya geç', continueFree: 'Ücretsiz planla devam et', unavailable: 'Uygulama içi satın alma yakında geliyor. Pro’ya buradan geçebileceksin.', restore: 'Satın alımları geri yükle', terms: 'İstediğin zaman iptal et. Ödeme App Store veya Google Play üzerinden alınır.',
+    startTrial: '{days} günlük ücretsiz denemeyi başlat', trialNote: 'Ödeme gerekmez. Hesap başına bir ücretsiz deneme.', trialFailed: 'Deneme başlatılamadı. Lütfen tekrar dene.', storePrice: '{store} fiyatı', storeCharges: '{store} {price} tahsil edecek.', storeDiscountNote: '{store} {price} tahsil edecek. Bu indirim henüz mağaza satın alımlarına uygulanamıyor.', deviceRegionNote: '{country} için fiyatlar (cihazının bölgesine göre). Nihai fiyatı mağaza ödeme sırasında onaylar.', purchasePending: 'Satın alman onay bekliyor. Mağaza onaylar onaylamaz Pro açılacak.', purchaseUnverified: 'Satın alma tamamlandı ama henüz doğrulayamadık. Birazdan Satın alımları geri yükle seçeneğini kullan.', restored: 'Satın alımlar geri yüklendi.', nothingToRestore: 'Bu hesapta geri yüklenecek satın alım yok.',
+  },
+  stories: {
+    categories: { 'weekly-challenge': 'Meydan okuma', 'coach-tips': 'Koç ipuçları', 'new-workouts': 'Yeni', nutrition: 'Beslenme', motivation: 'Motivasyon', 'bonus-workout': 'Bonus', 'new-exercise': 'Egzersiz' },
+    locked: 'Bu hikâyeyi Pro ile aç.',
+  },
+  legal: {
+    privacyBody: 'Gym Freak antrenman verilerini HealthyMe hesabında saklar. Verilerinin dışa aktarılmasını veya silinmesini istediğin zaman HealthyMe gizlilik ayarlarından ya da destek ekibine yazarak isteyebilirsin.',
+    termsBody: 'Gym Freak genel fitness rehberliği sunar ve tıbbi tavsiye değildir. Yeni bir programa başlamadan önce doktoruna danış ve ağrı yapan her egzersizi bırak.',
+    helpBody: 'Sorun ya da geri bildirimin mi var? HealthyMe destek üzerinden ekibe ulaş, sana dönüş yapalım.',
+  },
+};

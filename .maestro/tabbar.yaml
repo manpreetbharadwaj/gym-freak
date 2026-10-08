@@ -1,0 +1,34 @@
+# Floating tab bar: hide on scroll down, show on scroll up / top / tab switch, raised Workout tab, keyboard.
+appId: com.gymfreak.app
+---
+- runFlow: launch-app.yaml
+- extendedWaitUntil: { visible: "Ready to crush your workout\\?", timeout: 30000 }
+- assertVisible: { id: "tab-Workout" }
+- takeScreenshot: t01-home-docked
+# Scroll down → dock slides away
+- swipe: { start: "50%,75%", end: "50%,35%", duration: 250 }
+- extendedWaitUntil: { notVisible: { id: "tab-Home" }, timeout: 3000 }
+- takeScreenshot: t02-hidden
+# Scroll up a little → dock returns
+- swipe: { start: "50%,40%", end: "50%,55%", duration: 250 }
+- extendedWaitUntil: { visible: { id: "tab-Home" }, timeout: 3000 }
+- takeScreenshot: t03-shown
+# Hidden again, then switching tabs always brings it back
+- swipe: { start: "50%,75%", end: "50%,35%", duration: 250 }
+- extendedWaitUntil: { notVisible: { id: "tab-Home" }, timeout: 3000 }
+- swipe: { start: "50%,40%", end: "50%,48%", duration: 300 }
+- tapOn: { id: "tab-Workout" }
+- extendedWaitUntil: { visible: { id: "tab-Home" }, timeout: 3000 }
+- takeScreenshot: t04-workout-tab
+# Keyboard: dock steps out of the way and returns when it closes.
+# Android only — the iOS simulator uses the Mac's hardware keyboard, so no on-screen keyboard appears there.
+- tapOn: { id: "tab-Explore" }
+- runFlow:
+    when: { platform: Android }
+    commands:
+      - tapOn: "Search exercises"
+      - extendedWaitUntil: { notVisible: { id: "tab-Home" }, timeout: 3000 }
+      - takeScreenshot: t05-keyboard
+      - back
+      - extendedWaitUntil: { visible: { id: "tab-Home" }, timeout: 3000 }
+- tapOn: { id: "tab-Home" }

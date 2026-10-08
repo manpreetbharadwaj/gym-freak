@@ -1,0 +1,56 @@
+# FREE Activity module on a signed-in account: GPS run via simulated device location (Maestro `travel`
+# moves the simulator's real Core Location / Android location along a route), countdown, pause/resume,
+# hold-to-finish, summary, save, detail with splits, km → mi switch. Run on a simulator/emulator only.
+appId: com.gymfreak.app
+---
+- runFlow: launch-app.yaml
+- extendedWaitUntil: { visible: { id: "tab-Activity" }, timeout: 30000 }
+- tapOn: { id: "tab-Activity" }
+- extendedWaitUntil: { visible: "FREE", timeout: 10000 }
+- takeScreenshot: a01-dashboard
+- setLocation: { latitude: 12.9716, longitude: 77.5946 }
+- tapOn: { id: "quick-RUNNING" }
+- extendedWaitUntil: { visible: "Choose an activity", timeout: 8000 }
+- runFlow:
+    when: { visible: { id: "allow-location" } }
+    commands:
+      - tapOn: { id: "allow-location" }
+      - runFlow:
+          when: { visible: "Allow While Using App" }
+          commands: [ { tapOn: "Allow While Using App" } ]
+      - runFlow:
+          when: { visible: "While using the app" }
+          commands: [ { tapOn: "While using the app" } ]
+- extendedWaitUntil: { visible: { id: "gps-status", text: "Ready|Weak signal|Searching…" }, timeout: 15000 }
+- takeScreenshot: a02-start-gps
+- tapOn: { id: "start-activity" }
+- extendedWaitUntil: { visible: { id: "countdown-value", text: "5|4" }, timeout: 5000 }
+- takeScreenshot: a03-countdown
+- extendedWaitUntil: { visible: { id: "live-pause" }, timeout: 12000 }
+# ~1.2 km straight north at a steady running speed.
+- travel:
+    points:
+      - 12.9716,77.5946
+      - 12.9746,77.5946
+      - 12.9776,77.5946
+      - 12.9806,77.5946
+      - 12.9826,77.5946
+    speed: 9
+- takeScreenshot: a04-live-running
+- assertVisible: { id: "live-distance", text: "1\\.[0-9][0-9]" }
+- tapOn: { id: "live-pause" }
+- extendedWaitUntil: { visible: { id: "live-resume" }, timeout: 3000 }
+- takeScreenshot: a05-paused
+- tapOn: { id: "live-resume" }
+- extendedWaitUntil: { visible: { id: "live-pause" }, timeout: 3000 }
+- tapOn: { id: "live-pause" }
+- longPressOn: { id: "live-finish" }
+- extendedWaitUntil: { visible: "Finish activity?", timeout: 5000 }
+- tapOn: "Finish"
+- extendedWaitUntil: { visible: { id: "summary-title" }, timeout: 8000 }
+- takeScreenshot: a06-summary
+- tapOn: { id: "summary-save" }
+- extendedWaitUntil: { visible: { id: "detail-distance" }, timeout: 15000 }
+- takeScreenshot: a07-detail-km
+- scrollUntilVisible: { element: "Splits", direction: DOWN }
+- takeScreenshot: a08-splits
