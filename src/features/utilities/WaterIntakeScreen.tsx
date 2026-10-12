@@ -45,7 +45,7 @@ export function WaterIntakeScreen({ navigation }: RootScreenProps<'WaterIntake'>
     return () => sub.remove();
   }, []);
 
-  const add = (ml: number) => { haptics.tap(); water.add(ml); };
+  const add = (ml: number) => water.add(ml); // success haptic + sound fire once the entry is saved
   const toggleReminders = async (enabled: boolean) => {
     if (enabled) { const result = await notificationPermission(true); setPermission(result); if (result !== 'granted') return; }
     water.setReminder({ enabled });
@@ -78,7 +78,7 @@ export function WaterIntakeScreen({ navigation }: RootScreenProps<'WaterIntake'>
     {/* Quick add */}
     <Section title={copy.quickAdd}>
       <View style={styles.quickRow}>
-        {QUICK_ADD_ML.map((ml, i) => <PressableScale key={ml} onPress={() => add(ml)} accessibilityLabel={format(copy.addAmountLabel, { amount: ml })} containerStyle={{ flex: 1 }}>
+        {QUICK_ADD_ML.map((ml, i) => <PressableScale key={ml} haptic={null} onPress={() => add(ml)} accessibilityLabel={format(copy.addAmountLabel, { amount: ml })} containerStyle={{ flex: 1 }}>
           <View style={[styles.quick, shadow(undefined, 0.35)]}>
             <View style={styles.quickIcon}><GlyphIcon glyph={mdi(i === 0 ? 'cup-outline' : i === 1 ? 'cup-water' : 'bottle-soda-classic-outline')} size={20} color={BLUE} /></View>
             <Txt variant="row" color={palette.ink}>{format(copy.addMl, { amount: ml })}</Txt>

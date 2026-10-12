@@ -8,10 +8,11 @@ import { useI18n } from '@/i18n';
 import { useActivities } from '@/hooks/queries';
 import { useUnitSystem } from '@/hooks/useUnits';
 import { RootScreenProps } from '@/navigation/types';
-import { gutter, palette, scenes } from '@/theme';
+import { gutter, palette } from '@/theme';
 import { ActivityType } from '@/types/domain';
 import { ACTIVITY_ORDER, ACTIVITY_TYPES } from './activityTypes';
 import { ActivityRow } from './components';
+import { activityTheme } from './theme/activityGlassTheme';
 
 /** All activities (recorded in Gym Freak and imported from Apple Health / Health Connect), newest first. */
 export function ActivityHistoryScreen({ navigation }: RootScreenProps<'ActivityHistory'>) {
@@ -22,10 +23,10 @@ export function ActivityHistoryScreen({ navigation }: RootScreenProps<'ActivityH
   const list = useActivities(type);
   const items = list.data?.pages.flatMap((p) => p.items) ?? [];
 
-  return <Screen scene={scenes.violet} scroll={false} header={<Header title={copy.history} onBack={() => navigation.goBack()} />} contentStyle={{ paddingHorizontal: 0, paddingTop: 0 }}>
+  return <Screen scene={activityTheme.scene} scroll={false} header={<Header title={copy.history} onBack={() => navigation.goBack()} />} contentStyle={{ paddingHorizontal: 0, paddingTop: 0 }}>
     <View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
-        <FilterChip label={copy.all} active={!type} onPress={() => setType(undefined)} />
+        <FilterChip label={copy.all} active={!type} color={activityTheme.glass ? activityTheme.accent : undefined} onPress={() => setType(undefined)} />
         {ACTIVITY_ORDER.map((t) => <FilterChip key={t} label={copy.types[t]} active={type === t} color={ACTIVITY_TYPES[t].color} glyph={mdi(ACTIVITY_TYPES[t].icon)} onPress={() => setType(t)} />)}
       </ScrollView>
     </View>

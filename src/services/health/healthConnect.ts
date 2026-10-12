@@ -63,6 +63,19 @@ const dayRange = (day: string) => {
 export const healthConnect: HealthAdapter = {
   provider: 'HEALTH_CONNECT',
 
+  bodyFat: {
+    async connect() {
+      if (!(await init())) return false;
+      const granted = await requestPermission([{ accessType: 'read', recordType: 'BodyFat' }]);
+      return granted.some((p) => p.recordType === 'BodyFat' && p.accessType === 'read');
+    },
+    async read(since) {
+      if (!(await init())) return [];
+      const { records } = await readRecords('BodyFat', { timeRangeFilter: { operator: 'after', startTime: since.toISOString() }, pageSize: 500 });
+      return records.flatMap((r) => (r.metadata?.id ? [{ externalId: r.metadata.id, value: r.percentage, measuredAt: r.time, source: r.metadata.dataOrigin ?? null }] : []));
+    },
+  },
+
   async availability(): Promise<HealthAvailability> {
     const status = await getSdkStatus().catch(() => SdkAvailabilityStatus.SDK_UNAVAILABLE);
     if (status === SdkAvailabilityStatus.SDK_AVAILABLE) return 'available';

@@ -9,7 +9,6 @@ import { ErrorState, Skeleton, SkeletonList } from '@/components/feedback';
 import { Header, IconCircle } from '@/components/layout';
 import { ExerciseMedia } from '@/components/media';
 import { useActiveSession, useFavorites, useToggleFavorite, useWorkout } from '@/hooks/queries';
-import { workoutImage } from '@/assets';
 import { estimateKcal } from '@/components/dashboard';
 import { GlyphIcon, PressableScale } from '@/components';
 import { prescriptionText } from '@/components/cards';
@@ -40,7 +39,7 @@ export function WorkoutDetailScreen({ route, navigation }: RootScreenProps<'Work
     <StatusBar style="light" />
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}>
       <View style={{ height: heroH }}>
-        {data ? <ExerciseMedia media={data.media.thumbnailUrl ? data.media : data.exercises[0]?.exercise.media ?? {}} muscle={data.muscleGroups[0]} fallback={data.media.thumbnailUrl || data.exercises[0]?.exercise.media.thumbnailUrl ? undefined : workoutImage(data)} height={heroH} rounded={0} /> : <Skeleton height={heroH} round={0} />}
+        {data ? <ExerciseMedia media={data.media.thumbnailUrl ? data.media : data.exercises[0]?.exercise.media ?? {}} muscle={data.muscleGroups[0]} height={heroH} rounded={0} /> : <Skeleton height={heroH} round={0} />}
         <LinearGradient colors={['rgba(23,20,61,0.35)', 'rgba(23,20,61,0)', `${scene.background}00`, scene.background]} locations={[0, 0.3, 0.75, 1]} style={StyleSheet.absoluteFill} />
       </View>
       <View style={styles.body}>

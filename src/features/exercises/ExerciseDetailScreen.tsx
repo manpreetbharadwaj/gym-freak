@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,10 +16,12 @@ import { ApiError } from '@/api/client';
 import { EmptyState } from '@/components/feedback';
 import { useShareExercise } from './useShareExercise';
 import { gradients, gutter, palette, radius, scenes, shadow } from '@/theme';
+import { useDialog } from '@/components/dialogs/DialogProvider';
 
 const scene = scenes.violet;
 
 export function ExerciseDetailScreen({ route, navigation }: RootScreenProps<'ExerciseDetail'>) {
+  const dialog = useDialog();
   const { exerciseId: routeId, workoutId, shared } = route.params;
   const { dictionary, muscle, difficulty, equipment } = useLabels();
   const copy = dictionary.exercise;
@@ -68,14 +70,14 @@ export function ExerciseDetailScreen({ route, navigation }: RootScreenProps<'Exe
     setAdding(true);
     try {
       const active = await gym.getActiveSession();
-      if (!active) { Alert.alert(copy.addToWorkout, copy.noActiveWorkout); return; }
+      if (!active) { await dialog.showWarning({ title: copy.addToWorkout, description: copy.noActiveWorkout }); return; }
       await gym.addSessionExercise(active.id, exercise.id);
-      Alert.alert(format(dictionary.player.added, { name: exercise.name }), format(copy.addedToSession, { name: active.name }), [
-        { text: dictionary.common.close, style: 'cancel' },
-        ...(active.workoutId ? [{ text: copy.openWorkout, onPress: () => navigation.navigate('WorkoutPlayer', { workoutId: active.workoutId! }) }] : []),
-      ]);
+      if (active.workoutId) {
+        const open = await dialog.showSuccess({ title: format(dictionary.player.added, { name: exercise.name }), description: format(copy.addedToSession, { name: active.name }), cancelLabel: dictionary.common.close, confirmLabel: copy.openWorkout });
+        if (open) navigation.navigate('WorkoutPlayer', { workoutId: active.workoutId });
+      } else await dialog.showSuccess({ title: format(dictionary.player.added, { name: exercise.name }), description: format(copy.addedToSession, { name: active.name }), confirmLabel: dictionary.common.close });
     } catch {
-      Alert.alert(dictionary.states.errorTitle, dictionary.player.editFailed);
+      void dialog.showError({ title: dictionary.states.errorTitle, description: dictionary.player.editFailed });
     } finally { setAdding(false); }
   };
 

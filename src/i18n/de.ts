@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { deApp } from './app/de';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/de.ts`. */
 const firstRun: Translation = {
   common: { next: 'Weiter', back: 'Zurück', skip: 'Überspringen', done: 'Fertig', continue: 'Weiter', save: 'Speichern', cancel: 'Abbrechen', search: 'Suchen', close: 'Schließen', seeAll: 'Alle ansehen', min: 'Min.', reps: 'Wdh.', sec: 'Sek.', sets: 'Sätze', edit: 'Bearbeiten', on: 'An', off: 'Aus' },
   splash: { tagline: 'Besser trainieren. Stärker bewegen.' },
   intro: {
-    slides: [
-      { tag: 'Persönlich', title: 'Training, das zu dir passt', body: 'Deine Ziele, Erfahrung und dein Alltag formen jedes Workout.' },
-      { tag: 'Angeleitet', title: 'Jede Bewegung klar sehen', body: 'Klare Demos mit den Hinweisen, auf die es ankommt.' },
-      { tag: 'Fortschritt', title: 'Fortschritt, den du wirklich siehst', body: 'Serien, Statistiken und Bestleistungen an einem Ort.' },
-      { tag: 'Dranbleiben', title: 'Kleine Erfolge. Jede Woche.', body: 'Wöchentliche Challenges, die dich in Bewegung halten.' },
-    ],
     start: 'Los geht’s',
-    visual: {
-      goal: 'Dein Ziel', goalValue: 'Muskeln aufbauen', schedule: '4 Tage / Woche', level: 'Fortgeschritten',
-      exercise: 'Goblet Squat', reps: 'Wdh.', sets: 'Sätze', muscle: 'Muskelgruppe', muscleValue: 'Gesäß · Oberschenkel', technique: 'Technik', techniqueValue: 'Langsam absenken',
-      thisWeek: 'Diese Woche', workouts: 'Workouts', minutes: 'Minuten', personalBest: 'Neue Bestleistung',
-      challenge: 'Wochen-Challenge', challengeValue: '3 von 4 Workouts', streak: 'Tage-Serie', badge: 'Abzeichen freigeschaltet', badgeValue: 'Frühaufsteher', complete: 'Workout geschafft',
-    },
   },
   language: { title: 'Wähle deine Sprache', body: 'Du kannst sie jederzeit ändern.', search: 'Sprache suchen', popular: 'Beliebt', all: 'Alle Sprachen', results: 'Ergebnisse', noResults: 'Keine Sprache passt zu „{query}“.', continueIn: 'Weiter auf {language}' },
   auth: {
@@ -168,4 +160,4 @@ const firstRun: Translation = {
   },
 };
 
-export const de = mergeTranslations(firstRun, deApp, dashboard.de, utilities.de, growth.de, activity.de);
+export const de = mergeTranslations(firstRun, deApp, dashboard.de, utilities.de, growth.de, activity.de, nutrition.de, sounds.de, support.de, socialShare.de);

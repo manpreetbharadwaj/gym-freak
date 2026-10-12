@@ -1,4 +1,5 @@
-import { Access, Account, Activity, ActivityDetail, ActivityType, BillingPlan, HealthConnection, HealthConnectionStatus, HealthDaily, HealthProvider, HealthSyncResult, ImportedWorkout, NewActivity, CheckoutResult, DeviceRegistration, Exercise, ExerciseAccess, ExerciseQuery, FavoriteTarget, GymProfile, HomeData, OnboardingAnswers, Page, Preferences, Progress, QuickStartTile, Quote, ReferralSource, ReferralStatus, ReferralSummary, SetUpdate, ShareEventType, Story, Workout, WeekPlan, WorkoutSession } from '@/types/domain';
+import type { SupportRepository } from './support';
+import { Access, Account, Activity, ActivityDetail, ActivityType, BillingPlan, HealthConnection, HealthConnectionStatus, HealthDaily, HealthProvider, HealthSyncResult, ImportedWorkout, NewActivity, CheckoutResult, DeviceRegistration, Exercise, ExerciseAccess, ExerciseQuery, FavoriteTarget, GymProfile, HomeData, OnboardingAnswers, OnboardingContent, Page, Preferences, Progress, QuickStartTile, Quote, ReferralSource, ReferralStatus, ReferralSummary, SetUpdate, ShareEventDetails, ShareEventType, Story, Workout, WeekPlan, WorkoutSession, ContentTiles, ActivityLevel, BodyFatMeasurement, BodyFatReading, BodyFatSummary, CalcSex, NutritionHistoryEntry, NutritionSummary, OrganizerSnapshot, NoteInput, PersonalNote, ReminderInput, PersonalReminder, ReminderCategory, ReminderCompletion, ReminderSnooze } from '@/types/domain';
 
 /** Starting a workout while another one is unfinished: the screen asks whether to resume or discard it. */
 export class ActiveSessionConflict extends Error {
@@ -23,6 +24,21 @@ export interface AuthRepository {
 
 /** Everything Gym Freak needs from the HealthyMe Gym module. */
 export interface GymRepository {
+  /** Public, pre-sign-in: the published onboarding cards for the request locale (English fallback per field). */
+  getOnboardingContent(): Promise<OnboardingContent>;
+  /** Admin-managed image tiles (Explore + onboarding question photos). Public: works before sign-in. */
+  getContentTiles(): Promise<ContentTiles>;
+  getNutrition(): Promise<NutritionSummary>;
+  setNutritionInputs(input: { calculationSex?: CalcSex | null; activityLevel?: ActivityLevel | null; medicalCaution?: boolean }): Promise<NutritionSummary>;
+  setNutritionOverride(input: { calories: number; proteinG: number }): Promise<NutritionSummary>;
+  clearNutritionOverride(): Promise<NutritionSummary>;
+  getNutritionHistory(): Promise<NutritionHistoryEntry[]>;
+  getBodyFat(): Promise<BodyFatSummary>;
+  addBodyFat(input: { percent: number; measuredAt: string; source?: string | null; notes?: string | null }): Promise<BodyFatMeasurement>;
+  addBodyFatNavy(input: { heightCm?: number; neckCm: number; waistCm: number; hipCm?: number; measuredAt: string; notes?: string | null }): Promise<BodyFatMeasurement>;
+  importBodyFat(provider: HealthProvider, readings: BodyFatReading[]): Promise<{ imported: number; skipped: number; invalid: number }>;
+  updateBodyFat(id: string, patch: { percent?: number; measuredAt?: string; source?: string | null; notes?: string | null }): Promise<BodyFatMeasurement>;
+  deleteBodyFat(id: string): Promise<void>;
   getAccess(): Promise<Access>;
   /** Explicit, account-bound free trial (length configured by admins). */
   startTrial(): Promise<Access>;
@@ -67,6 +83,19 @@ export interface GymRepository {
   registerDevice(input: DeviceRegistration): Promise<{ serverPush: boolean }>;
   unregisterDevice(): Promise<void>;
 
+  getOrganizer(since?: string): Promise<OrganizerSnapshot>;
+  createNote(input: NoteInput): Promise<PersonalNote>;
+  updateNote(id: string, input: Partial<NoteInput> & { baseRevision?: number }): Promise<PersonalNote>;
+  deleteNote(id: string): Promise<void>;
+  createReminder(input: ReminderInput): Promise<PersonalReminder>;
+  updateReminder(id: string, input: Partial<ReminderInput> & { baseRevision?: number }): Promise<PersonalReminder>;
+  deleteReminder(id: string): Promise<void>;
+  completeReminder(id: string, occurrenceAt: string, source?: 'APP' | 'NOTIFICATION'): Promise<ReminderCompletion>;
+  snoozeReminder(id: string, occurrenceAt: string, minutes: 5 | 10 | 15): Promise<ReminderSnooze>;
+  createReminderCategory(input: Pick<ReminderCategory, 'name' | 'icon' | 'color'> & { description?: string | null }): Promise<ReminderCategory>;
+  deleteReminderCategory(id: string): Promise<void>;
+  saveReminderSchedule(id: string, input: { installationId: string; timezone: string; notificationIds: string[]; scheduledThrough?: string | null }): Promise<void>;
+
   /* Referrals, plans, coupons, checkout: every amount and status comes from the server. */
   getReferral(): Promise<ReferralSummary>;
   /** Attach this new account to a referrer (once, shortly after sign-up). */
@@ -82,7 +111,7 @@ export interface GymRepository {
   checkout(planKey: string, couponCode?: string | null, country?: string | null): Promise<CheckoutResult>;
   /** Sends a store receipt (App Store JWS / Play purchase token) for server-side verification; premium only changes there. */
   verifyPurchase(input: { platform: 'ios' | 'android'; productId: string; receipt: string }): Promise<void>;
-  trackShare(type: ShareEventType, exerciseId?: string, referralCode?: string): Promise<void>;
+  trackShare(type: ShareEventType, exerciseId?: string, referralCode?: string, details?: ShareEventDetails): Promise<void>;
 
   /* Activity tracking (FREE — never gated). The backend is the source of Gym Freak activity history. */
   listActivities(query?: { type?: ActivityType; before?: string; limit?: number }): Promise<{ items: Activity[]; nextCursor: string | null }>;
@@ -102,4 +131,6 @@ export interface Repositories {
   mode: 'api' | 'mock';
   auth: AuthRepository;
   gym: GymRepository;
+  /** Help & Support, Feedback, Advertise & Collaborate. */
+  support: SupportRepository;
 }

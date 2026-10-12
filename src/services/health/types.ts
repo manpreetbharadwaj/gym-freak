@@ -1,4 +1,4 @@
-import { ActivityDetail, HealthConnectionStatus, HealthDaily, HealthProvider, ImportedWorkout } from '@/types/domain';
+import { ActivityDetail, BodyFatReading, HealthConnectionStatus, HealthDaily, HealthProvider, ImportedWorkout } from '@/types/domain';
 
 /**
  * Device health platform (Apple Health / HealthKit on iOS, Health Connect on Android).
@@ -31,4 +31,9 @@ export interface HealthAdapter {
   workouts(since: Date): Promise<ImportedWorkout[]>;
   /** Writes a Gym Freak activity; returns the platform record id (used to avoid duplicates). */
   writeActivity(activity: ActivityDetail): Promise<string | null>;
+  /**
+   * Body-fat readings (Profile → Body composition), with their own read permission requested only when the user
+   * asks to import. `connect` resolves false when the platform refuses (iOS never reveals read grants: true = asked).
+   */
+  bodyFat: { connect(): Promise<boolean>; read(since: Date): Promise<BodyFatReading[]> };
 }

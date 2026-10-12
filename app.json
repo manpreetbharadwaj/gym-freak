@@ -35,6 +35,7 @@
         "android.permission.FOREGROUND_SERVICE",
         "android.permission.FOREGROUND_SERVICE_LOCATION",
         "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.READ_BODY_FAT",
         "android.permission.health.READ_DISTANCE",
         "android.permission.health.READ_EXERCISE",
         "android.permission.health.READ_STEPS",
@@ -76,7 +77,10 @@
       [
         "expo-notifications",
         {
-          "color": "#5A3BFF"
+          "color": "#5A3BFF",
+          "sounds": [
+            "./src/assets/sound/waterdrop.wav"
+          ]
         }
       ],
       "expo-localization",
@@ -104,7 +108,7 @@
       [
         "@kingstinct/react-native-healthkit",
         {
-          "NSHealthShareUsageDescription": "Gym Freak reads your steps, walking and running distance, active energy and workouts (including ones recorded on Apple Watch) to complete your Activity dashboard, history and streaks.",
+          "NSHealthShareUsageDescription": "Gym Freak reads your steps, walking and running distance, active energy and workouts (including ones recorded on Apple Watch) to complete your Activity dashboard, history and streaks, and, only if you choose to import them, body fat readings for Body composition.",
           "NSHealthUpdateUsageDescription": "Gym Freak saves the runs, walks, hikes and yoga sessions you record in the app to Apple Health, if you turn this on.",
           "background": false
         }
@@ -118,7 +122,32 @@
           }
         }
       ],
-      "expo-iap"
+      "expo-iap",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Gym Freak lets you attach screenshots to support requests and feedback. Only the photos you choose are shared.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      "expo-sharing",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Gym Freak accesses only the fitness share images you choose to save.",
+          "savePhotosPermission": "Gym Freak saves a fitness share image only when you tap Save Image.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
     ],
     "splash": {
       "image": "./src/assets/app_logo.png",

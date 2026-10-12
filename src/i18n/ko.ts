@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { koApp } from './app/ko';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/ko.ts`. */
 const firstRun: Translation = {
   common: { next: '다음', back: '뒤로', skip: '건너뛰기', done: '완료', continue: '계속', search: '검색' },
   splash: { tagline: '더 잘, 더 강하게.' },
   intro: {
-    slides: [
-      { tag: '맞춤형', title: '나에게 맞춘 트레이닝', body: '목표, 경험, 라이프스타일이 모든 운동을 만듭니다.' },
-      { tag: '가이드', title: '모든 동작을 선명하게', body: '꼭 필요한 팁만 담은 명확한 데모.' },
-      { tag: '성장', title: '눈에 보이는 성장', body: '연속 기록, 통계, 개인 최고 기록을 한곳에서.' },
-      { tag: '꾸준함', title: '작은 성공, 매주.', body: '동기를 이어 주는 주간 챌린지.' },
-    ],
     start: '시작하기',
-    visual: {
-      goal: '나의 목표', goalValue: '근육 키우기', schedule: '주 4일', level: '중급',
-      exercise: '고블릿 스쿼트', reps: '횟수', sets: '세트', muscle: '근육 부위', muscleValue: '둔근 · 대퇴사두', technique: '테크닉', techniqueValue: '천천히 내려가기',
-      thisWeek: '이번 주', workouts: '운동', minutes: '분', personalBest: '개인 최고 기록 경신',
-      challenge: '주간 챌린지', challengeValue: '4회 중 3회', streak: '일 연속', badge: '배지 획득', badgeValue: '얼리버드', complete: '운동 완료',
-    },
   },
   language: { title: '언어 선택', body: '언제든지 변경할 수 있어요.', search: '언어 검색', popular: '인기', all: '모든 언어', results: '검색 결과', noResults: '“{query}”와 일치하는 언어가 없어요.', continueIn: '{language}(으)로 계속' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const ko = mergeTranslations(firstRun, koApp, dashboard.ko, utilities.ko, growth.ko, activity.ko);
+export const ko = mergeTranslations(firstRun, koApp, dashboard.ko, utilities.ko, growth.ko, activity.ko, nutrition.ko, sounds.ko, support.ko, socialShare.ko);

@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { hiApp } from './app/hi';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/hi.ts`. */
 const firstRun: Translation = {
   common: { next: 'आगे', back: 'पीछे', skip: 'छोड़ें', done: 'हो गया', continue: 'जारी रखें', search: 'खोजें' },
   splash: { tagline: 'बेहतर बनाएं। मज़बूती से आगे बढ़ें।' },
   intro: {
-    slides: [
-      { tag: 'आपके लिए', title: 'आपके हिसाब से बनी ट्रेनिंग', body: 'आपके लक्ष्य, अनुभव और जीवनशैली से हर वर्कआउट तय होता है।' },
-      { tag: 'गाइडेड', title: 'हर मूवमेंट साफ़ देखें', body: 'साफ़ डेमो, सिर्फ़ ज़रूरी टिप्स के साथ।' },
-      { tag: 'प्रगति', title: 'प्रगति जो सच में दिखे', body: 'स्ट्रीक, आंकड़े और पर्सनल बेस्ट, सब एक जगह।' },
-      { tag: 'निरंतरता', title: 'छोटी जीत। हर हफ़्ते।', body: 'साप्ताहिक चैलेंज जो आपकी रफ़्तार बनाए रखें।' },
-    ],
     start: 'चलिए शुरू करें',
-    visual: {
-      goal: 'आपका लक्ष्य', goalValue: 'मसल बनाना', schedule: 'हफ़्ते में 4 दिन', level: 'मध्यम',
-      exercise: 'गॉबलेट स्क्वाट', reps: 'रेप्स', sets: 'सेट', muscle: 'मसल ग्रुप', muscleValue: 'ग्लूट्स · क्वाड्स', technique: 'तकनीक', techniqueValue: 'धीरे-धीरे नीचे जाएं',
-      thisWeek: 'इस हफ़्ते', workouts: 'वर्कआउट', minutes: 'मिनट', personalBest: 'नया पर्सनल बेस्ट',
-      challenge: 'साप्ताहिक चैलेंज', challengeValue: '4 में से 3 वर्कआउट', streak: 'दिन की स्ट्रीक', badge: 'बैज अनलॉक', badgeValue: 'सुबह का योद्धा', complete: 'वर्कआउट पूरा',
-    },
   },
   language: { title: 'अपनी भाषा चुनें', body: 'आप इसे कभी भी बदल सकते हैं।', search: 'भाषा खोजें', popular: 'लोकप्रिय', all: 'सभी भाषाएं', results: 'परिणाम', noResults: '“{query}” से कोई भाषा मेल नहीं खाती।', continueIn: '{language} में जारी रखें' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const hi = mergeTranslations(firstRun, hiApp, dashboard.hi, utilities.hi, growth.hi, activity.hi);
+export const hi = mergeTranslations(firstRun, hiApp, dashboard.hi, utilities.hi, growth.hi, activity.hi, nutrition.hi, sounds.hi, support.hi, socialShare.hi);

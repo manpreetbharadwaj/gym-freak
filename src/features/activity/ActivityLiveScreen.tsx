@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, AppState, BackHandler, Pressable, StyleSheet, Text, View } from 'react-native';
+import { AppState, BackHandler, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import Animated, { cancelAnimation, Easing, FadeIn, FadeOut, ReduceMotion, runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { GlyphIcon, mdi, Txt } from '@/components';
+import Animated, { cancelAnimation, Easing, FadeIn, FadeOut, ReduceMotion, runOnJS, useAnimatedStyle, useSharedValue, withTiming, ZoomIn } from 'react-native-reanimated';
+import { GlyphIcon, mdi, PressableScale, Txt } from '@/components';
 import { format, useI18n } from '@/i18n';
 import { RootScreenProps } from '@/navigation/types';
-import { palette, radius, shadow, typography, useLayout } from '@/theme';
+import { durations, palette, radius, shadow, springs, typography, useLayout } from '@/theme';
 import { haptics } from '@/utils/haptics';
 import { clock, distanceUnit, distanceValue, formatElevation, paceSecPerKm, paceUnit, paceValue } from '@/utils/units';
 import { ACTIVITY_TYPES, isGpsActivity } from './activityTypes';
@@ -15,13 +15,18 @@ import { RouteMap } from './components';
 import { activeMs, currentPace } from './engine';
 import { ActivityInProgress, tracker, useActiveSession } from './tracker';
 import { useSessionMeta } from './useSessionMeta';
+import { activityTheme } from './theme/activityGlassTheme';
+import { GlassSurface } from './theme/Glass';
+import { LinearGradient } from 'expo-linear-gradient';
 import { setVoiceLanguage, speak } from './voice';
+import { useDialog } from '@/components/dialogs/DialogProvider';
 
 const COUNT_FROM = 5;
 const HOLD_MS = 1200;
 
 /** Live activity: countdown → tracking. Leaving this screen never stops the session. */
 export function ActivityLiveScreen({ navigation, route }: RootScreenProps<'ActivityLive'>) {
+  const dialog = useDialog();
   const { dictionary, language } = useI18n();
   const copy = dictionary.activity;
   const session = useActiveSession();
@@ -52,7 +57,7 @@ export function ActivityLiveScreen({ navigation, route }: RootScreenProps<'Activ
       .then(() => setTimeout(() => setCount(null), 450))
       .catch((error) => {
         if (error instanceof ActivityInProgress) { setCount(null); return; }
-        Alert.alert(copy.startFailed, undefined, [{ text: dictionary.common.close, onPress: () => navigation.goBack() }]);
+        void dialog.showError({ title: copy.startFailed, confirmLabel: dictionary.common.close, onConfirm: () => navigation.goBack() });
       });
   }, [count]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -91,33 +96,34 @@ export function ActivityLiveScreen({ navigation, route }: RootScreenProps<'Activ
   const signalLost = gps && !paused && t.lastFixAt != null && now - t.lastFixAt > 15_000;
   const waiting = gps && t.lastFixAt == null;
 
-  const finish = () => Alert.alert(copy.finishTitle, copy.finishBody, [
-    { text: copy.keepGoing, style: 'cancel' },
-    { text: copy.finish, style: 'destructive', onPress: async () => { haptics.press(); await tracker.finish(); navigation.replace('ActivitySummary'); } },
-  ]);
+  const finish = async () => { if (await dialog.showDestructiveConfirm({ title: copy.finishTitle, description: copy.finishBody, cancelLabel: copy.keepGoing, confirmLabel: copy.finish, onConfirm: async () => { haptics.press(); await tracker.finish(); } })) navigation.replace('ActivitySummary'); };
 
   return <View style={[styles.root, { paddingTop: insets.top }]}>
     <StatusBar style="light" />
+    {/* Glass: one static warm glow behind everything (no animation, so no per-frame cost while tracking). */}
+    {activityTheme.glass ? <LinearGradient pointerEvents="none" colors={['rgba(254,116,41,0.16)', 'rgba(254,116,41,0)']} start={{ x: 0.8, y: 0 }} end={{ x: 0.3, y: 0.55 }} style={StyleSheet.absoluteFill} /> : null}
     <View style={styles.topBar}>
       <Pressable accessibilityRole="button" accessibilityLabel={dictionary.common.back} hitSlop={12} onPress={() => navigation.goBack()} style={styles.iconBtn} testID="live-minimize"><GlyphIcon glyph={mdi('chevron-down')} size={26} color={palette.ink} /></Pressable>
-      <View style={[styles.typePill, { backgroundColor: info.tint }]}><GlyphIcon glyph={mdi(info.icon)} size={16} color={info.color} /><Txt variant="label" color={info.color}>{copy.typeLong[t.type]}</Txt></View>
+      <View style={[styles.typePill, { backgroundColor: info.tint }, activityTheme.glass && styles.glassEdge]}><GlyphIcon glyph={mdi(info.icon)} size={16} color={info.color} /><Txt variant="label" color={info.color}>{copy.typeLong[t.type]}</Txt></View>
       <View style={{ width: 44 }} />
     </View>
 
     {gps ? <View style={{ paddingHorizontal: 16 }}>
       <RouteMap route={t.route} live height={Math.max(170, height * 0.28)} testID="live-map" />
-      {paused || signalLost || waiting ? <Animated.View entering={FadeIn.duration(180).reduceMotion(ReduceMotion.System)} exiting={FadeOut.duration(180)} style={[styles.mapChip, { backgroundColor: paused ? palette.ink : 'rgba(255,209,102,0.12)' }]}>
-        <GlyphIcon glyph={mdi(paused ? 'pause' : 'crosshairs-question')} size={14} color={paused ? palette.white : '#B86A00'} />
-        <Txt variant="label" color={paused ? palette.white : '#B86A00'} testID="live-status">{paused ? (t.autoPaused ? copy.autoPaused : copy.paused) : waiting ? copy.gpsSearching : copy.signalLost}</Txt>
+      {paused || signalLost || waiting ? <Animated.View entering={FadeIn.duration(180).reduceMotion(ReduceMotion.System)} exiting={FadeOut.duration(180)} style={[styles.mapChip, activityTheme.glass ? styles.mapChipGlass : { backgroundColor: paused ? palette.ink : 'rgba(255,209,102,0.12)' }]}>
+        {activityTheme.glass ? <GlassSurface blur strong padded={false} radius={radius.md} style={StyleSheet.absoluteFill} /> : null}
+        <GlyphIcon glyph={mdi(paused ? 'pause' : 'crosshairs-question')} size={14} color={activityTheme.glass ? (paused ? palette.white : activityTheme.accentSoft) : paused ? palette.white : '#B86A00'} />
+        <Txt variant="label" color={activityTheme.glass ? (paused ? palette.white : activityTheme.accentSoft) : paused ? palette.white : '#B86A00'} testID="live-status">{paused ? (t.autoPaused ? copy.autoPaused : copy.paused) : waiting ? copy.gpsSearching : copy.signalLost}</Txt>
       </Animated.View> : null}
     </View> : null}
 
     <View style={styles.metrics}>
+      <MetricsPanel>
       {gps ? <View style={styles.hero} accessible accessibilityLabel={`${copy.distance} ${distanceValue(t.distanceMeters, system)} ${distanceUnit(system)}`}>
-        <Text style={styles.heroValue} numberOfLines={1} adjustsFontSizeToFit testID="live-distance">{distanceValue(t.distanceMeters, system)}</Text>
+        <Text style={[styles.heroValue, styles.heroFit]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5} testID="live-distance">{distanceValue(t.distanceMeters, system)}</Text>
         <Txt variant="title" color={palette.inkMuted}>{distanceUnit(system)}</Txt>
       </View> : <View style={styles.hero} accessible accessibilityLabel={`${copy.time} ${clock(elapsed / 1000, true)}`}>
-        <Text style={styles.heroValue} numberOfLines={1} adjustsFontSizeToFit testID="live-time">{clock(elapsed / 1000, true)}</Text>
+        <Text style={[styles.heroValue, styles.heroFit]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5} testID="live-time">{clock(elapsed / 1000, true)}</Text>
       </View>}
       {!gps && paused ? <Txt variant="label" color={palette.inkMuted} align="center" testID="live-status">{copy.paused}</Txt> : null}
 
@@ -128,15 +134,22 @@ export function ActivityLiveScreen({ navigation, route }: RootScreenProps<'Activ
         <Stat label={copy.estCalories} value={String(kcal)} unit="kcal" testID="live-calories" />
         {gps && t.elevationGainM >= 1 ? <Stat label={copy.elevation} value={formatElevation(t.elevationGainM, system)} /> : null}
       </View>
+      </MetricsPanel>
     </View>
 
     <View style={[styles.controls, { paddingBottom: insets.bottom + 18 }]}>
       {paused ? <>
         <HoldButton label={copy.holdToFinish} onComplete={finish} />
-        <RoundButton testID="live-resume" label={copy.resume} glyph="play" color={palette.aqua} onPress={() => { haptics.press(); tracker.resume(); setNow(Date.now()); }} />
-      </> : <RoundButton testID="live-pause" label={copy.pause} glyph="pause" color={palette.violet} onPress={() => { haptics.press(); tracker.pause(); setNow(Date.now()); }} />}
+        <RoundButton testID="live-resume" label={copy.resume} glyph="play" color={activityTheme.resume} onPress={() => { haptics.press(); tracker.resume(); setNow(Date.now()); }} />
+      </> : <RoundButton testID="live-pause" label={copy.pause} glyph="pause" color={activityTheme.pause} onPress={() => { haptics.press(); tracker.pause(); setNow(Date.now()); }} />}
     </View>
   </View>;
+}
+
+/** Live metrics: a glass panel in the experiment, the plain layout otherwise. */
+function MetricsPanel({ children }: { children: React.ReactNode }) {
+  if (!activityTheme.glass) return <>{children}</>;
+  return <GlassSurface radius={radius.xl} style={styles.metricsPanel}>{children}</GlassSurface>;
 }
 
 function Stat({ label, value, unit, testID }: { label: string; value: string; unit?: string; testID?: string }) {
@@ -149,32 +162,35 @@ function Stat({ label, value, unit, testID }: { label: string; value: string; un
   </View>;
 }
 
+/** Pause / resume: presses down with the shared spring and pops in when the controls swap (pause ↔ resume + finish). */
 function RoundButton({ label, glyph, color, onPress, testID }: { label: string; glyph: string; color: string; onPress: () => void; testID?: string }) {
-  return <View style={{ alignItems: 'center', gap: 6 }}>
-    <Pressable testID={testID} accessibilityRole="button" accessibilityLabel={label} onPress={onPress} style={({ pressed }) => [styles.round, { backgroundColor: color }, shadow(color, 1.4), pressed && { transform: [{ scale: 0.95 }] }]}>
+  return <Animated.View entering={ZoomIn.springify().damping(springs.snappy.damping).stiffness(springs.snappy.stiffness).reduceMotion(ReduceMotion.System)} style={{ alignItems: 'center', gap: 6 }}>
+    <PressableScale testID={testID} haptic={null} scaleTo={0.93} accessibilityLabel={label} onPress={onPress} style={[styles.round, { backgroundColor: color }, shadow(color, 1.4)]}>
       <GlyphIcon glyph={mdi(glyph)} size={36} color={palette.white} />
-    </Pressable>
+    </PressableScale>
     <Txt variant="label" color={palette.inkSoft}>{label}</Txt>
-  </View>;
+  </Animated.View>;
 }
 
 /** Finish needs a deliberate 1.2 s hold (then a confirmation), so it can't be hit by accident. */
 function HoldButton({ label, onComplete }: { label: string; onComplete: () => void }) {
   const progress = useSharedValue(0);
   const fill = useAnimatedStyle(() => ({ height: `${progress.value * 100}%` }));
+  // A firm tick when the hold completes, so you feel the moment before the confirmation appears.
+  const completeHold = () => { haptics.medium(); onComplete(); };
   const begin = () => {
     haptics.tap();
-    progress.value = withTiming(1, { duration: HOLD_MS, easing: Easing.linear }, (done) => { if (done) runOnJS(onComplete)(); });
+    progress.value = withTiming(1, { duration: HOLD_MS, easing: Easing.linear }, (done) => { if (done) runOnJS(completeHold)(); });
   };
   const cancel = () => { cancelAnimation(progress); progress.value = withTiming(0, { duration: 160 }); };
-  return <View style={{ alignItems: 'center', gap: 6 }}>
+  return <Animated.View entering={FadeIn.duration(durations.standard).reduceMotion(ReduceMotion.System)} style={{ alignItems: 'center', gap: 6 }}>
     <Pressable testID="live-finish" accessibilityRole="button" accessibilityLabel={label} accessibilityHint={label} onPressIn={begin} onPressOut={cancel} onLongPress={() => undefined} delayLongPress={HOLD_MS + 500}
       style={[styles.round, styles.finish]}>
       <Animated.View style={[styles.finishFill, fill]} />
       <GlyphIcon glyph={mdi('stop')} size={34} color={palette.danger} />
     </Pressable>
     <Txt variant="label" color={palette.inkSoft}>{label}</Txt>
-  </View>;
+  </Animated.View>;
 }
 
 function Countdown({ value, label, goLabel, type }: { value: number; label: string; goLabel: string; type: keyof typeof ACTIVITY_TYPES }) {
@@ -196,13 +212,17 @@ function Countdown({ value, label, goLabel, type }: { value: number; label: stri
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: palette.surfaceRaised },
+  root: { flex: 1, backgroundColor: activityTheme.liveBackground },
   topBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 6 },
   iconBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   typePill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
   mapChip: { position: 'absolute', top: 10, left: 26, right: 26, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8, borderRadius: radius.md },
   metrics: { flex: 1, paddingHorizontal: 20, justifyContent: 'center', gap: 12 },
   hero: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 8 },
+  heroFit: { flexShrink: 1, textAlign: 'center' },
+  metricsPanel: { gap: 14, paddingVertical: 20 },
+  mapChipGlass: { overflow: 'hidden' },
+  glassEdge: { borderWidth: StyleSheet.hairlineWidth * 2, borderColor: activityTheme.border },
   /** Outdoor-readable: the one focal figure is very large and high contrast. */
   heroValue: { ...typography.number, fontSize: 84, lineHeight: 92, letterSpacing: -3, color: palette.ink, fontVariant: ['tabular-nums'] },
   grid: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 14 },
@@ -210,7 +230,7 @@ const styles = StyleSheet.create({
   statValue: { ...typography.number, fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: palette.ink, fontVariant: ['tabular-nums'] },
   controls: { flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start', gap: 40, paddingTop: 12 },
   round: { width: 84, height: 84, borderRadius: 42, alignItems: 'center', justifyContent: 'center' },
-  finish: { backgroundColor: palette.surface, borderWidth: 3, borderColor: 'rgba(255,107,126,0.12)', overflow: 'hidden' },
+  finish: { backgroundColor: activityTheme.glass ? activityTheme.fillStrong : palette.surface, borderWidth: 3, borderColor: 'rgba(255,107,126,0.12)', overflow: 'hidden' },
   finishFill: { position: 'absolute', left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(255,107,126,0.12)' },
   countdown: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
   countValue: { ...typography.number, fontSize: 160, lineHeight: 176, letterSpacing: -4 },

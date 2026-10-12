@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { itApp } from './app/it';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/it.ts`. */
 const firstRun: Translation = {
   common: { next: 'Avanti', back: 'Indietro', skip: 'Salta', done: 'Fatto', continue: 'Continua', search: 'Cerca' },
   splash: { tagline: 'Allenati meglio. Muoviti più forte.' },
   intro: {
-    slides: [
-      { tag: 'Personalizzato', title: 'Allenamento costruito su di te', body: 'I tuoi obiettivi, la tua esperienza e il tuo stile di vita guidano ogni workout.' },
-      { tag: 'Guidato', title: 'Ogni movimento, chiaro', body: 'Demo chiare con i consigli che contano davvero.' },
-      { tag: 'Progressi', title: 'Progressi che vedi davvero', body: 'Serie, statistiche e record personali in un unico posto.' },
-      { tag: 'Costanza', title: 'Piccole vittorie. Ogni settimana.', body: 'Sfide settimanali che tengono vivo il tuo slancio.' },
-    ],
     start: 'Andiamo',
-    visual: {
-      goal: 'Il tuo obiettivo', goalValue: 'Aumentare i muscoli', schedule: '4 giorni / settimana', level: 'Intermedio',
-      exercise: 'Goblet squat', reps: 'Rip.', sets: 'Serie', muscle: 'Gruppo muscolare', muscleValue: 'Glutei · Quadricipiti', technique: 'Tecnica', techniqueValue: 'Scendi lentamente',
-      thisWeek: 'Questa settimana', workouts: 'Allenamenti', minutes: 'Minuti', personalBest: 'Nuovo record personale',
-      challenge: 'Sfida settimanale', challengeValue: '3 di 4 allenamenti', streak: 'giorni di fila', badge: 'Badge sbloccato', badgeValue: 'Mattiniero', complete: 'Allenamento completato',
-    },
   },
   language: { title: 'Scegli la tua lingua', body: 'Puoi cambiarla in qualsiasi momento.', search: 'Cerca lingua', popular: 'Popolari', all: 'Tutte le lingue', results: 'Risultati', noResults: 'Nessuna lingua corrisponde a «{query}».', continueIn: 'Continua in {language}' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const it = mergeTranslations(firstRun, itApp, dashboard.it, utilities.it, growth.it, activity.it);
+export const it = mergeTranslations(firstRun, itApp, dashboard.it, utilities.it, growth.it, activity.it, nutrition.it, sounds.it, support.it, socialShare.it);

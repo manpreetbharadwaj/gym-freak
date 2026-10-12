@@ -9,14 +9,15 @@ import { Card, Header, Screen } from '@/components/layout';
 import { DaysStep, DurationStep, EquipmentStep, ExperienceStep, GoalStep, LocationStep } from '@/features/onboarding/steps';
 import { LanguageScreen } from '@/features/language/LanguageScreen';
 import { Badges, HistoryRow } from '@/features/progress/ProgressScreen';
-import { keys, useFavorites, usePreferences, useProfile, useProgress, useUpdatePreferences, useUpdateProfile, useWorkouts } from '@/hooks/queries';
+import { ShareComposer } from '@/features/sharing';
+import { keys, useFavorites, usePreferences, useProfile, useProgress, useReferral, useUpdatePreferences, useUpdateProfile, useWorkouts } from '@/hooks/queries';
 import { applyLayoutDirection, format, useI18n } from '@/i18n';
 import { RootScreenProps } from '@/navigation/types';
 import { notificationPermission } from '@/services/notifications';
 import { useWaterReminderSetting } from '@/services/storage/water';
 import { useRepos } from '@/store/session';
 import { palette, scenes } from '@/theme';
-import { DurationRange, Equipment, OnboardingAnswers } from '@/types/domain';
+import { Achievement, DurationRange, Equipment, OnboardingAnswers, SessionSummary } from '@/types/domain';
 
 /* ───────────── Training preferences ───────────── */
 
@@ -145,20 +146,27 @@ export function FavoritesScreen({ navigation }: RootScreenProps<'Favorites'>) {
 }
 
 export function HistoryScreen({ navigation }: RootScreenProps<'History'>) {
-  const { dictionary } = useI18n();
+  const { dictionary, language } = useI18n();
   const progress = useProgress();
+  const referral = useReferral();
+  const [sharing, setSharing] = useState<SessionSummary>();
   return <Screen scene={scenes.blue} header={<Header title={dictionary.profile.history} onBack={() => navigation.goBack()} />}>
     {progress.isLoading ? <SkeletonList /> : progress.error ? <ErrorState error={progress.error} onRetry={() => progress.refetch()} />
-      : progress.data?.history.length ? <View style={{ gap: 10 }}>{progress.data.history.map((h) => <HistoryRow key={h.id} item={h} />)}</View>
+      : progress.data?.history.length ? <View style={{ gap: 10 }}>{progress.data.history.map((h) => <HistoryRow key={h.id} item={h} onShare={setSharing} />)}</View>
       : <EmptyState title={dictionary.progress.noHistory} body={dictionary.progress.noHistoryBody} glyph={mdi('history')} />}
+    {sharing ? <ShareComposer visible onClose={() => setSharing(undefined)} referral={referral.data} card={{ kind: 'workout', contentId: sharing.id, title: sharing.name, eyebrow: dictionary.socialShare.workoutEyebrow, date: new Date(sharing.completedAt).toLocaleDateString(language, { dateStyle: 'medium' }), statement: dictionary.socialShare.stronger, metrics: [{ id: 'duration', label: dictionary.complete.duration, value: `${sharing.minutes} ${dictionary.common.min}` }, { id: 'exercises', label: dictionary.complete.exercises, value: String(sharing.exercises) }, { id: 'sets', label: dictionary.complete.sets, value: String(sharing.sets) }] }} /> : null}
   </Screen>;
 }
 
 export function AchievementsScreen({ navigation }: RootScreenProps<'Achievements'>) {
-  const { dictionary } = useI18n();
+  const { dictionary, language } = useI18n();
   const progress = useProgress();
+  const referral = useReferral();
+  const { gym } = useRepos();
+  const [sharing, setSharing] = useState<Achievement>();
   return <Screen scene={scenes.orange} header={<Header title={dictionary.profile.achievements} onBack={() => navigation.goBack()} />}>
-    {progress.isLoading ? <SkeletonList rows={3} height={130} /> : progress.error ? <ErrorState error={progress.error} onRetry={() => progress.refetch()} /> : <Badges achievements={progress.data?.achievements ?? []} />}
+    {progress.isLoading ? <SkeletonList rows={3} height={130} /> : progress.error ? <ErrorState error={progress.error} onRetry={() => progress.refetch()} /> : <Badges achievements={progress.data?.achievements ?? []} onShare={(achievement) => { setSharing(achievement); void gym.trackShare('achievement_share_initiated', undefined, undefined, { contentType: 'achievement', contentId: achievement.id }); }} />}
+    {sharing ? <ShareComposer visible onClose={() => setSharing(undefined)} referral={referral.data} card={{ kind: 'achievement', contentId: sharing.id, title: sharing.title, eyebrow: dictionary.socialShare.achievementEyebrow, subtitle: sharing.description, date: sharing.unlockedAt ? new Date(sharing.unlockedAt).toLocaleDateString(language, { dateStyle: 'medium' }) : undefined, statement: dictionary.socialShare.progressNeverStops, metrics: [] }} /> : null}
   </Screen>;
 }
 

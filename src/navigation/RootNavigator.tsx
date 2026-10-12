@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Easing } from 'react-native';
 import Constants from 'expo-constants';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BottomTabNavigationOptions, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '@/features/home/HomeScreen';
 import { WorkoutPlanScreen } from '@/features/workouts/WorkoutPlanScreen';
 import { WorkoutDetailScreen } from '@/features/workouts/WorkoutDetailScreen';
@@ -19,6 +19,13 @@ import { UpgradeView } from '@/features/subscription/UpgradeScreen';
 import { StopwatchScreen } from '@/features/utilities/StopwatchScreen';
 import { ReferEarnScreen } from '@/features/referral/ReferEarnScreen';
 import { WaterIntakeScreen } from '@/features/utilities/WaterIntakeScreen';
+import { NotesRemindersScreen } from '@/features/utilities/NotesRemindersScreen';
+import { HelpSupportScreen } from '@/features/support/HelpSupportScreen';
+import { SupportNewTicketScreen, SupportTicketScreen } from '@/features/support/SupportTicketScreens';
+import { SendFeedbackScreen } from '@/features/support/FeedbackScreen';
+import { PartnerScreen } from '@/features/support/PartnerScreen';
+import { NutritionGoalsScreen } from '@/features/nutrition/NutritionGoalsScreen';
+import { BodyCompositionScreen } from '@/features/nutrition/BodyCompositionScreen';
 import { ActivityScreen } from '@/features/activity/ActivityScreen';
 import { ActivityStartScreen } from '@/features/activity/ActivityStartScreen';
 import { ActivityLiveScreen } from '@/features/activity/ActivityLiveScreen';
@@ -31,15 +38,20 @@ import { UnitsScreen } from '@/features/activity/UnitsScreen';
 import { tracker } from '@/features/activity/tracker';
 import { healthSync } from '@/services/health/sync';
 import { useInvalidateActivities } from '@/hooks/queries';
-import { usePreferences, useProfile } from '@/hooks/queries';
+import { usePreferences, useProfile, useUpdatePreferences } from '@/hooks/queries';
 import { useWater } from '@/services/storage/water';
 import { useRepos } from '@/store/session';
 import { useI18n } from '@/i18n';
-import { onNotificationOpened, syncDevice, syncWaterReminders, syncWorkoutReminder } from '@/services/notifications';
+import { preloadSounds } from '@/services/sounds';
+import { askForPushOnce, onNotificationOpened, onPushTokenChanged, syncDevice, syncPersonalReminders, syncWaterReminders, syncWorkoutReminder } from '@/services/notifications';
+import { useOrganizer } from '@/services/storage/organizer';
+import { localState } from '@/services/storage/localState';
 import { navigationRef, openLink } from './deepLinks';
 import { onPendingRoute, takePendingRoute } from '@/services/storage/pendingLink';
 import { palette } from '@/theme';
 import { CapsuleTabBar } from './CapsuleTabBar';
+import { useReducedMotion } from '@/utils/motion';
+import { durations } from '@/theme';
 import { MainTabParamList, RootScreenProps, RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -47,10 +59,26 @@ const Tabs = createBottomTabNavigator<MainTabParamList>();
 
 const theme = { ...DarkTheme, colors: { ...DarkTheme.colors, background: palette.canvas, primary: palette.accent, card: palette.surface, text: palette.ink, border: palette.line } };
 
+/**
+ * Tab content transition: a short cross-fade with a 14 px drift toward the tab you picked, on the native
+ * driver and timed with the dock's sliding pill. Screens stay mounted (scroll position and state survive);
+ * with Reduce Motion on, tabs switch instantly.
+ */
+const tabTransition: BottomTabNavigationOptions = {
+  transitionSpec: { animation: 'timing', config: { duration: durations.standard, easing: Easing.out(Easing.cubic) } },
+  sceneStyleInterpolator: ({ current }) => ({
+    sceneStyle: {
+      opacity: current.progress.interpolate({ inputRange: [-1, 0, 1], outputRange: [0, 1, 0] }),
+      transform: [{ translateX: current.progress.interpolate({ inputRange: [-1, 0, 1], outputRange: [-14, 0, 14] }) }],
+    },
+  }),
+};
+
 function MainTabs() {
+  const reducedMotion = useReducedMotion();
   // Workout sits in the centre slot so its raised button is truly central. Profile lives on the
   // stack (Home avatar / Progress header) so Activity can be a primary destination.
-  return <Tabs.Navigator tabBar={(props) => <CapsuleTabBar {...props} />} screenOptions={{ headerShown: false, animation: 'shift' }}>
+  return <Tabs.Navigator tabBar={(props) => <CapsuleTabBar {...props} />} screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: palette.canvas }, ...(reducedMotion ? { animation: 'none' } : tabTransition) }}>
     <Tabs.Screen name="Home" component={HomeScreen} />
     <Tabs.Screen name="Explore" component={ExploreScreen} />
     <Tabs.Screen name="Workout" component={WorkoutPlanScreen} />
@@ -100,11 +128,25 @@ function DeviceSync() {
   const { gym } = useRepos();
   const prefs = usePreferences();
   const { dictionary, language } = useI18n();
+  const updatePrefs = useUpdatePreferences();
   const [serverPush, setServerPush] = useState<boolean | null>(null);
+  const [tokenVersion, setTokenVersion] = useState(0);
   const permissionAsked = prefs.data?.notificationsEnabled;
+  // One permission prompt per installation, once the user is in the app. Allowing it also switches the
+  // account's notifications on (the server sends nothing while that master switch is off).
+  const prompted = useRef(false);
+  useEffect(() => {
+    if (!prefs.data || prompted.current) return;
+    prompted.current = true;
+    askForPushOnce().then((result) => {
+      if (result === 'granted-now' && !prefs.data?.notificationsEnabled) updatePrefs.mutate({ notificationsEnabled: true });
+      else if (result === 'granted-now') setTokenVersion((v) => v + 1);
+    }).catch(() => undefined);
+  }, [prefs.data, updatePrefs]);
+  useEffect(() => onPushTokenChanged(() => setTokenVersion((v) => v + 1)), []);
   useEffect(() => {
     syncDevice((input) => gym.registerDevice(input), language, Constants.expoConfig?.version ?? '0.0.0').then((r) => setServerPush(r.serverPush)).catch(() => setServerPush(false));
-  }, [gym, language, permissionAsked]);
+  }, [gym, language, permissionAsked, tokenVersion]);
   useEffect(() => {
     if (prefs.data && serverPush !== null) syncWorkoutReminder(prefs.data.notificationsEnabled, prefs.data.notifications, { title: dictionary.notifications.reminderTitle, body: dictionary.notifications.reminderBody }, serverPush);
   }, [dictionary.notifications.reminderBody, dictionary.notifications.reminderTitle, prefs.data, serverPush]);
@@ -130,6 +172,8 @@ function WaterReminderSync() {
   const { dictionary } = useI18n();
   const { title, body, progress } = { title: dictionary.notifications.waterTitle, body: dictionary.notifications.waterBody, progress: dictionary.notifications.waterProgress };
   const { enabled, startMin, endMin, intervalMin } = water.reminder;
+  // Load the water-added sound once after sign-in so the first tap plays without delay.
+  useEffect(() => { preloadSounds(); }, []);
   useEffect(() => {
     if (!water.loaded) return;
     const timer = setTimeout(() => { syncWaterReminders({ enabled, startMin, endMin, intervalMin }, water.ml, water.goalMl, { title, body, progress }); }, 800);
@@ -138,10 +182,34 @@ function WaterReminderSync() {
   return null;
 }
 
+/** Restores and refreshes private local reminders on sign-in, foreground, edits, timezone changes, and reinstall recovery. */
+function PersonalReminderSync() {
+  const organizer = useOrganizer(); const { gym } = useRepos();
+  const [timezone, setTimezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (status) => {
+      if (status === 'active') setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+    });
+    return () => sub.remove();
+  }, []);
+  useEffect(() => {
+    if (!organizer.loaded) return;
+    const timer = setTimeout(() => {
+      syncPersonalReminders(organizer.reminders, organizer.categories, organizer.config?.notificationTemplates).then(async (schedules) => {
+        const installationId = await localState.installationId();
+        await Promise.all(schedules.filter((s) => !s.reminderId.startsWith('local-')).map((s) => gym.saveReminderSchedule(s.reminderId, { installationId, timezone, notificationIds: s.notificationIds, scheduledThrough: s.scheduledThrough }).catch(() => undefined)));
+      }).catch(() => undefined);
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [gym, organizer.loaded, organizer.reminders, organizer.categories, organizer.config?.notificationTemplates, timezone]);
+  return null;
+}
+
 export function RootNavigator() {
   return <NavigationContainer ref={navigationRef} theme={theme}>
     <DeviceSync />
     <WaterReminderSync />
+    <PersonalReminderSync />
     <ActivitySync />
     <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right', contentStyle: { backgroundColor: palette.lavenderBg } }}>
       <Stack.Screen name="Tabs" component={MainTabs} />
@@ -152,6 +220,8 @@ export function RootNavigator() {
       <Stack.Screen name="StoryViewer" component={StoryViewerScreen} options={{ presentation: 'transparentModal', animation: 'fade' }} />
       <Stack.Screen name="Upgrade" component={UpgradeRoute} options={{ presentation: 'modal' }} />
       <Stack.Screen name="TrainingPreferences" component={TrainingPreferencesScreen} />
+      <Stack.Screen name="NutritionGoals" component={NutritionGoalsScreen} />
+      <Stack.Screen name="BodyComposition" component={BodyCompositionScreen} />
       <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
       <Stack.Screen name="LanguageSettings" component={LanguageSettingsScreen} />
       <Stack.Screen name="Favorites" component={FavoritesScreen} />
@@ -160,6 +230,12 @@ export function RootNavigator() {
       <Stack.Screen name="Legal" component={LegalScreen} />
       <Stack.Screen name="WaterIntake" component={WaterIntakeScreen} />
       <Stack.Screen name="Stopwatch" component={StopwatchScreen} />
+      <Stack.Screen name="NotesReminders" component={NotesRemindersScreen} />
+      <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
+      <Stack.Screen name="SupportNewTicket" component={SupportNewTicketScreen} />
+      <Stack.Screen name="SupportTicket" component={SupportTicketScreen} />
+      <Stack.Screen name="SendFeedback" component={SendFeedbackScreen} />
+      <Stack.Screen name="PartnerWithUs" component={PartnerScreen} />
       <Stack.Screen name="ReferEarn" component={ReferEarnScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
       <Stack.Screen name="ActivityStart" component={ActivityStartScreen} />

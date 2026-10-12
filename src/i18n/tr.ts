@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { trApp } from './app/tr';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/tr.ts`. */
 const firstRun: Translation = {
   common: { next: 'İleri', back: 'Geri', skip: 'Atla', done: 'Bitti', continue: 'Devam et', search: 'Ara' },
   splash: { tagline: 'Daha iyi çalış. Daha güçlü hareket et.' },
   intro: {
-    slides: [
-      { tag: 'Kişisel', title: 'Sana göre kurulan antrenman', body: 'Hedeflerin, deneyimin ve yaşam tarzın her antrenmanı şekillendirir.' },
-      { tag: 'Rehberli', title: 'Her hareketi net gör', body: 'Gerçekten önemli ipuçlarıyla net demolar.' },
-      { tag: 'İlerleme', title: 'Gerçekten görebildiğin ilerleme', body: 'Seriler, istatistikler ve kişisel rekorlar tek yerde.' },
-      { tag: 'İstikrar', title: 'Küçük kazanımlar. Her hafta.', body: 'Temponu koruyan haftalık görevler.' },
-    ],
     start: 'Hadi başlayalım',
-    visual: {
-      goal: 'Hedefin', goalValue: 'Kas kazanmak', schedule: 'Haftada 4 gün', level: 'Orta seviye',
-      exercise: 'Goblet squat', reps: 'Tekrar', sets: 'Set', muscle: 'Kas grubu', muscleValue: 'Kalça · Ön bacak', technique: 'Teknik', techniqueValue: 'Yavaşça in',
-      thisWeek: 'Bu hafta', workouts: 'Antrenman', minutes: 'Dakika', personalBest: 'Yeni kişisel rekor',
-      challenge: 'Haftalık görev', challengeValue: '4 antrenmandan 3’ü', streak: 'günlük seri', badge: 'Rozet açıldı', badgeValue: 'Erkenci', complete: 'Antrenman tamamlandı',
-    },
   },
   language: { title: 'Dilini seç', body: 'İstediğin zaman değiştirebilirsin.', search: 'Dil ara', popular: 'Popüler', all: 'Tüm diller', results: 'Sonuçlar', noResults: '“{query}” ile eşleşen dil yok.', continueIn: '{language} ile devam et' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const tr = mergeTranslations(firstRun, trApp, dashboard.tr, utilities.tr, growth.tr, activity.tr);
+export const tr = mergeTranslations(firstRun, trApp, dashboard.tr, utilities.tr, growth.tr, activity.tr, nutrition.tr, sounds.tr, support.tr, socialShare.tr);

@@ -9,9 +9,8 @@ import { PhotoWorkoutCard, WeekStrip, estimateKcal } from '@/components/dashboar
 import { EmptyState, ErrorState, Skeleton, SkeletonList } from '@/components/feedback';
 import { AnimatedCard } from '@/components/firstRun';
 import { Screen, Section } from '@/components/layout';
-import { AssetImage } from '@/components/AssetImage';
+import { RemoteImage } from '@/components/RemoteImage';
 import { ExerciseMedia } from '@/components/media';
-import { AppImages, workoutImage } from '@/assets';
 import { useFavorites, useToggleFavorite, useWeekPlan, useWorkouts } from '@/hooks/queries';
 import { format } from '@/i18n';
 import { RootStackParamList } from '@/navigation/types';
@@ -49,7 +48,7 @@ export function WorkoutPlanScreen() {
         {plan ? <AnimatedCard style={{ marginTop: 22 }}>
           <View style={[styles.planCard, shadow(undefined, 1)]}>
             <View style={styles.planPhoto}>
-              <AssetImage asset={AppImages.gymFloor} style={StyleSheet.absoluteFill} />
+              <RemoteImage uri={plan.media?.thumbnailUrl ?? plan.media?.imageUrl} style={StyleSheet.absoluteFill} />
               <LinearGradient colors={['rgba(8,16,27,1)', 'rgba(8,16,27,0.6)', 'rgba(8,16,27,0.15)']} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={StyleSheet.absoluteFill} />
             </View>
             <View style={styles.planBody}>
@@ -82,11 +81,12 @@ export function WorkoutPlanScreen() {
         </> : null}
       </>}
 
-    <Section title={copy.allWorkouts}>
+    {/* Hidden once loaded with nothing to list: an empty heading is clutter. */}
+    {workouts.isLoading || workouts.error || workouts.data?.length ? <Section title={copy.allWorkouts}>
       {workouts.isLoading ? <SkeletonList rows={3} height={200} /> : workouts.error ? <ErrorState compact error={workouts.error} onRetry={() => workouts.refetch()} />
         : <View style={styles.grid}>{(workouts.data ?? []).map((workout) => <PhotoWorkoutCard key={workout.id} workout={workout} width="48.5%" height={196} saved={saved.has(workout.id)}
           onToggleSave={() => toggleFavorite.mutate({ type: 'workout', id: workout.id, favorite: !saved.has(workout.id) })} onPress={() => open(workout.id)} />)}</View>}
-    </Section>
+    </Section> : null}
   </Screen>;
 }
 
@@ -97,7 +97,7 @@ function FocusWorkout({ day, onOpen, onStart }: { day: PlanDay; onOpen: () => vo
   return <View style={[styles.focus, shadow(palette.accent, 0.45)]}>
     <PressableScale onPress={onOpen} scaleTo={0.99} accessibilityLabel={workout.name}>
       <View style={{ height: 176 }}>
-        <ExerciseMedia media={workout.media} muscle={workout.muscleGroups[0]} fallback={workout.media.thumbnailUrl ? undefined : workoutImage(workout)} height={176} rounded={0} autoPlay={false} />
+        <ExerciseMedia media={workout.media} muscle={workout.muscleGroups[0]} height={176} rounded={0} autoPlay={false} />
         <LinearGradient colors={['rgba(11,18,32,0)', 'rgba(11,18,32,0.55)', 'rgba(11,18,32,1)']} locations={[0, 0.5, 1]} style={StyleSheet.absoluteFill} />
         <View style={styles.focusTitle}>
           <Txt variant="overline" color={palette.accentSoft}>{workout.muscleGroups.map((m) => muscle(m).toUpperCase()).join(' · ')}</Txt>
@@ -158,7 +158,7 @@ function DayRow({ day, onPress }: { day: PlanDay; onPress: () => void }) {
         <Txt variant="tab" color={palette.inkMuted}>{date.toLocaleDateString(undefined, { weekday: 'short' }).toUpperCase()}</Txt>
         <Txt variant="metric">{date.getDate()}</Txt>
       </View>
-      <ExerciseMedia media={workout.media} muscle={workout.muscleGroups[0]} fallback={workout.media.thumbnailUrl ? undefined : workoutImage(workout)} height={52} rounded={14} style={{ width: 52 }} autoPlay={false} />
+      <ExerciseMedia media={workout.media} muscle={workout.muscleGroups[0]} height={52} rounded={14} style={{ width: 52 }} autoPlay={false} />
       <View style={{ flex: 1, minWidth: 0 }}>
         <Txt variant="h3" numberOfLines={1}>{workout.name}</Txt>
         <Txt variant="small" color={palette.inkMuted} numberOfLines={1}>{workout.muscleGroups.map(muscle).join(' · ')} · {workout.estimatedMinutes} {dictionary.common.min}</Txt>

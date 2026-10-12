@@ -6,22 +6,22 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { GlyphIcon, GradientButton, MeshBackground, mdi, SecondaryButton, Txt } from '@/components';
 import { ExerciseRow, useLabels } from '@/components/cards';
-import { EmptyState, ErrorState, SkeletonList } from '@/components/feedback';
+import { EmptyState, ErrorState, Skeleton, SkeletonList } from '@/components/feedback';
 import { BottomSheet, FilterChip } from '@/components/inputs';
 import { HorizontalRail, TAB_BAR_SPACE } from '@/components/layout';
 import Animated from 'react-native-reanimated';
 import { useTabBarOnScroll } from '@/navigation/TabBarVisibilityContext';
 import { visualFor } from '@/components/media';
-import { useExerciseLibrary, useHome, useWorkouts } from '@/hooks/queries';
-import { AssetImage } from '@/components/AssetImage';
+import { useContentTiles, useExerciseLibrary, useHome, useWorkouts } from '@/hooks/queries';
+import { RemoteImage } from '@/components/RemoteImage';
 import { PhotoWorkoutCard } from '@/components/dashboard';
 import { PressableScale } from '@/components';
-import { AssetKey, exploreMuscles, muscleImage } from '@/assets';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Goal, Workout } from '@/types/domain';
+import { ContentTile, Goal, Workout } from '@/types/domain';
+import { Glyph } from '@/components/primitives';
 import { format } from '@/i18n';
 import { MainTabParamList, RootStackParamList } from '@/navigation/types';
-import { controls, fonts, gutter, palette, radius, scenes, shadow } from '@/theme';
+import { controls, fonts, gutter, palette, pressScales, radius, scenes, shadow, typography } from '@/theme';
 import { Difficulty, ExerciseMode, muscleGroups } from '@/types/domain';
 
 const scene = scenes.aqua;
@@ -30,7 +30,6 @@ const difficulties: Difficulty[] = ['beginner', 'intermediate', 'advanced'];
 const modes: ExerciseMode[] = ['strength', 'bodyweight_reps', 'timed'];
 /** App goal → HealthyMe workout goal vocabulary. */
 const goalKeys: [Goal, string][] = [['build-muscle', 'build_muscle'], ['lose-fat', 'lose_fat'], ['get-stronger', 'get_stronger'], ['stay-fit', 'general_fitness'], ['improve-endurance', 'endurance'], ['improve-mobility', 'mobility']];
-const equipmentPhotos: Record<string, AssetKey> = { dumbbells: 'equipment/dumbbells', barbell: 'equipment/barbell', bench: 'equipment/bench', 'cable-machine': 'equipment/cable-machine', bands: 'equipment/resistance-bands', 'smith-machine': 'equipment/smith-machine', 'pull-up-bar': 'equipment/pull-up-bar', machines: 'equipment/machines', bodyweight: 'equipment/bodyweight' };
 type DurationBand = 'short' | 'medium' | 'long';
 const inBand = (minutes: number, band: DurationBand) => (band === 'short' ? minutes < 20 : band === 'medium' ? minutes >= 20 && minutes < 40 : minutes >= 40);
 
@@ -58,6 +57,10 @@ export function ExploreScreen() {
   const [durationFilter, setDuration] = useState<DurationBand>();
   const workouts = useWorkouts();
   const home = useHome();
+  // Muscle / goal / equipment tiles and their photos are admin-managed (Admin → Explore content).
+  const tiles = useContentTiles();
+  const section = (key: 'explore_muscle' | 'explore_goal' | 'explore_equipment') => tiles.data?.sections[key] ?? [];
+  const goalLabel = (apiGoal: string) => { const app = goalKeys.find(([, api]) => api === apiGoal)?.[0]; return app ? dictionary.onboarding.goal.options[app].title : apiGoal; };
   // Keep in sync when Home's quick-start circles open Explore with a muscle.
   useEffect(() => { if (route.params?.muscle) setMuscle(route.params.muscle); }, [route.params?.muscle]);
   const term = useDebounced(search.trim());
@@ -82,10 +85,10 @@ export function ExploreScreen() {
         <TextInput value={search} onChangeText={setSearch} placeholder={copy.search} placeholderTextColor={palette.inkFaint} style={styles.searchInput} returnKeyType="search" autoCorrect={false} accessibilityLabel={copy.search} selectionColor={palette.accent} onFocus={() => setSearchFocused(true)} onBlur={() => setSearchFocused(false)} />
         {search ? <Pressable onPress={() => setSearch('')} hitSlop={10} accessibilityLabel={dictionary.common.close}><GlyphIcon glyph={mdi('close-circle')} size={20} color={palette.inkFaint} /></Pressable> : null}
       </View>
-      <Pressable onPress={() => setSheet(true)} style={({ pressed }) => [styles.filterButton, activeFilters > 0 && styles.filterActive, pressed && { transform: [{ scale: 0.95 }] }]} accessibilityRole="button" accessibilityLabel={copy.filters}>
+      <PressableScale onPress={() => setSheet(true)} haptic="light" scaleTo={pressScales.icon} style={[styles.filterButton, activeFilters > 0 && styles.filterActive]} accessibilityLabel={copy.filters}>
         <GlyphIcon glyph={mdi('tune-variant')} size={21} color={activeFilters ? palette.accent : palette.ink} />
         {activeFilters ? <View style={styles.badge}><Txt variant="tab" color={palette.onAccent}>{activeFilters}</Txt></View> : null}
-      </Pressable>
+      </PressableScale>
     </View>
     <HorizontalRail gap={8}>
       <FilterChip label={copy.all} active={!muscleFilter} onPress={() => setMuscle(undefined)} color={palette.accent} />
@@ -101,17 +104,18 @@ export function ExploreScreen() {
       {(workouts.data ?? []).length ? <DiscoverSection title={copy.featured}>
         <HorizontalRail gap={12}>{(workouts.data ?? []).slice(0, 6).map((w) => <PhotoWorkoutCard key={w.id} workout={w} width={276} height={220} onPress={() => openWorkout(w)} />)}</HorizontalRail>
       </DiscoverSection> : null}
-      <DiscoverSection title={copy.byMuscle}>
-        <View style={styles.tiles}>{exploreMuscles.map((m) => <PhotoTile key={m} label={muscle(m)} asset={muscleImage(m)} onPress={() => setMuscle(m)} />)}</View>
-      </DiscoverSection>
-      <DiscoverSection title={copy.byGoal}>
-        <HorizontalRail gap={12}>{goalKeys.map(([appGoal, apiGoal]) => <PhotoTile key={appGoal} wide label={dictionary.onboarding.goal.options[appGoal].title} asset={`goals/${appGoal}` as AssetKey} onPress={() => setGoal(apiGoal)} />)}</HorizontalRail>
-      </DiscoverSection>
-      <DiscoverSection title={copy.byEquipment}>
-        <HorizontalRail gap={12}>{equipmentOptions.map((e) => <PressableScale key={e} onPress={() => setEquipment(e)} accessibilityLabel={equipment(e)}>
-          <View style={styles.equipTile}><AssetImage asset={equipmentPhotos[e]} contentFit={equipmentPhotos[e].endsWith('bodyweight') ? 'cover' : 'contain'} style={styles.equipPhoto} /><Txt variant="label" numberOfLines={1}>{equipment(e)}</Txt></View>
+      {tiles.isLoading ? <DiscoverSection title={copy.byMuscle}><View style={styles.tiles}>{[0, 1, 2, 3].map((i) => <View key={i} style={styles.tileSlot}><Skeleton height={118} round={radius.lg} /></View>)}</View></DiscoverSection> : null}
+      {section('explore_muscle').length ? <DiscoverSection title={copy.byMuscle}>
+        <View style={styles.tiles}>{section('explore_muscle').map((t) => <PhotoTile key={t.id} tile={t} label={t.title ?? muscle(t.key)} glyph={visualFor(t.key).glyph} onPress={() => setMuscle(t.key)} />)}</View>
+      </DiscoverSection> : null}
+      {section('explore_goal').length ? <DiscoverSection title={copy.byGoal}>
+        <HorizontalRail gap={12}>{section('explore_goal').map((t) => <PhotoTile key={t.id} wide tile={t} label={t.title ?? goalLabel(t.key)} onPress={() => setGoal(t.key)} />)}</HorizontalRail>
+      </DiscoverSection> : null}
+      {section('explore_equipment').length ? <DiscoverSection title={copy.byEquipment}>
+        <HorizontalRail gap={12}>{section('explore_equipment').map((t) => <PressableScale key={t.id} onPress={() => setEquipment(t.key)} accessibilityLabel={t.title ?? equipment(t.key)}>
+          <View style={styles.equipTile}><RemoteImage uri={t.imageUrl} fit={t.imageFit} backdrop={palette.productBackdrop} glyph={mdi('dumbbell')} style={styles.equipPhoto} /><Txt variant="label" numberOfLines={1}>{t.title ?? equipment(t.key)}</Txt></View>
         </PressableScale>)}</HorizontalRail>
-      </DiscoverSection>
+      </DiscoverSection> : null}
       <DiscoverSection title={copy.byDuration}>
         <View style={{ flexDirection: 'row', gap: 10 }}>{(['short', 'medium', 'long'] as const).map((band) => <PressableScale key={band} onPress={() => setDuration(band)} containerStyle={{ flex: 1 }} accessibilityLabel={copy[band]}>
           <View style={styles.durationTile}><GlyphIcon glyph={mdi(band === 'short' ? 'timer-sand' : band === 'medium' ? 'timer-outline' : 'timer-plus-outline')} size={22} color={palette.accent} /><Txt variant="label" numberOfLines={1}>{copy[band]}</Txt></View>
@@ -158,10 +162,10 @@ export function ExploreScreen() {
 function DiscoverSection({ title, children }: { title: string; children: React.ReactNode }) {
   return <View style={{ marginTop: 28 }}><Txt variant="title" style={{ marginBottom: 12 }}>{title}</Txt>{children}</View>;
 }
-function PhotoTile({ label, asset, onPress, wide }: { label: string; asset: AssetKey; onPress: () => void; wide?: boolean }) {
+function PhotoTile({ label, tile, glyph, onPress, wide }: { label: string; tile: ContentTile; glyph?: Glyph; onPress: () => void; wide?: boolean }) {
   return <PressableScale onPress={onPress} accessibilityLabel={label} containerStyle={wide ? { width: 156 } : styles.tileSlot}>
     <View style={[wide ? styles.goalTile : styles.tile, shadow(undefined, 0.6)]}>
-      <AssetImage asset={asset} style={StyleSheet.absoluteFill} />
+      <RemoteImage uri={tile.imageUrl} fit={tile.imageFit} glyph={glyph} style={StyleSheet.absoluteFill} />
       <LinearGradient colors={['rgba(8,16,27,0)', 'rgba(8,16,27,0.4)', 'rgba(8,16,27,0.95)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
       <View style={styles.tileLabel}>
         <Txt variant="h3" color={palette.white} numberOfLines={2} style={{ flex: 1 }}>{label}</Txt>
@@ -182,7 +186,7 @@ const styles = StyleSheet.create({
   // Focus changes values only (same keys) so the TextInput is never remounted.
   search: { flex: 1, minHeight: controls.input.height, borderRadius: controls.input.height / 2, backgroundColor: palette.glass, borderWidth: 1, borderColor: palette.line, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16 },
   searchFocused: { borderColor: palette.accent, backgroundColor: palette.surfaceRaised },
-  searchInput: { flex: 1, fontFamily: fonts.medium, fontSize: 15, color: palette.ink, paddingVertical: 12 },
+  searchInput: { flex: 1, ...typography.input, lineHeight: undefined, color: palette.ink, paddingVertical: 12 },
   filterButton: { width: controls.input.height, height: controls.input.height, borderRadius: controls.input.height / 2, backgroundColor: palette.glass, borderWidth: 1, borderColor: palette.line, alignItems: 'center', justifyContent: 'center' },
   filterActive: { borderColor: palette.accent, backgroundColor: 'rgba(34,184,245,0.12)' },
   badge: { position: 'absolute', top: 4, right: 4, minWidth: 17, height: 17, borderRadius: 9, backgroundColor: palette.accent, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
@@ -193,6 +197,6 @@ const styles = StyleSheet.create({
   tileLabel: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: 12 },
   tileArrow: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,16,27,0.6)', borderWidth: StyleSheet.hairlineWidth * 2, borderColor: palette.lineStrong },
   equipTile: { width: 108, backgroundColor: palette.surface, borderRadius: radius.md, padding: 8, gap: 8, alignItems: 'center', borderWidth: StyleSheet.hairlineWidth * 2, borderColor: palette.line },
-  equipPhoto: { width: 90, height: 74, borderRadius: 12, backgroundColor: 'rgba(34,184,245,0.12)' },
+  equipPhoto: { width: 90, height: 74, borderRadius: radius.xs },
   durationTile: { backgroundColor: palette.glass, borderRadius: radius.md, paddingVertical: 16, alignItems: 'center', gap: 8, borderWidth: StyleSheet.hairlineWidth * 2, borderColor: palette.line },
 });

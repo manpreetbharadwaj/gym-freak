@@ -7,19 +7,21 @@ import { useLabels } from '@/components/cards';
 import { MetricStrip, MetricTile, PhotoHeroCard, PhotoWorkoutCard, QuickAccessRail, QuickAccessSkeleton, QuickItem, WaterCard, WeekStrip, estimateKcal } from '@/components/dashboard';
 import { ErrorState, Skeleton } from '@/components/feedback';
 import { AnimatedCard } from '@/components/firstRun';
+import { AnimatedCalendarIcon } from '@/components/AnimatedCalendarIcon';
 import { HorizontalRail, Screen, Section } from '@/components/layout';
-import { AppImages } from '@/assets';
 import { StoryRail } from '@/features/stories/StoryRail';
-import { useAccess, useActiveSession, useFavorites, useHome, useProfile, useProgress, useQuickStart, useToggleFavorite, useWeekPlan } from '@/hooks/queries';
+import { useAccess, useActiveSession, useFavorites, useHome, useNutrition, useProfile, useProgress, useQuickStart, useToggleFavorite, useWeekPlan } from '@/hooks/queries';
 import { format } from '@/i18n';
 import { useUnitSystem } from '@/hooks/useUnits';
 import { formatWeight } from '@/utils/units';
 import { RootStackParamList } from '@/navigation/types';
 import { useWaterToday } from '@/services/storage/water';
 import { useSession } from '@/store/session';
-import { gradients, palette, radius, scenes, shadow } from '@/theme';
+import { gradients, palette, pressScales, radius, scenes, shadow } from '@/theme';
 import { HomeData, PlanDay, QuickStartTarget, WeekPlan, WorkoutSession } from '@/types/domain';
 import { dayKey, parseDay } from '@/utils/dates';
+import { AccentScopeProvider } from '@/components/accentScope';
+import { homeTheme } from './theme/homeExperimentalTheme';
 import { LinearGradient } from 'expo-linear-gradient';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -39,11 +41,13 @@ export function HomeScreen() {
   const goal = profile.data?.goal ? dictionary.onboarding.goal.options[profile.data.goal]?.title : undefined;
   const trialDays = access.data?.status === 'trial' && access.data.trialEndsAt ? Math.max(0, Math.ceil((Date.parse(access.data.trialEndsAt) - Date.now()) / 86_400_000)) : null;
 
-  return <Screen scene={scenes.violet} tabBar refreshing={home.isRefetching} onRefresh={() => { home.refetch(); access.refetch(); profile.refetch(); quickStart.refetch(); }}>
+  // Home colour experiment: scene + scoped accents come from homeTheme (see ./theme/homeExperimentalTheme.ts).
+  return <Screen scene={homeTheme.scene} tabBar refreshing={home.isRefetching} onRefresh={() => { home.refetch(); access.refetch(); profile.refetch(); quickStart.refetch(); }}>
+    <AccentScopeProvider value={homeTheme.scope}>
     <View style={styles.header}>
-      <Pressable accessibilityRole="button" accessibilityLabel={dictionary.nav.Profile} onPress={() => navigation.navigate('Profile')} style={({ pressed }) => [styles.avatarRing, pressed && { transform: [{ scale: 0.95 }] }]}>
-        <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}><Txt variant="h3" color={palette.onAccent}>{(name || account?.email || '?').slice(0, 1).toUpperCase()}</Txt></LinearGradient>
-      </Pressable>
+      <PressableScale haptic="light" scaleTo={pressScales.icon} accessibilityLabel={dictionary.nav.Profile} onPress={() => navigation.navigate('Profile')} style={[styles.avatarRing, { borderColor: `${homeTheme.accentSoft}73` }]}>
+        <LinearGradient colors={homeTheme.avatar} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}><Txt variant="h3" color={homeTheme.onAccent}>{(name || account?.email || '?').slice(0, 1).toUpperCase()}</Txt></LinearGradient>
+      </PressableScale>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Txt variant="small" color={palette.inkMuted} numberOfLines={1}>{greeting}</Txt>
         <Txt variant="display" numberOfLines={1}>{name || copy.ready}</Txt>
@@ -51,7 +55,7 @@ export function HomeScreen() {
       <IconButton glyph={mdi('bell-outline')} size="lg" tone="glass" label={dictionary.profile.notifications} onPress={() => navigation.navigate('NotificationSettings')} />
     </View>
     {goal || trialDays !== null ? <View style={styles.pills}>
-      {goal ? <View style={styles.pill}><View style={styles.pillDot} /><Txt variant="label" color={palette.inkSoft}>{format(copy.goalLabel, { goal })}</Txt></View> : null}
+      {goal ? <View style={styles.pill}><View style={[styles.pillDot, { backgroundColor: homeTheme.accent, shadowColor: homeTheme.accent }]} /><Txt variant="label" color={palette.inkSoft}>{format(copy.goalLabel, { goal })}</Txt></View> : null}
       {trialDays !== null ? <Pressable onPress={() => navigation.navigate('Upgrade')} accessibilityRole="button" style={({ pressed }) => [styles.pill, styles.trialPill, pressed && { opacity: 0.7 }]}>
         <GlyphIcon glyph={mdi('crown-outline')} size={14} color={palette.yellow} />
         <Txt variant="label" color={palette.yellow}>{format(copy.trialBanner, { days: trialDays })}</Txt>
@@ -59,6 +63,7 @@ export function HomeScreen() {
     </View> : null}
 
     {home.isLoading ? <HomeSkeleton /> : home.error ? <View style={{ marginTop: 20 }}><ErrorState error={home.error} onRetry={() => home.refetch()} /></View> : home.data ? <HomeContent data={home.data} navigation={navigation} weightKg={profile.data?.weightKg} heightCm={profile.data?.heightCm} /> : null}
+    </AccentScopeProvider>
   </Screen>;
 }
 
@@ -74,17 +79,9 @@ function HomeContent({ data, navigation, weightKg, heightCm }: { data: HomeData;
   const resume = data.activeSession;
   const saved = new Set((favorites.data ?? []).filter((f) => f.type === 'workout').map((f) => f.id));
   const explore = (muscle: string) => navigation.navigate('Tabs', { screen: 'Explore', params: { muscle } });
-  // Quick Start is admin-managed (Admin → Gym / Training → Quick Start). The bundled six below are only an
-  // offline fallback for a first launch that can't reach the server; cached server tiles win otherwise.
+  // Quick Start is admin-managed (Admin → Gym Freak · App Management → Home · Quick Start). Offline, the last
+  // good copy is served from disk; with none the rail is hidden rather than filled with bundled photos.
   const quickStart = useQuickStart();
-  const bundledQuick: QuickItem[] = [
-    { key: 'warmup', label: copy.warmUp, asset: AppImages.stories.warmup, onPress: () => explore('cardio') },
-    { key: 'chest', label: dictionary.catalog.muscles.chest, asset: AppImages.stories.chest, onPress: () => explore('chest') },
-    { key: 'back', label: dictionary.catalog.muscles.back, asset: AppImages.stories.back, onPress: () => explore('back') },
-    { key: 'legs', label: dictionary.catalog.muscles.legs, asset: AppImages.stories.legs, onPress: () => explore('legs') },
-    { key: 'core', label: dictionary.catalog.muscles.core, asset: AppImages.stories.core, onPress: () => explore('core') },
-    { key: 'mobility', label: dictionary.catalog.muscles.mobility, asset: AppImages.stories.mobility, onPress: () => explore('mobility') },
-  ];
   const openQuick = (target: QuickStartTarget) => {
     if (target.type === 'muscle') explore(target.muscle);
     else if (target.type === 'workout') navigation.navigate('WorkoutDetail', { workoutId: target.id });
@@ -92,7 +89,7 @@ function HomeContent({ data, navigation, weightKg, heightCm }: { data: HomeData;
   };
   const quick: QuickItem[] | null = quickStart.data
     ? quickStart.data.map((tile) => ({ key: tile.id, label: tile.title, uri: tile.imageUrl, onPress: () => openQuick(tile.target) }))
-    : quickStart.isError ? bundledQuick : null;
+    : quickStart.isError ? [] : null;
   const todayKey = dayKey(new Date());
   const todayMinutes = progress.data?.weekDays.find((d) => d.date === todayKey)?.minutes ?? data.progress.weekDays.find((d) => d.date === todayKey)?.minutes ?? 0;
   const system = useUnitSystem();
@@ -104,10 +101,10 @@ function HomeContent({ data, navigation, weightKg, heightCm }: { data: HomeData;
 
   return <>
     {resume?.workoutId ? <PressableScale onPress={() => navigation.navigate('WorkoutPlayer', { workoutId: resume.workoutId! })} scaleTo={0.98} containerStyle={{ marginTop: 18 }} accessibilityLabel={`${copy.resume} ${resume.name}`}>
-      <View style={[styles.resume, shadow(palette.accent, 0.5)]}>
-        <View style={styles.resumeIcon}><GlyphIcon glyph={mdi('progress-clock')} size={20} color={palette.accent} /></View>
-        <View style={{ flex: 1 }}><Txt variant="overline" color={palette.accentSoft}>{copy.unfinished.toUpperCase()}</Txt><Txt variant="h3" numberOfLines={1}>{resume.name}</Txt></View>
-        <View style={styles.resumeCta}><Txt variant="label" color={palette.onAccent}>{copy.resume}</Txt><GlyphIcon glyph={mdi('play')} size={14} color={palette.onAccent} /></View>
+      <View style={[styles.resume, { backgroundColor: homeTheme.surface, borderColor: `${homeTheme.accent}73` }, shadow(homeTheme.accent, 0.5)]}>
+        <View style={[styles.resumeIcon, { backgroundColor: `${homeTheme.accent}1F` }]}><GlyphIcon glyph={mdi('progress-clock')} size={20} color={homeTheme.accent} /></View>
+        <View style={{ flex: 1 }}><Txt variant="overline" color={homeTheme.accentSoft}>{copy.unfinished.toUpperCase()}</Txt><Txt variant="h3" numberOfLines={1}>{resume.name}</Txt></View>
+        <View style={[styles.resumeCta, { backgroundColor: homeTheme.accent }]}><Txt variant="label" color={homeTheme.onAccent}>{copy.resume}</Txt><GlyphIcon glyph={mdi('play')} size={14} color={palette.onAccent} /></View>
       </View>
     </PressableScale> : null}
 
@@ -117,19 +114,22 @@ function HomeContent({ data, navigation, weightKg, heightCm }: { data: HomeData;
         eyebrow={data.today.status === 'today' ? dictionary.plan.today.toUpperCase() : parseDay(data.today.date).toLocaleDateString(undefined, { weekday: 'long' }).toUpperCase()}
         onOpen={() => navigation.navigate('WorkoutDetail', { workoutId: data.today!.workout!.id })}
         onStart={() => navigation.navigate('WorkoutPlayer', { workoutId: data.today!.workout!.id })} />
-        : <View style={styles.restCard}>
-          <View style={styles.restIcon}><GlyphIcon glyph={mdi(data.planName ? 'weather-night' : 'calendar-blank')} size={26} color={palette.accent} /></View>
+        : <View style={[styles.restCard, { backgroundColor: homeTheme.surface, borderColor: homeTheme.line }]}>
+          <View style={[styles.restIcon, { backgroundColor: `${homeTheme.accent}1F`, borderColor: `${homeTheme.accent}4D` }]}>
+            {data.planName ? <GlyphIcon glyph={mdi('weather-night')} size={26} color={homeTheme.accent} />
+              : <AnimatedCalendarIcon size={36} fallback={<GlyphIcon glyph={mdi('calendar-blank')} size={26} color={homeTheme.accent} />} />}
+          </View>
           <Txt variant="display" style={{ marginTop: 14 }}>{data.planName ? copy.restDay : copy.noPlan}</Txt>
           <Txt variant="body" color={palette.inkMuted} style={{ marginTop: 6 }}>{data.planName ? copy.restBody : copy.noPlanBody}</Txt>
-          <GradientButton label={data.planName ? dictionary.plan.title : copy.browse} icon={data.planName ? 'calendar' : 'compass'} onPress={() => navigation.navigate('Tabs', { screen: data.planName ? 'Workout' : 'Explore' })} style={{ marginTop: 18 }} />
+          <GradientButton label={data.planName ? dictionary.plan.title : copy.browse} icon={data.planName ? 'calendar' : 'compass'} gradient={homeTheme.cta} onPress={() => navigation.navigate('Tabs', { screen: data.planName ? 'Workout' : 'Explore' })} style={{ marginTop: 18 }} />
         </View>}
     </AnimatedCard>
 
     <AnimatedCard delay={40} style={{ marginTop: 14 }}>
       <MetricStrip items={[
-        { label: copy.activeMinutes, value: todayMinutes > 0 ? String(todayMinutes) : null, unit: dictionary.common.min, glyph: mdi('timer-outline'), color: palette.accent },
-        { label: copy.calories, value: todayMinutes > 0 ? String(estimateKcal(todayMinutes, 'intermediate')) : null, unit: 'kcal', glyph: mdi('fire'), color: palette.orange, note: copy.estimated },
-        { label: copy.streak, value: String(data.progress.streak), unit: copy.days, glyph: mdi('lightning-bolt'), color: palette.yellow },
+        { label: copy.activeMinutes, value: todayMinutes > 0 ? String(todayMinutes) : null, unit: dictionary.common.min, glyph: mdi('timer-outline'), color: homeTheme.metrics.minutes },
+        { label: copy.calories, value: todayMinutes > 0 ? String(estimateKcal(todayMinutes, 'intermediate')) : null, unit: 'kcal', glyph: mdi('fire'), color: homeTheme.metrics.calories, note: copy.estimated },
+        { label: copy.streak, value: String(data.progress.streak), unit: copy.days, glyph: mdi('lightning-bolt'), color: homeTheme.metrics.streak },
       ]} />
     </AnimatedCard>
 
@@ -138,7 +138,7 @@ function HomeContent({ data, navigation, weightKg, heightCm }: { data: HomeData;
         <WeekStrip days={week.data.days} onPressDay={(day) => navigation.navigate('WorkoutDetail', { workoutId: day.workout!.id })} />
         <View style={styles.weekFoot}>
           <Txt variant="small" color={palette.inkMuted}>{copy.workouts}: <Txt variant="small" color={palette.ink}>{data.progress.week.sessions}</Txt>  ·  {copy.weeklyTime}: <Txt variant="small" color={palette.ink}>{data.progress.week.minutes} {dictionary.common.min}</Txt></Txt>
-          {adherence !== undefined ? <Txt variant="label" color={palette.accent}>{Math.round(adherence * 100)}%</Txt> : null}
+          {adherence !== undefined ? <Txt variant="label" color={homeTheme.accent}>{Math.round(adherence * 100)}%</Txt> : null}
         </View>
       </AnimatedCard>
     </Section> : null}
@@ -162,11 +162,49 @@ function HomeContent({ data, navigation, weightKg, heightCm }: { data: HomeData;
         <MetricTile label={copy.bmi} value={bmi ? bmi.toFixed(1) : undefined} note={bmi ? copy.fromProfile : undefined} />
       </View>
       <View style={[styles.grid, { marginTop: 10 }]}>
-        <MetricTile label={copy.bodyFat} />
+        <CaloriesTile onPress={() => navigation.navigate('NutritionGoals')} />
         <MetricTile label={copy.goalWeight} />
       </View>
+      <MacroRow onPress={() => navigation.navigate('NutritionGoals')} />
     </Section>
   </>;
+}
+
+/**
+ * Estimated daily calorie target (an intake target, never exercise calories burned). Intake isn't tracked in
+ * Gym Freak yet, so the tile says so instead of showing a consumed number or progress.
+ */
+function CaloriesTile({ onPress }: { onPress: () => void }) {
+  const { dictionary } = useLabels();
+  const copy = dictionary.nutrition;
+  const nutrition = useNutrition();
+  const n = nutrition.data;
+  const value = n?.target ? n.target.calories.toLocaleString() : undefined;
+  const note = n?.target ? copy.intakeNotTracked : n?.status === 'needs_input' ? copy.completeSetup : n?.status === 'not_applicable' ? copy.notApplicable : undefined;
+  return <PressableScale onPress={onPress} scaleTo={0.98} containerStyle={{ flex: 1 }} style={{ flex: 1 }} accessibilityLabel={`${copy.dailyCalories}: ${value ? `${value} ${copy.kcal}` : note ?? dictionary.home.notTracked}`}>
+    {nutrition.isLoading ? <View style={[styles.tileSkeleton, { backgroundColor: homeTheme.surface, borderColor: homeTheme.line }]}><Skeleton height={14} width="60%" /><Skeleton height={24} width="70%" /></View>
+      : <MetricTile label={copy.dailyCalories} value={value} unit={copy.kcal} note={note} style={{ flex: 1 }} />}
+  </PressableScale>;
+}
+
+/** Protein / carbs / fat targets in grams (shown only when targets exist). */
+function MacroRow({ onPress }: { onPress: () => void }) {
+  const { dictionary } = useLabels();
+  const copy = dictionary.nutrition;
+  const t = useNutrition().data?.target;
+  if (!t) return null;
+  const items = [
+    { label: copy.protein, value: t.proteinG, color: homeTheme.macros.protein },
+    { label: copy.carbs, value: t.carbsG, color: homeTheme.macros.carbs },
+    { label: copy.fat, value: t.fatG, color: homeTheme.macros.fat },
+  ];
+  return <PressableScale onPress={onPress} scaleTo={0.99} containerStyle={{ marginTop: 10 }} accessibilityLabel={items.map((i) => `${i.label} ${i.value} ${copy.g}`).join(', ')}>
+    <View style={[styles.macroRow, { backgroundColor: homeTheme.surface, borderColor: homeTheme.line }]}>{items.map((i) => <View key={i.label} style={styles.macroItem}>
+      <View style={[styles.macroDot, { backgroundColor: i.color }]} />
+      <Txt variant="small" color={palette.inkMuted}>{i.label}</Txt>
+      <Txt variant="h3" style={{ fontVariant: ['tabular-nums'] }}>{i.value}<Txt variant="label" color={palette.inkMuted}> {copy.g}</Txt></Txt>
+    </View>)}</View>
+  </PressableScale>;
 }
 
 /** Today's exercises done (completed day = all; a live session counts finished exercises). */
@@ -204,4 +242,8 @@ const styles = StyleSheet.create({
   restIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(34,184,245,0.12)', borderWidth: 1, borderColor: 'rgba(34,184,245,0.3)', alignItems: 'center', justifyContent: 'center' },
   weekFoot: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingHorizontal: 4 },
   grid: { flexDirection: 'row', gap: 10 },
+  tileSkeleton: { flex: 1, backgroundColor: palette.surface, borderRadius: radius.md, padding: 14, gap: 8, borderWidth: StyleSheet.hairlineWidth * 2, borderColor: palette.line },
+  macroRow: { flexDirection: 'row', backgroundColor: palette.surface, borderRadius: radius.md, paddingVertical: 12, paddingHorizontal: 14, borderWidth: StyleSheet.hairlineWidth * 2, borderColor: palette.line },
+  macroItem: { flex: 1, gap: 2 },
+  macroDot: { width: 8, height: 8, borderRadius: 4, marginBottom: 2 },
 });

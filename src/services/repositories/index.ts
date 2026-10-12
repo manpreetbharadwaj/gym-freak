@@ -14,3 +14,4 @@ export function createRepositories(onSessionExpired: () => void): Repositories {
 
 export { ActiveSessionConflict } from './types';
 export type { AuthRepository, GymRepository, Repositories, SignInInput, SignUpInput } from './types';
+export type { SupportRepository } from './support';

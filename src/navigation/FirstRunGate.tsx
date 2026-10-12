@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Alert, View } from 'react-native';
+import { View } from 'react-native';
 import * as Linking from 'expo-linking';
 import { AuthFlow, AuthMode } from '@/features/auth/AuthFlow';
 import { IntroScreen } from '@/features/intro/IntroScreen';
+import { preloadOnboarding } from '@/features/intro/useOnboardingCards';
 import { LanguageScreen } from '@/features/language/LanguageScreen';
 import { OnboardingScreen } from '@/features/onboarding/OnboardingScreen';
 import { PlanReadyScreen } from '@/features/onboarding/PlanReadyScreen';
@@ -15,6 +16,7 @@ import { useSession } from '@/store/session';
 import { firstRunTheme } from '@/components/firstRun';
 import { OnboardingAnswers } from '@/types/domain';
 import { RootNavigator } from './RootNavigator';
+import { useDialog } from '@/components/dialogs/DialogProvider';
 
 type Stage = 'splash' | 'intro' | 'language' | 'onboarding' | 'auth' | 'planReady' | 'upgrade' | 'app';
 
@@ -23,6 +25,7 @@ type Stage = 'splash' | 'intro' | 'language' | 'onboarding' | 'auth' | 'planRead
  * Onboarding answers are kept as a local draft until the account exists, then saved to HealthyMe.
  */
 export function FirstRunGate() {
+  const dialog = useDialog();
   const { status, repos, setAccount } = useSession();
   const { dictionary, language } = useI18n();
   const [stage, setStage] = useState<Stage>('splash');
@@ -31,6 +34,11 @@ export function FirstRunGate() {
   const [resetToken, setResetToken] = useState<string>();
   const [draft, setDraft] = useState<OnboardingAnswers | null>(null);
   const routed = useRef(false);
+
+  // Installs that haven't seen the intro fetch its (admin-managed) cards while the splash plays.
+  useEffect(() => {
+    localState.firstRun().then((firstRun) => { if (!firstRun.introSeen) preloadOnboarding(repos.gym); }).catch(() => undefined);
+  }, [repos]);
 
   // Decide where to go once the splash has played and the stored session is resolved.
   useEffect(() => {
@@ -56,10 +64,10 @@ export function FirstRunGate() {
     const value = (key: string) => (typeof queryParams?.[key] === 'string' ? (queryParams[key] as string) : undefined);
     if (path === 'reset-password' && value('token')) { setResetToken(value('token')); setAuthMode('reset'); routed.current = true; setStage('auth'); }
     if (path === 'verify-email' && value('code')) {
-      try { await repos.auth.verifyEmail(value('code')!); setAccount(await repos.auth.me()); Alert.alert(dictionary.auth.verified); }
-      catch { Alert.alert(dictionary.auth.errors.tokenInvalid); }
+      try { await repos.auth.verifyEmail(value('code')!); setAccount(await repos.auth.me()); void dialog.showSuccess({ title: dictionary.auth.verified }); }
+      catch { void dialog.showError({ title: dictionary.auth.errors.tokenInvalid }); }
     }
-  }, [dictionary.auth.errors.tokenInvalid, dictionary.auth.verified, repos, setAccount, status]);
+  }, [dialog, dictionary.auth.errors.tokenInvalid, dictionary.auth.verified, repos, setAccount, status]);
 
   useEffect(() => {
     Linking.getInitialURL().then(handleLink);

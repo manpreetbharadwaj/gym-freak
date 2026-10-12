@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { jaApp } from './app/ja';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/ja.ts`. */
 const firstRun: Translation = {
   common: { next: '次へ', back: '戻る', skip: 'スキップ', done: '完了', continue: '続ける', search: '検索' },
   splash: { tagline: 'もっと良く。もっと強く。' },
   intro: {
-    slides: [
-      { tag: 'パーソナル', title: 'あなたに合わせたトレーニング', body: '目標・経験・ライフスタイルから、毎回のワークアウトを組み立てます。' },
-      { tag: 'ガイド付き', title: 'すべての動きをわかりやすく', body: '大切なポイントに絞った、見やすいデモ。' },
-      { tag: '進捗', title: '成長がはっきり見える', body: '連続記録、データ、自己ベストをひとつの場所に。' },
-      { tag: '継続', title: '小さな勝利を、毎週。', body: '勢いを保つウィークリーチャレンジ。' },
-    ],
     start: 'はじめよう',
-    visual: {
-      goal: 'あなたの目標', goalValue: '筋肉をつける', schedule: '週4日', level: '中級',
-      exercise: 'ゴブレットスクワット', reps: '回数', sets: 'セット', muscle: '部位', muscleValue: 'お尻・太もも', technique: 'フォーム', techniqueValue: 'ゆっくり下ろす',
-      thisWeek: '今週', workouts: 'ワークアウト', minutes: '分', personalBest: '自己ベスト更新',
-      challenge: '今週のチャレンジ', challengeValue: '4回中3回達成', streak: '日連続', badge: 'バッジ獲得', badgeValue: '早起きアスリート', complete: 'ワークアウト完了',
-    },
   },
   language: { title: '言語を選択', body: 'いつでも変更できます。', search: '言語を検索', popular: '人気', all: 'すべての言語', results: '検索結果', noResults: '「{query}」に一致する言語はありません。', continueIn: '{language}で続ける' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const ja = mergeTranslations(firstRun, jaApp, dashboard.ja, utilities.ja, growth.ja, activity.ja);
+export const ja = mergeTranslations(firstRun, jaApp, dashboard.ja, utilities.ja, growth.ja, activity.ja, nutrition.ja, sounds.ja, support.ja, socialShare.ja);

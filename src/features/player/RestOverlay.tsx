@@ -6,7 +6,7 @@ import { GlyphIcon, GradientButton, mdi, OutlineButton, Txt } from '@/components
 import { useLabels } from '@/components/cards';
 import { format, useI18n } from '@/i18n';
 import { cancelScheduled, scheduleRestEnd } from '@/services/notifications';
-import { palette, radius, shadow } from '@/theme';
+import { palette, radius, shadow, typography } from '@/theme';
 import { ExerciseMedia } from '@/components/media';
 import { Media } from '@/types/domain';
 import { formatClock } from '@/utils/dates';
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   dialFace: { position: 'absolute', width: SIZE - STROKE * 2 - 16, height: SIZE - STROKE * 2 - 16, borderRadius: SIZE, backgroundColor: palette.surface },
   clock: { position: 'absolute', alignItems: 'center', gap: 2 },
   /** The rest clock is the one focal figure here, so it stays larger than the shared `number` role. */
-  timer: { fontSize: 52, lineHeight: 58, letterSpacing: -1.5, fontVariant: ['tabular-nums'] },
+  timer: typography.timer,
   next: { alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: palette.surface, borderRadius: radius.lg, padding: 12 },
   nextTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   actions: { flexDirection: 'row', gap: 12, alignSelf: 'stretch' },

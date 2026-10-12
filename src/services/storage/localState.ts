@@ -3,14 +3,14 @@ import { NotificationPreferences, OnboardingAnswers, Preferences } from '@/types
 import { safeStorage } from './safeStorage';
 
 /**
- * Device-only state: per-install values (installation id, first-run flags, audio cues).
+ * Device-only state: per-install values (installation id, first-run flags, audio cues, sound effects).
  * Account data (story views, notification categories, progress) lives in HealthyMe.
  */
 
 /** Mirrors the backend defaults; used by the offline mock repository. */
 export const defaultNotificationPreferences: NotificationPreferences = { workoutReminders: true, reminderHour: 18, reminderMinute: 0, streakReminders: true, stories: true, weeklyChallenge: true, newContent: true, trialEnding: true, achievements: true };
-export const defaultLocalPreferences = { audioCues: true };
-type LocalPreferences = Pick<Preferences, 'audioCues'>;
+export const defaultLocalPreferences = { audioCues: true, soundEffects: true };
+type LocalPreferences = Pick<Preferences, 'audioCues' | 'soundEffects'>;
 
 export interface FirstRunState { introSeen: boolean; languageChosen: boolean; onboardingSaved: boolean }
 
@@ -22,11 +22,11 @@ export const localState = {
   },
   async preferences(): Promise<LocalPreferences> {
     const saved = await safeStorage.get<Partial<LocalPreferences>>('localPreferences', {});
-    return { audioCues: saved.audioCues ?? defaultLocalPreferences.audioCues };
+    return { audioCues: saved.audioCues ?? defaultLocalPreferences.audioCues, soundEffects: saved.soundEffects ?? defaultLocalPreferences.soundEffects };
   },
   async savePreferences(patch: Partial<LocalPreferences>) {
     const current = await this.preferences();
-    await safeStorage.set('localPreferences', { audioCues: patch.audioCues ?? current.audioCues });
+    await safeStorage.set('localPreferences', { audioCues: patch.audioCues ?? current.audioCues, soundEffects: patch.soundEffects ?? current.soundEffects });
   },
   /** Onboarding answers collected before sign-up; saved to HealthyMe right after authentication. */
   draft: () => safeStorage.get<OnboardingAnswers | null>('onboardingDraft', null),

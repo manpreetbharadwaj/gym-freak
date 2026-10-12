@@ -221,7 +221,8 @@ export const tracker = {
       calories: liveCalories(s, end),
       caloriesEstimated: true,
       elevationGainM: gps && t.elevationGainM > 0 ? Math.round(t.elevationGainM * 10) / 10 : null,
-      route: gps ? simplifyRoute(t.route).map((p) => ({ lat: p.lat, lng: p.lng, alt: p.alt, accuracy: p.accuracy, t: p.t, gap: p.gap || undefined })) : [],
+      // iOS fix timestamps carry sub-millisecond fractions; the API stores whole milliseconds (a fraction is a 400).
+      route: gps ? simplifyRoute(t.route).map((p) => ({ lat: p.lat, lng: p.lng, alt: p.alt, accuracy: p.accuracy, t: Math.round(p.t), gap: p.gap || undefined })) : [],
       splits,
     };
   },

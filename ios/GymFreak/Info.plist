@@ -60,7 +60,7 @@
 	<key>NSFaceIDUsageDescription</key>
 	<string>Allow $(PRODUCT_NAME) to access your Face ID biometric data.</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Gym Freak reads your steps, walking and running distance, active energy and workouts (including ones recorded on Apple Watch) to complete your Activity dashboard, history and streaks.</string>
+	<string>Gym Freak reads your steps, walking and running distance, active energy and workouts (including ones recorded on Apple Watch) to complete your Activity dashboard, history and streaks, and, only if you choose to import them, body fat readings for Body composition.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>Gym Freak saves the runs, walks, hikes and yoga sessions you record in the app to Apple Health, if you turn this on.</string>
 	<key>NSLocalNetworkUsageDescription</key>
@@ -69,7 +69,9 @@
 	<string>Gym Freak only uses your location while you record a run, walk, hike or trek that you started. It never tracks you otherwise.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Gym Freak only uses your location while you record a run, walk, hike or trek that you started. It never tracks you otherwise.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>Gym Freak lets you attach screenshots to support requests and feedback. Only the photos you choose are shared.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
 	<string>Gym Freak uses your location only while you record a run, walk, hike or trek, to draw your route and measure distance and pace.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Allow $(PRODUCT_NAME) to detect your current motion activity</string>

@@ -1,22 +1,26 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Location from 'expo-location';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
-import { GlyphIcon, GradientButton, mdi, SecondaryButton, Txt } from '@/components';
-import { Card, Header, Screen } from '@/components/layout';
+import { GlyphIcon, GradientButton, mdi, PressableScale, SecondaryButton, Txt } from '@/components';
+import { Header, Screen } from '@/components/layout';
 import { useI18n } from '@/i18n';
 import { RootScreenProps } from '@/navigation/types';
-import { palette, radius, scenes, shadow } from '@/theme';
+import { palette, pressScales, radius, shadow } from '@/theme';
 import { ActivityType } from '@/types/domain';
 import { haptics } from '@/utils/haptics';
 import { ACTIVITY_ORDER, ACTIVITY_TYPES, isGpsActivity } from './activityTypes';
 import { locationServicesOn, requestLocationPermission, tracker } from './tracker';
+import { activityTheme } from './theme/activityGlassTheme';
+import { GlassCard } from './theme/Glass';
+import { useDialog } from '@/components/dialogs/DialogProvider';
 
 type Gps = 'checking' | 'needs-permission' | 'blocked' | 'services-off' | 'searching' | 'weak' | 'ready';
 
 /** Pick an activity; GPS activities show live signal quality before START. Location is asked for here, not at launch. */
 export function ActivityStartScreen({ navigation, route }: RootScreenProps<'ActivityStart'>) {
+  const dialog = useDialog();
   const { dictionary } = useI18n();
   const copy = dictionary.activity;
   const [type, setType] = useState<ActivityType>(route.params?.type ?? 'RUNNING');
@@ -55,7 +59,8 @@ export function ActivityStartScreen({ navigation, route }: RootScreenProps<'Acti
     await tracker.ensureLoaded();
     const existing = tracker.current();
     if (existing) {
-      Alert.alert(copy.conflict, undefined, [{ text: dictionary.common.cancel, style: 'cancel' }, { text: existing.tracker.status === 'finished' ? copy.review : copy.backToActivity, onPress: () => navigation.replace(existing.tracker.status === 'finished' ? 'ActivitySummary' : 'ActivityLive') }]);
+      const proceed = await dialog.showConfirm({ title: copy.conflict, cancelLabel: dictionary.common.cancel, confirmLabel: existing.tracker.status === 'finished' ? copy.review : copy.backToActivity });
+      if (proceed) navigation.replace(existing.tracker.status === 'finished' ? 'ActivitySummary' : 'ActivityLive');
       return;
     }
     haptics.press();
@@ -64,25 +69,25 @@ export function ActivityStartScreen({ navigation, route }: RootScreenProps<'Acti
 
   const canStart = !gpsType || gps === 'ready' || gps === 'weak' || gps === 'searching';
 
-  return <Screen scene={scenes.violet} header={<Header title={copy.start} onBack={() => navigation.goBack()} />}>
+  return <Screen scene={activityTheme.scene} header={<Header title={copy.start} onBack={() => navigation.goBack()} />}>
     <Txt variant="overline" color={palette.inkMuted} style={{ marginBottom: 10 }}>{copy.choose.toUpperCase()}</Txt>
     <View style={{ gap: 10 }}>
       {ACTIVITY_ORDER.map((t) => {
         const info = ACTIVITY_TYPES[t];
         const selected = t === type;
-        return <Pressable key={t} testID={`type-${t}`} accessibilityRole="radio" accessibilityState={{ selected }} accessibilityLabel={copy.typeLong[t]} onPress={() => { haptics.select(); setType(t); }}
-          style={({ pressed }) => [styles.type, selected && { borderColor: info.color, backgroundColor: info.tint }, shadow(undefined, selected ? 0.6 : 0.3), pressed && { transform: [{ scale: 0.98 }] }]}>
+        return <PressableScale key={t} testID={`type-${t}`} haptic="selection" scaleTo={pressScales.card} accessibilityRole="radio" accessibilityState={{ selected }} accessibilityLabel={copy.typeLong[t]} onPress={() => setType(t)}
+          style={[styles.type, selected && { borderColor: info.color, backgroundColor: info.tint }, !activityTheme.glass && shadow(undefined, selected ? 0.6 : 0.3)]}>
           <View style={[styles.typeIcon, { backgroundColor: selected ? info.color : info.tint }]}><GlyphIcon glyph={mdi(info.icon)} size={24} color={selected ? palette.white : info.color} /></View>
           <View style={{ flex: 1 }}>
             <Txt variant="row">{copy.typeLong[t]}</Txt>
             <Txt variant="small" color={palette.inkMuted}>{info.gps ? 'GPS' : copy.noGps}</Txt>
           </View>
           <View style={[styles.radio, selected && { borderColor: info.color }]}>{selected ? <View style={[styles.radioDot, { backgroundColor: info.color }]} /> : null}</View>
-        </Pressable>;
+        </PressableScale>;
       })}
     </View>
 
-    <Card style={styles.gps}>
+    <GlassCard style={styles.gps}>
       {gpsType ? <>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <GpsDot state={gps} />
@@ -97,12 +102,12 @@ export function ActivityStartScreen({ navigation, route }: RootScreenProps<'Acti
           {gps === 'needs-permission' ? <SecondaryButton testID="allow-location" label={copy.allowLocation} icon="crosshairs-gps" iconFirst onPress={allow} /> : <SecondaryButton label={copy.openSettings} icon="cog-outline" iconFirst onPress={() => Linking.openSettings()} />}
         </> : null}
       </> : <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <GlyphIcon glyph={mdi('timer-outline')} size={20} color={palette.violet} />
+        <GlyphIcon glyph={mdi('timer-outline')} size={20} color={activityTheme.accent} />
         <Txt variant="small" style={{ flex: 1 }}>{copy.noGps}</Txt>
       </View>}
-    </Card>
+    </GlassCard>
 
-    <GradientButton testID="start-activity" label={copy.startCta} icon="play" disabled={!canStart} onPress={start} style={{ marginTop: 20 }} />
+    <GradientButton gradient={activityTheme.cta} testID="start-activity" label={copy.startCta} icon="play" disabled={!canStart} onPress={start} style={{ marginTop: 20 }} />
   </Screen>;
 }
 
@@ -117,7 +122,7 @@ function GpsDot({ state }: { state: Gps }) {
 }
 
 const styles = StyleSheet.create({
-  type: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.lg, backgroundColor: palette.surface, borderWidth: 1.5, borderColor: 'transparent' },
+  type: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: radius.lg, backgroundColor: activityTheme.glass ? activityTheme.fill : palette.surface, borderWidth: 1.5, borderColor: activityTheme.glass ? activityTheme.border : 'transparent' },
   typeIcon: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   radio: { width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: palette.lineStrong, alignItems: 'center', justifyContent: 'center' },
   radioDot: { width: 10, height: 10, borderRadius: 5 },

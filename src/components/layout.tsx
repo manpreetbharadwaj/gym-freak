@@ -4,10 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated from 'react-native-reanimated';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GlyphIcon, MeshBackground, mdi, Txt } from './primitives';
-import { haptics } from '@/utils/haptics';
+import { GlyphIcon, MeshBackground, mdi, PressableScale, Txt } from './primitives';
 import { useTabBarOnScroll } from '@/navigation/TabBarVisibilityContext';
-import { gutter, palette, radius, Scene, scenes, shadow, controls } from '@/theme';
+import { gutter, palette, pressScales, radius, Scene, scenes, shadow, controls } from '@/theme';
+import { useAccentScope } from './accentScope';
 
 /** Space the floating tab bar occupies above the safe-area inset (60 dock + 10 gap + breathing room), so content never ends behind it. */
 export const TAB_BAR_SPACE = 96;
@@ -46,16 +46,17 @@ export function Header({ title, onBack, right, transparent }: { title?: string; 
 }
 
 export function IconCircle({ glyph, onPress, label, active, color = palette.ink, size = controls.iconButton.lg }: { glyph: ReturnType<typeof mdi>; onPress: () => void; label: string; active?: boolean; color?: string; size?: number }) {
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} hitSlop={8} onPress={() => { haptics.tap(); onPress(); }} style={({ pressed }) => [styles.iconCircle, { width: size, height: size, borderRadius: size / 2, transform: [{ scale: pressed ? 0.94 : 1 }] }, active && { backgroundColor: `${palette.coral}26`, borderColor: `${palette.coral}66` }]}>
+  return <PressableScale haptic="light" scaleTo={pressScales.icon} accessibilityLabel={label} hitSlop={8} onPress={onPress} style={[styles.iconCircle, { width: size, height: size, borderRadius: size / 2 }, active && { backgroundColor: `${palette.coral}26`, borderColor: `${palette.coral}66` }]}>
     <GlyphIcon glyph={glyph} size={size * 0.52} color={color} />
-  </Pressable>;
+  </PressableScale>;
 }
 
 export function Section({ title, action, onAction, children, style }: { title: string; action?: string; onAction?: () => void; children: React.ReactNode; style?: StyleProp<ViewStyle> }) {
+  const scope = useAccentScope();
   return <View style={[{ marginTop: 28 }, style]}>
     <View style={styles.sectionHeader}>
       <Txt variant="title">{title}</Txt>
-      {action && onAction ? <Pressable hitSlop={10} onPress={onAction} accessibilityRole="button" style={({ pressed }) => [styles.sectionAction, pressed && { opacity: 0.6 }]}><Txt variant="label" color={palette.accent}>{action}</Txt><GlyphIcon glyph={mdi('chevron-right')} size={16} color={palette.accent} /></Pressable> : null}
+      {action && onAction ? <Pressable hitSlop={10} onPress={onAction} accessibilityRole="button" style={({ pressed }) => [styles.sectionAction, pressed && { opacity: 0.6 }]}><Txt variant="label" color={scope.accent}>{action}</Txt><GlyphIcon glyph={mdi('chevron-right')} size={16} color={scope.accent} /></Pressable> : null}
     </View>
     {children}
   </View>;

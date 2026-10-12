@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Easing, Share, StyleSheet, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlyphIcon, GradientButton, mdi, SecondaryButton, Txt } from '@/components';
@@ -11,6 +11,7 @@ import { RootScreenProps } from '@/navigation/types';
 import { palette, radius, scenes, shadow } from '@/theme';
 import { haptics } from '@/utils/haptics';
 import { discountLabel } from '@/utils/money';
+import { ShareComposer } from '@/features/sharing';
 
 const LIME = palette.lime;
 
@@ -24,6 +25,7 @@ export function ReferEarnScreen({ navigation }: RootScreenProps<'ReferEarn'>) {
   const query = useReferral();
   const r = query.data;
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const copyCode = async () => {
     if (!r) return;
@@ -32,7 +34,6 @@ export function ReferEarnScreen({ navigation }: RootScreenProps<'ReferEarn'>) {
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
   };
-  const share = () => r && Share.share({ message: `${format(copy.shareMessage, { code: r.code })}\n${r.link}` }).catch(() => undefined);
 
   const reached = r?.nextMilestone ? r.nextMilestone.referrals - r.nextMilestone.remaining : 0;
   const progress = r?.nextMilestone ? Math.min(1, reached / r.nextMilestone.referrals) : 1;
@@ -51,7 +52,7 @@ export function ReferEarnScreen({ navigation }: RootScreenProps<'ReferEarn'>) {
           <Txt variant="label" color="rgba(255,255,255,0.8)" numberOfLines={1}>{r.link.replace(/^https:\/\//, '')}</Txt>
           <View style={styles.heroActions}>
             <SecondaryButton label={copied ? copy.copied : copy.copy} icon={copied ? 'checkmark-circle' : 'copy-outline'} iconFirst color={copied ? LIME : palette.violet} onPress={copyCode} style={{ flex: 1 }} />
-            <GradientButton label={copy.share} icon="share-social-outline" onPress={share} style={{ flex: 1 }} />
+            <GradientButton label={copy.share} icon="share-social-outline" onPress={() => setSharing(true)} style={{ flex: 1 }} />
           </View>
         </View>
         {!r.active ? <Card style={styles.notice}><GlyphIcon glyph={mdi('pause-circle-outline')} size={18} color={palette.inkMuted} /><Txt variant="small" color={palette.inkMuted} style={{ flex: 1 }}>{copy.paused}</Txt></Card> : null}
@@ -84,6 +85,7 @@ export function ReferEarnScreen({ navigation }: RootScreenProps<'ReferEarn'>) {
           </View>)}</Card>
         </Section>
       </>}
+    {r ? <ShareComposer visible={sharing} onClose={() => setSharing(false)} referral={r} card={{ kind: 'referral', title: dictionary.socialShare.referralEyebrow, eyebrow: dictionary.socialShare.referralEyebrow, subtitle: format(copy.shareMessage, { code: r.code }), statement: dictionary.socialShare.journey, metrics: [] }} /> : null}
   </Screen>;
 }
 

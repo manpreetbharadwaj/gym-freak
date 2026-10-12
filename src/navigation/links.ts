@@ -27,7 +27,7 @@ export function parseLink(url: string, hosts = linkHosts()): ParsedLink | null {
 
 /**
  * Maps HealthyMe deep links (push payloads, story CTAs, shared exercise links) to screens:
- * gymfreak://workout/<id> · exercise/<id or slug> · story/<id> · plan · achievements · upgrade · progress · home · water · stopwatch,
+ * gymfreak://workout/<id> · exercise/<id or slug> · story/<id> · plan · explore · achievements · upgrade · progress · home · water · stopwatch · support[/<ticketId>],
  * and https://<link host>/exercise/<id or slug>?ref=CODE. Referral-only links (ref/<code>) have no screen.
  * Unknown links resolve to null and are ignored.
  */
@@ -42,10 +42,14 @@ export function routeForLink(url: string, hosts = linkHosts()): Route | null {
     case 'achievements': return ['Achievements', undefined];
     case 'upgrade': return ['Upgrade', undefined];
     case 'plan': return ['Tabs', { screen: 'Workout' }];
+    case 'explore': return ['Tabs', { screen: 'Explore' }];
     case 'progress': return ['Tabs', { screen: 'Progress' }];
     case 'home': return ['Tabs', { screen: 'Home' }];
     case 'water': return ['WaterIntake', undefined];
     case 'stopwatch': return ['Stopwatch', undefined];
+    case 'reminder': return id ? ['NotesReminders', { reminderId: id }] : ['NotesReminders', undefined];
+    // Push for a support reply: gymfreak://support/<ticketId> (gymfreak://support opens Help & Support).
+    case 'support': return id ? ['SupportTicket', { ticketId: id }] : ['HelpSupport', undefined];
     case 'refer': return ['ReferEarn', undefined];
     default: return null;
   }

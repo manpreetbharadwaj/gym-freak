@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { esApp } from './app/es';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/es.ts`. */
 const firstRun: Translation = {
   common: { next: 'Siguiente', back: 'Atrás', skip: 'Omitir', done: 'Listo', continue: 'Continuar', search: 'Buscar' },
   splash: { tagline: 'Entrena mejor. Muévete más fuerte.' },
   intro: {
-    slides: [
-      { tag: 'Personalizado', title: 'Entrenamiento hecho para ti', body: 'Tus metas, tu experiencia y tu estilo de vida dan forma a cada entreno.' },
-      { tag: 'Guiado', title: 'Ve cada movimiento con claridad', body: 'Demostraciones claras con las indicaciones que importan.' },
-      { tag: 'Progreso', title: 'Un progreso que de verdad ves', body: 'Rachas, estadísticas y récords personales en un solo lugar.' },
-      { tag: 'Constancia', title: 'Pequeñas victorias. Cada semana.', body: 'Retos semanales que mantienen tu impulso.' },
-    ],
     start: '¡Vamos!',
-    visual: {
-      goal: 'Tu meta', goalValue: 'Ganar músculo', schedule: '4 días / semana', level: 'Intermedio',
-      exercise: 'Sentadilla goblet', reps: 'Reps', sets: 'Series', muscle: 'Grupo muscular', muscleValue: 'Glúteos · Cuádriceps', technique: 'Técnica', techniqueValue: 'Baja despacio',
-      thisWeek: 'Esta semana', workouts: 'Entrenos', minutes: 'Minutos', personalBest: 'Nuevo récord personal',
-      challenge: 'Reto semanal', challengeValue: '3 de 4 entrenos', streak: 'días de racha', badge: 'Insignia desbloqueada', badgeValue: 'Madrugador', complete: 'Entreno completado',
-    },
   },
   language: { title: 'Elige tu idioma', body: 'Puedes cambiarlo cuando quieras.', search: 'Buscar idioma', popular: 'Populares', all: 'Todos los idiomas', results: 'Resultados', noResults: 'Ningún idioma coincide con «{query}».', continueIn: 'Continuar en {language}' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const es = mergeTranslations(firstRun, esApp, dashboard.es, utilities.es, growth.es, activity.es);
+export const es = mergeTranslations(firstRun, esApp, dashboard.es, utilities.es, growth.es, activity.es, nutrition.es, sounds.es, support.es, socialShare.es);

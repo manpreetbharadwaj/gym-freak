@@ -1,3 +1,4 @@
+import { MockSupportRepository } from '@/services/repositories/support';
 import * as Crypto from 'expo-crypto';
 import { defaultNotificationPreferences, localState } from '@/services/storage/localState';
 import { safeStorage } from '@/services/storage/safeStorage';
@@ -200,15 +201,27 @@ class MockGymRepository implements GymRepository {
     }, s.sessions, (id) => (id ? muscles.get(id) : undefined));
   }
 
-  async getPreferences(): Promise<Preferences> { const [s, local] = await Promise.all([this.store.get(), localState.preferences()]); return { ...s.prefs, audioCues: local.audioCues, notifications: { ...defaultNotificationPreferences, ...s.notifications } }; }
+  async getPreferences(): Promise<Preferences> { const [s, local] = await Promise.all([this.store.get(), localState.preferences()]); return { ...s.prefs, audioCues: local.audioCues, soundEffects: local.soundEffects, notifications: { ...defaultNotificationPreferences, ...s.notifications } }; }
   async updatePreferences(patch: Partial<Preferences>) {
-    const { audioCues, notifications, ...remote } = patch;
+    const { audioCues, soundEffects, notifications, ...remote } = patch;
     await this.store.update((s) => { s.prefs = { ...s.prefs, ...Object.fromEntries(Object.entries(remote).filter(([, v]) => v !== undefined)) }; if (notifications) s.notifications = { ...defaultNotificationPreferences, ...s.notifications, ...notifications }; });
-    if (audioCues !== undefined) await localState.savePreferences({ audioCues });
+    if (audioCues !== undefined || soundEffects !== undefined) await localState.savePreferences({ audioCues, soundEffects });
     return this.getPreferences();
   }
   // No server in mock mode: reminders stay local.
   async registerDevice() { return { serverPush: false }; }
+  async getOrganizer(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async createNote(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async updateNote(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async deleteNote(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async createReminder(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async updateReminder(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async deleteReminder(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async completeReminder(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async snoozeReminder(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async createReminderCategory(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async deleteReminderCategory(): Promise<never> { throw new Error('Organizer sync needs the HealthyMe server'); }
+  async saveReminderSchedule(): Promise<void> { /* local reminders still work in mock mode */ }
   /* Referrals, coupons and checkout exist only on the server: offline mode refuses rather than inventing discounts. */
   async getReferral(): Promise<never> { throw new Error('Referrals need the HealthyMe server'); }
   /* Activity history and health sync live on the server: offline mode refuses rather than inventing sessions or steps. */
@@ -222,7 +235,21 @@ class MockGymRepository implements GymRepository {
   async syncHealth(): Promise<never> { throw new Error('Health sync needs the HealthyMe server'); }
   async claimReferral(): Promise<never> { throw new Error('Referrals need the HealthyMe server'); }
   async validateReferralCode() { return false; }
-  async listQuickStart(): Promise<never> { throw new Error('Quick Start needs the HealthyMe server'); } // Home falls back to the bundled tiles
+  async getOnboardingContent(): Promise<never> { throw new Error('Onboarding cards need the HealthyMe server'); } // no cards → onboarding is skipped
+  // Nutrition targets and body composition need the HealthyMe server (no invented values in mock mode).
+  async getNutrition(): Promise<never> { throw new Error('Nutrition targets need the HealthyMe server'); }
+  async setNutritionInputs(): Promise<never> { throw new Error('Nutrition targets need the HealthyMe server'); }
+  async setNutritionOverride(): Promise<never> { throw new Error('Nutrition targets need the HealthyMe server'); }
+  async clearNutritionOverride(): Promise<never> { throw new Error('Nutrition targets need the HealthyMe server'); }
+  async getNutritionHistory() { return []; }
+  async getBodyFat(): Promise<never> { throw new Error('Body composition needs the HealthyMe server'); }
+  async addBodyFat(): Promise<never> { throw new Error('Body composition needs the HealthyMe server'); }
+  async addBodyFatNavy(): Promise<never> { throw new Error('Body composition needs the HealthyMe server'); }
+  async importBodyFat(): Promise<never> { throw new Error('Body composition needs the HealthyMe server'); }
+  async updateBodyFat(): Promise<never> { throw new Error('Body composition needs the HealthyMe server'); }
+  async deleteBodyFat(): Promise<never> { throw new Error('Body composition needs the HealthyMe server'); }
+  async getContentTiles(): Promise<never> { throw new Error('Content images need the HealthyMe server'); } // tiles hide; options show without photos
+  async listQuickStart(): Promise<never> { throw new Error('Quick Start needs the HealthyMe server'); } // Home hides the rail
   async listPlans() { return []; }
   async quote(): Promise<never> { throw new Error('Checkout needs the HealthyMe server'); }
   async checkout(): Promise<never> { throw new Error('Checkout needs the HealthyMe server'); }
@@ -233,5 +260,5 @@ class MockGymRepository implements GymRepository {
 
 export function createMockRepositories(): Repositories {
   const store = new Store();
-  return { mode: 'mock', auth: new MockAuthRepository(store), gym: new MockGymRepository(store) };
+  return { mode: 'mock', auth: new MockAuthRepository(store), gym: new MockGymRepository(store), support: new MockSupportRepository() };
 }

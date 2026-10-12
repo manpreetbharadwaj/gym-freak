@@ -3,11 +3,14 @@ import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 import { accessFrom } from '@/api/access';
 import { ApiError, createApiClient, publicRequest, resolveMediaUrl } from '@/api/client';
+import { ApiContentTiles, contentTilesFrom } from '@/api/contentTiles';
+import { ApiOnboardingContent, onboardingCardFrom } from '@/api/onboarding';
 import { ApiAccess, ApiAccount, ApiAchievement, ApiExercise, ApiGymPreferences, ApiGymProfile, ApiMedia, ApiNotificationPreferences, ApiPage, ApiPlanDay, ApiProgress, ApiRecommendations, ApiSession, ApiStory, ApiUserPreferences, ApiWeekPlan, ApiWorkout, ApiWorkoutSession } from '@/api/contracts';
 import { tokenStorage } from '@/services/auth/tokenStorage';
 import { localState } from '@/services/storage/localState';
-import { QuickStartTile, Access, Account, Achievement, Activity, ActivityDetail, ActivityType, HealthConnection, HealthConnectionStatus, HealthDaily, HealthProvider, HealthSyncResult, ImportedWorkout, NewActivity, BillingPlan, CheckoutResult, ExerciseAccess, Quote, ReferralSource, ReferralStatus, ReferralSummary, ShareEventType, DeviceRegistration, DurationRange, Exercise, Goal, GymProfile, Media, NotificationPreferences, OnboardingAnswers, PlanDay, Preferences, Progress, Story, Workout, WorkoutSession } from '@/types/domain';
+import { OnboardingContent, QuickStartTile, Access, Account, Achievement, Activity, ActivityDetail, ActivityType, HealthConnection, HealthConnectionStatus, HealthDaily, HealthProvider, HealthSyncResult, ImportedWorkout, NewActivity, BillingPlan, CheckoutResult, ExerciseAccess, Quote, ReferralSource, ReferralStatus, ReferralSummary, ShareEventDetails, ShareEventType, DeviceRegistration, DurationRange, Exercise, Goal, GymProfile, Media, NotificationPreferences, OnboardingAnswers, PlanDay, Preferences, Progress, Story, Workout, WorkoutSession, ContentTiles, ActivityLevel, BodyFatMeasurement, BodyFatReading, BodyFatSummary, CalcSex, NutritionHistoryEntry, NutritionSummary, OrganizerSnapshot, NoteInput, PersonalNote, ReminderInput, PersonalReminder, ReminderCategory, ReminderCompletion, ReminderSnooze } from '@/types/domain';
 import { ActiveSessionConflict, AuthRepository, GymRepository, Repositories, SignInInput, SignUpInput } from './types';
+import { ApiSupportRepository } from './support';
 
 /* ───────────── Vocabulary mapping (app ↔ HealthyMe) ───────────── */
 
@@ -155,7 +158,7 @@ class ApiGymRepository implements GymRepository {
     const { data } = await this.http.get<ApiWeekPlan>('/me/gym/training-plan');
     const days = data.days.map(this.day);
     const plan = data.plan ? {
-      id: data.plan.id, name: data.plan.name, description: data.plan.description ?? undefined, goal: data.plan.goal, difficulty: data.plan.difficulty, daysPerWeek: data.plan.daysPerWeek, locked: false,
+      id: data.plan.id, name: data.plan.name, description: data.plan.description ?? undefined, goal: data.plan.goal, difficulty: data.plan.difficulty, daysPerWeek: data.plan.daysPerWeek, locked: false, media: this.media(data.plan.media),
       days: days.filter((d) => d.workout && d.dayNumber).map((d) => ({ dayNumber: d.dayNumber!, workout: d.workout! })).sort((a, b) => a.dayNumber - b.dayNumber),
     } : undefined;
     return { plan, assignment: data.assignment ? { source: data.assignment.source, startDate: data.assignment.startDate } : undefined, days, today: data.today ? this.day(data.today) : undefined };
@@ -212,6 +215,25 @@ class ApiGymRepository implements GymRepository {
     const { data } = await this.http.get<{ valid: boolean }>('/referral-codes/validate', { params: { code }, ...publicRequest });
     return data.valid;
   }
+  async getOnboardingContent(): Promise<OnboardingContent> {
+    const { data } = await this.http.get<ApiOnboardingContent>('/app/onboarding', publicRequest);
+    return { version: String(data.version ?? ''), locale: String(data.locale ?? ''), cards: (Array.isArray(data.items) ? data.items : []).flatMap((item) => onboardingCardFrom(item, this.baseURL)) };
+  }
+  async getContentTiles(): Promise<ContentTiles> {
+    const { data } = await this.http.get<ApiContentTiles>('/app/content-tiles', publicRequest);
+    return contentTilesFrom(data, this.baseURL);
+  }
+  async getNutrition() { return (await this.http.get<NutritionSummary>('/me/gym/nutrition')).data; }
+  async setNutritionInputs(input: { calculationSex?: CalcSex | null; activityLevel?: ActivityLevel | null; medicalCaution?: boolean }) { return (await this.http.put<NutritionSummary>('/me/gym/nutrition/inputs', input)).data; }
+  async setNutritionOverride(input: { calories: number; proteinG: number }) { return (await this.http.put<NutritionSummary>('/me/gym/nutrition/override', input)).data; }
+  async clearNutritionOverride() { return (await this.http.delete<NutritionSummary>('/me/gym/nutrition/override')).data; }
+  async getNutritionHistory() { return (await this.http.get<NutritionHistoryEntry[]>('/me/gym/nutrition/history')).data; }
+  async getBodyFat() { return (await this.http.get<BodyFatSummary>('/me/gym/body-fat')).data; }
+  async addBodyFat(input: { percent: number; measuredAt: string; source?: string | null; notes?: string | null }) { return (await this.http.post<BodyFatMeasurement>('/me/gym/body-fat', input)).data; }
+  async addBodyFatNavy(input: { heightCm?: number; neckCm: number; waistCm: number; hipCm?: number; measuredAt: string; notes?: string | null }) { return (await this.http.post<BodyFatMeasurement>('/me/gym/body-fat/navy', input)).data; }
+  async importBodyFat(provider: HealthProvider, readings: BodyFatReading[]) { return (await this.http.post<{ imported: number; skipped: number; invalid: number }>('/me/gym/body-fat/import', { provider, readings })).data; }
+  async updateBodyFat(id: string, patch: { percent?: number; measuredAt?: string; source?: string | null; notes?: string | null }) { return (await this.http.patch<BodyFatMeasurement>(`/me/gym/body-fat/${id}`, patch)).data; }
+  async deleteBodyFat(id: string) { await this.http.delete(`/me/gym/body-fat/${id}`); }
   async listQuickStart(): Promise<QuickStartTile[]> {
     const { data } = await this.http.get<{ items: { id: string; title: string; imageUrl: string | null; target: { type: string; muscle?: string | null; id?: string } }[] }>('/quick-start');
     return data.items.flatMap((item): QuickStartTile[] => {
@@ -224,8 +246,8 @@ class ApiGymRepository implements GymRepository {
   async quote(planKey: string, couponCode?: string | null, country?: string | null) { return (await this.http.post<Quote>('/me/gym/billing/quote', { planId: planKey, couponCode: couponCode || undefined, country: country || undefined })).data; }
   async checkout(planKey: string, couponCode?: string | null, country?: string | null) { return (await this.http.post<CheckoutResult>('/me/gym/billing/checkout', { planId: planKey, couponCode: couponCode || undefined, country: country || undefined })).data; }
   async verifyPurchase(input: { platform: 'ios' | 'android'; productId: string; receipt: string }) { await this.http.post('/me/gym/subscriptions/verify', input); }
-  async trackShare(type: ShareEventType, exerciseId?: string, referralCode?: string) {
-    await this.http.post('/me/gym/share-events', { type, exerciseId, referralCode }).catch(() => undefined);
+  async trackShare(type: ShareEventType, exerciseId?: string, referralCode?: string, details?: ShareEventDetails) {
+    await this.http.post('/me/gym/share-events', { type, exerciseId, referralCode, ...details, eventId: details?.eventId ?? Crypto.randomUUID() }).catch(() => undefined);
   }
 
   /** Scheduled, audience-targeted stories with server-side view state. */
@@ -298,29 +320,41 @@ class ApiGymRepository implements GymRepository {
   async getPreferences(): Promise<Preferences> {
     const [user, gym, notifications, local] = await Promise.all([this.http.get<ApiUserPreferences>('/me/preferences'), this.http.get<ApiGymPreferences>('/me/gym/preferences'), this.http.get<ApiNotificationPreferences>('/me/gym/notification-preferences'), localState.preferences()]);
     // "auto" lives only in the gym preferences; the shared HealthyMe preference stays metric | imperial for the other apps.
-    return { audioCues: local.audioCues, language: user.data.language, units: gym.data.units ?? user.data.units, notificationsEnabled: user.data.notificationsEnabled, restTimerEnabled: gym.data.restTimerEnabled, defaultRestSeconds: gym.data.defaultRestSeconds, notifications: notificationsFrom(notifications.data) };
+    return { audioCues: local.audioCues, soundEffects: local.soundEffects, language: user.data.language, units: gym.data.units ?? user.data.units, notificationsEnabled: user.data.notificationsEnabled, restTimerEnabled: gym.data.restTimerEnabled, defaultRestSeconds: gym.data.defaultRestSeconds, notifications: notificationsFrom(notifications.data) };
   }
   async updatePreferences(patch: Partial<Preferences>) {
-    const { language, units, notificationsEnabled, restTimerEnabled, defaultRestSeconds, audioCues, notifications } = patch;
+    const { language, units, notificationsEnabled, restTimerEnabled, defaultRestSeconds, audioCues, soundEffects, notifications } = patch;
     await Promise.all([
       language !== undefined || (units !== undefined && units !== 'auto') || notificationsEnabled !== undefined ? this.http.patch('/me/preferences', { language, units: units === 'auto' ? undefined : units, notificationsEnabled }) : null,
       restTimerEnabled !== undefined || defaultRestSeconds !== undefined || units !== undefined || notificationsEnabled !== undefined ? this.http.patch('/me/gym/preferences', { restTimerEnabled, defaultRestSeconds, units, notificationsEnabled }) : null,
       notifications !== undefined ? this.http.put('/me/gym/notification-preferences', notificationsTo(notifications)) : null,
       // Audio cues are a property of this device, not the account.
-      audioCues !== undefined ? localState.savePreferences({ audioCues }) : null,
+      audioCues !== undefined || soundEffects !== undefined ? localState.savePreferences({ audioCues, soundEffects }) : null,
     ]);
     return this.getPreferences();
   }
 
   async registerDevice(input: DeviceRegistration) {
     const platform = Platform.OS === 'android' ? 'android' : 'ios';
-    const { data } = await this.http.put<{ serverPush?: boolean }>('/me/gym/devices', { installationId: await localState.installationId(), platform, provider: 'expo', pushToken: input.pushToken ?? undefined, timezone: input.timezone, locale: input.locale, appVersion: input.appVersion });
+    const { data } = await this.http.put<{ serverPush?: boolean }>('/me/gym/devices', { installationId: await localState.installationId(), platform, provider: 'expo', pushToken: input.pushToken ?? undefined, timezone: input.timezone, locale: input.locale, appVersion: input.appVersion, country: input.country ?? undefined });
     return { serverPush: !!data.serverPush };
   }
   async unregisterDevice() { await this.http.delete(`/me/gym/devices/${await localState.installationId()}`); }
+  async getOrganizer(since?: string) { return (await this.http.get<OrganizerSnapshot>('/me/gym/organizer', { params: { since } })).data; }
+  async createNote(input: NoteInput) { return (await this.http.post<PersonalNote>('/me/gym/notes', input)).data; }
+  async updateNote(id: string, input: Partial<NoteInput> & { baseRevision?: number }) { return (await this.http.patch<PersonalNote>(`/me/gym/notes/${id}`, input)).data; }
+  async deleteNote(id: string) { await this.http.delete(`/me/gym/notes/${id}`); }
+  async createReminder(input: ReminderInput) { return (await this.http.post<PersonalReminder>('/me/gym/reminders', input)).data; }
+  async updateReminder(id: string, input: Partial<ReminderInput> & { baseRevision?: number }) { return (await this.http.patch<PersonalReminder>(`/me/gym/reminders/${id}`, input)).data; }
+  async deleteReminder(id: string) { await this.http.delete(`/me/gym/reminders/${id}`); }
+  async completeReminder(id: string, occurrenceAt: string, source: 'APP' | 'NOTIFICATION' = 'APP') { return (await this.http.post<ReminderCompletion>(`/me/gym/reminders/${id}/complete`, { occurrenceAt, source })).data; }
+  async snoozeReminder(id: string, occurrenceAt: string, minutes: 5 | 10 | 15) { return (await this.http.post<ReminderSnooze>(`/me/gym/reminders/${id}/snooze`, { occurrenceAt, minutes })).data; }
+  async createReminderCategory(input: Pick<ReminderCategory, 'name' | 'icon' | 'color'> & { description?: string | null }) { return (await this.http.post<ReminderCategory>('/me/gym/note-categories', input)).data; }
+  async deleteReminderCategory(id: string) { await this.http.delete(`/me/gym/note-categories/${id}`); }
+  async saveReminderSchedule(id: string, input: { installationId: string; timezone: string; notificationIds: string[]; scheduledThrough?: string | null }) { await this.http.put(`/me/gym/reminders/${id}/device-schedule`, input); }
 }
 
 export function createApiRepositories(baseURL: string, onSessionExpired: () => void): Repositories {
   const http = createApiClient(baseURL, onSessionExpired);
-  return { mode: 'api', auth: new ApiAuthRepository(http), gym: new ApiGymRepository(http, baseURL) };
+  return { mode: 'api', auth: new ApiAuthRepository(http), gym: new ApiGymRepository(http, baseURL), support: new ApiSupportRepository(http, baseURL) };
 }

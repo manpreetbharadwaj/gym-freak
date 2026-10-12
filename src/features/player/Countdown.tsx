@@ -3,7 +3,7 @@ import { Pressable, StyleSheet } from 'react-native';
 import Animated, { Easing, FadeIn, FadeOut, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Txt } from '@/components';
 import { useI18n } from '@/i18n';
-import { palette } from '@/theme';
+import { palette, typography } from '@/theme';
 import { haptics } from '@/utils/haptics';
 
 /** 3 · 2 · 1 · GO before the first set. Spoken through the existing audio-cue setting; tap to skip. */
@@ -40,5 +40,5 @@ export function Countdown({ onDone, speak }: { onDone: () => void; speak?: (text
 const styles = StyleSheet.create({
   root: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(248,248,252,0.96)', alignItems: 'center', justifyContent: 'center', gap: 8, zIndex: 30 },
   /** Full-screen 3·2·1 is meant to be read at arm’s length mid-set; intentionally oversized. */
-  digit: { fontSize: 96, lineHeight: 104 },
+  digit: typography.countdown,
 });

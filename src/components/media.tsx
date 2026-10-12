@@ -3,11 +3,10 @@ import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { useEventListener } from 'expo';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import { Glyph, mdi } from './primitives';
-import { GradientPair, gradients, palette } from '@/theme';
+import { Glyph, GlyphIcon, mdi } from './primitives';
+import { GradientPair, gradients, motion, palette } from '@/theme';
+import { useReducedMotion } from '@/utils/motion';
 import { Media } from '@/types/domain';
-import { AssetKey, muscleImage } from '@/assets';
-import { AssetImage } from './AssetImage';
 
 /** Visual identity per muscle group: used for illustrations, chips and charts. */
 export const muscleVisuals: Record<string, { glyph: Glyph; gradient: GradientPair; color: string }> = {
@@ -32,21 +31,22 @@ export function prefetchMedia(media: Media[]) {
 }
 
 /**
- * Exercise / workout media: streams the admin-uploaded video when present (video only, no player UI),
- * otherwise a cached thumbnail, otherwise a realistic muscle-group photo, so nothing exercise-specific
- * ships in the bundle. Used everywhere a demo plays: exercise detail, the workout player, cards, stories.
+ * Exercise / workout media from HealthyMe (admin uploads): streams the video when present (video only, no
+ * player UI), otherwise the cached thumbnail. With neither (or while loading) it shows a neutral surface with
+ * the muscle group's glyph — never an unrelated bundled photo. Used everywhere a demo plays: exercise detail,
+ * the workout player, cards, stories.
  */
-export function ExerciseMedia({ media, muscle, height, rounded = 28, style, autoPlay = true, fallback, sound = false }: { media: Media; muscle?: string; height: number; rounded?: number; style?: StyleProp<ViewStyle>; autoPlay?: boolean; fallback?: AssetKey; /** Play the video's own audio (stories). Exercise demos stay muted. */ sound?: boolean }) {
+export function ExerciseMedia({ media, muscle, height, rounded = 28, style, autoPlay = true, sound = false }: { media: Media; muscle?: string; height: number; rounded?: number; style?: StyleProp<ViewStyle>; autoPlay?: boolean; /** Play the video's own audio (stories). Exercise demos stay muted. */ sound?: boolean }) {
   return <View style={[{ height, borderRadius: rounded, overflow: 'hidden' }, style]}>
-    {/* Realistic local photo for the muscle group until (or unless) HealthyMe media loads. */}
-    <AssetImage asset={fallback ?? muscleImage(muscle)} style={StyleSheet.absoluteFill} />
+    <View style={[StyleSheet.absoluteFill, styles.placeholder]}><GlyphIcon glyph={visualFor(muscle).glyph} size={Math.max(18, Math.min(44, height * 0.3))} color={palette.inkFaint} /></View>
     {media.thumbnailUrl || media.imageUrl ? <ImageLayer uri={(media.thumbnailUrl ?? media.imageUrl)!} /> : null}
     {media.videoUrl && autoPlay ? <VideoLayer key={media.videoUrl} uri={media.videoUrl} sound={sound} /> : null}
   </View>;
 }
 
 function ImageLayer({ uri }: { uri: string }) {
-  return <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" cachePolicy="memory-disk" transition={250} recyclingKey={uri} />;
+  const reduced = useReducedMotion();
+  return <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" contentPosition="center" cachePolicy="memory-disk" transition={reduced ? 0 : motion.fast} recyclingKey={uri} />;
 }
 
 /**
@@ -78,3 +78,7 @@ function VideoLayer({ uri, sound }: { uri: string; sound: boolean }) {
 
 const MAX_RETRIES = 2;
 const RETRY_MS = 1500;
+
+const styles = StyleSheet.create({
+  placeholder: { backgroundColor: palette.surface, alignItems: 'center', justifyContent: 'center' },
+});

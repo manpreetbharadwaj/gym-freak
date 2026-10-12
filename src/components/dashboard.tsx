@@ -1,19 +1,18 @@
 import React, { useEffect } from 'react';
 import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { AssetKey, workoutImage } from '@/assets';
 import { format, useI18n } from '@/i18n';
-import { controls, gradients, motion, palette, radius, shadow } from '@/theme';
+import { controls, gradients, motion, palette, pressScales, radius, shadow } from '@/theme';
 import { PlanDay, Workout } from '@/types/domain';
 import { dayKey, parseDay } from '@/utils/dates';
 import { haptics } from '@/utils/haptics';
-import { AssetImage } from './AssetImage';
+import { RemoteImage } from './RemoteImage';
 import { LockBadge, useLabels } from './cards';
 import { Skeleton } from './feedback';
 import { ExerciseMedia } from './media';
 import { Glyph, GlyphIcon, GradientButton, mdi, PressableScale, Txt } from './primitives';
+import { scopedSurface, useAccentScope } from './accentScope';
 
 /** Rough estimate (MET-style, by difficulty); always labelled as an estimate in the UI. */
 export function estimateKcal(minutes: number, difficulty?: string) {
@@ -45,31 +44,32 @@ export function PhotoHeroCard({ workout, eyebrow, onOpen, onStart, progress }: {
     [mdi('fire'), format(copy.kcalEst, { count: estimateKcal(workout.estimatedMinutes, workout.difficulty) })],
   ];
   const pct = progress && progress.total ? progress.done / progress.total : 0;
+  const scope = useAccentScope();
   return <PressableScale onPress={onOpen} scaleTo={0.985} accessibilityLabel={workout.name}>
-    <View style={[styles.heroShadow, shadow(palette.accent, 0.55)]}>
+    <View style={[styles.heroShadow, shadow(scope.accent, 0.55)]}>
       <View style={styles.hero}>
         <View style={styles.heroPhoto}>
-          <ExerciseMedia media={workout.media} muscle={workout.muscleGroups[0]} fallback={workout.media.thumbnailUrl ? undefined : 'home/todays-workout'} height={300} rounded={0} autoPlay={false} style={StyleSheet.absoluteFill} />
+          <ExerciseMedia media={workout.media} muscle={workout.muscleGroups[0]} height={300} rounded={0} autoPlay={false} style={StyleSheet.absoluteFill} />
           <LinearGradient colors={['rgba(8,16,27,0.94)', 'rgba(8,16,27,0.55)', 'rgba(8,16,27,0)']} start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} style={StyleSheet.absoluteFill} />
           <LinearGradient colors={['rgba(8,16,27,0)', 'rgba(8,16,27,0.35)', 'rgba(8,16,27,0.98)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
         </View>
         <View style={styles.heroTop}>
-          <View style={styles.heroTag}><View style={styles.liveDot} /><Txt variant="label" color={palette.white}>{eyebrow}</Txt></View>
+          <View style={styles.heroTag}><View style={[styles.liveDot, { backgroundColor: scope.accent, shadowColor: scope.accent }]} /><Txt variant="label" color={palette.white}>{eyebrow}</Txt></View>
           {workout.locked ? <LockBadge small /> : null}
         </View>
         <View style={styles.heroBottom}>
-          <Txt variant="overline" color={palette.accentSoft}>{workout.muscleGroups.map((m) => muscle(m).toUpperCase()).join(' · ')}</Txt>
+          <Txt variant="overline" color={scope.accentSoft}>{workout.muscleGroups.map((m) => muscle(m).toUpperCase()).join(' · ')}</Txt>
           <Txt variant="hero" color={palette.white} numberOfLines={2} style={{ marginTop: 6, maxWidth: '82%' }}>{workout.name}</Txt>
-          <View style={styles.heroStats}>{stats.map(([glyph, label]) => <View key={label} style={styles.heroStat}><GlyphIcon glyph={glyph} size={13} color={palette.accentSoft} /><Txt variant="label" color={palette.inkSoft} numberOfLines={1}>{label}</Txt></View>)}</View>
+          <View style={styles.heroStats}>{stats.map(([glyph, label]) => <View key={label} style={styles.heroStat}><GlyphIcon glyph={glyph} size={13} color={scope.accentSoft} /><Txt variant="label" color={palette.inkSoft} numberOfLines={1}>{label}</Txt></View>)}</View>
           {progress && progress.done > 0 ? <View style={styles.heroProgress}>
-            <View style={{ flex: 1 }}><ProgressBar progress={pct} color={palette.accent} track="rgba(255,255,255,0.10)" height={5} /></View>
-            <Txt variant="label" color={palette.accentSoft}>{Math.round(pct * 100)}%</Txt>
+            <View style={{ flex: 1 }}><ProgressBar progress={pct} color={scope.accent} track="rgba(255,255,255,0.10)" height={5} /></View>
+            <Txt variant="label" color={scope.accentSoft}>{Math.round(pct * 100)}%</Txt>
           </View> : null}
           <View style={styles.heroActions}>
-            <GradientButton label={copy.start} icon="play" onPress={onStart} style={{ flex: 1 }} />
-            <Pressable onPress={onOpen} accessibilityRole="button" accessibilityLabel={workout.name} hitSlop={6} style={({ pressed }) => [styles.heroMore, pressed && { transform: [{ scale: 0.94 }] }]}>
+            <GradientButton label={copy.start} icon="play" gradient={scope.ring} onPress={onStart} style={{ flex: 1 }} />
+            <PressableScale onPress={onOpen} haptic="light" scaleTo={pressScales.icon} accessibilityLabel={workout.name} hitSlop={6} style={styles.heroMore}>
               <GlyphIcon glyph={mdi('information-variant')} size={22} color={palette.white} />
-            </Pressable>
+            </PressableScale>
           </View>
         </View>
       </View>
@@ -80,7 +80,8 @@ export function PhotoHeroCard({ workout, eyebrow, onOpen, onStart, progress }: {
 /** A row of compact figures in one glass container, separated by hairlines (dashboard "at a glance"). */
 export function MetricStrip({ items, style }: { items: { label: string; value: string | null; unit?: string; glyph: Glyph; color: string; note?: string }[]; style?: StyleProp<ViewStyle> }) {
   const { dictionary } = useI18n();
-  return <View style={[styles.strip, style]}>
+  const scope = useAccentScope();
+  return <View style={[styles.strip, scopedSurface(scope), style]}>
     {items.map((item, index) => <View key={item.label} style={[styles.stripItem, index > 0 && styles.stripDivider]} accessible accessibilityLabel={item.value == null ? `${item.label}: ${dictionary.home.notTracked}` : `${item.label}: ${item.value}${item.unit ? ` ${item.unit}` : ''}${item.note ? `, ${item.note}` : ''}`}>
       <View style={styles.stripValue}><GlyphIcon glyph={item.glyph} size={15} color={item.color} style={{ marginRight: 2 }} /><Txt variant="metric" numberOfLines={1} color={item.value == null ? palette.inkFaint : undefined}>{item.value ?? '—'}</Txt>{item.unit && item.value != null ? <Txt variant="label" color={palette.inkMuted}>{item.unit}</Txt> : null}</View>
       <Txt variant="tab" color={palette.inkMuted} numberOfLines={1}>{item.label}</Txt>
@@ -104,35 +105,37 @@ export function WeekStrip({ days, onPressDay }: { days: PlanDay[]; onPressDay?: 
   const letters = dictionary.onboarding.days.weekdays;
   const copy = dictionary.plan;
   const statusLabel: Record<PlanDay['status'], string> = { completed: copy.completed, today: copy.today, upcoming: copy.upcoming, missed: copy.missed, rest: copy.rest, not_started: copy.notStarted };
-  return <View style={styles.week}>
+  const scope = useAccentScope();
+  return <View style={[styles.week, scopedSurface(scope)]}>
     {days.map((day) => {
-      const tone = dayTone[day.status];
+      const tone = day.status === 'today' ? { ...dayTone.today, bg: scope.accent, fg: scope.onAccent } : dayTone[day.status];
       const isToday = day.date === dayKey(new Date());
       return <Pressable key={day.date} onPress={onPressDay && day.workout ? () => { haptics.select(); onPressDay(day); } : undefined} accessibilityRole={day.workout ? 'button' : undefined}
         accessibilityLabel={`${letters[day.weekday]} ${parseDay(day.date).getDate()}, ${statusLabel[day.status]}${day.workout ? `, ${day.workout.name}` : ''}`} style={styles.weekDay}>
-        <Txt variant="tab" color={isToday ? palette.accent : palette.inkMuted} numberOfLines={1}>{letters[day.weekday]}</Txt>
-        <View style={[styles.weekDot, { backgroundColor: tone.bg }, day.status === 'upcoming' && styles.weekDotUpcoming, isToday && day.status !== 'today' && styles.weekDotRing]}>
+        <Txt variant="tab" color={isToday ? scope.accent : palette.inkMuted} numberOfLines={1}>{letters[day.weekday]}</Txt>
+        <View style={[styles.weekDot, { backgroundColor: tone.bg }, day.status === 'upcoming' && styles.weekDotUpcoming, isToday && day.status !== 'today' && [styles.weekDotRing, { borderColor: scope.accent }]]}>
           {tone.glyph ? <GlyphIcon glyph={mdi(tone.glyph)} size={15} color={tone.fg} /> : <Txt variant="row" color={tone.fg}>{parseDay(day.date).getDate()}</Txt>}
         </View>
-        <View style={[styles.weekMark, { backgroundColor: day.workout ? (day.status === 'completed' ? palette.success : palette.accent) : 'transparent' }]} />
+        <View style={[styles.weekMark, { backgroundColor: day.workout ? (day.status === 'completed' ? palette.success : scope.accent) : 'transparent' }]} />
       </Pressable>;
     })}
   </View>;
 }
 
-/** A Quick Start tile: a remote (admin-uploaded) image, or a bundled one for the offline fallback. */
-export interface QuickItem { key: string; label: string; uri?: string; asset?: AssetKey; onPress: () => void }
+/** A Quick Start tile with its admin-uploaded image. */
+export interface QuickItem { key: string; label: string; uri?: string; onPress: () => void }
 const QUICK_COLUMNS = 3;
 
 /** Story-style circular photo shortcuts. */
 export function QuickAccessRail({ items }: { items: QuickItem[] }) {
   // Invisible spacers complete the last row, so any number of tiles keeps the 3-column rhythm.
   const spacers = (QUICK_COLUMNS - (items.length % QUICK_COLUMNS)) % QUICK_COLUMNS;
+  const scope = useAccentScope();
   return <View style={styles.quickRow}>
     {items.map((item) => <PressableScale key={item.key} onPress={item.onPress} accessibilityLabel={item.label} containerStyle={styles.quickItem}>
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <LinearGradient colors={gradients.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.quickRing}>
-          <View style={styles.quickInner}>{item.uri ? <Image source={{ uri: item.uri }} style={styles.quickPhoto} contentFit="cover" cachePolicy="memory-disk" transition={150} /> : item.asset ? <AssetImage asset={item.asset} style={styles.quickPhoto} /> : null}</View>
+        <LinearGradient colors={scope.ring} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.quickRing}>
+          <View style={[styles.quickInner, scope.canvas ? { backgroundColor: scope.canvas } : null]}><RemoteImage uri={item.uri} style={styles.quickPhoto} /></View>
         </LinearGradient>
         <Txt variant="label" color={palette.ink} numberOfLines={1}>{item.label}</Txt>
       </View>
@@ -149,16 +152,17 @@ export function QuickAccessSkeleton({ count = 6 }: { count?: number }) {
 /** Photo workout card: copy sits on the photo's navy fade; glass bookmark + duration pills. */
 export function PhotoWorkoutCard({ workout, saved, onToggleSave, onPress, width = 240, height = 200 }: { workout: Workout; saved?: boolean; onToggleSave?: () => void; onPress: () => void; width?: number | `${number}%`; height?: number }) {
   const { muscle, difficulty, dictionary } = useLabels();
+  const scope = useAccentScope();
   return <PressableScale onPress={onPress} scaleTo={0.97} containerStyle={{ width }} accessibilityLabel={workout.name}>
     <View style={[styles.cardShadow, shadow(undefined, 0.9)]}><View style={[styles.card, { height }]}>
-      <ExerciseMedia media={workout.media} muscle={workout.muscleGroups[0]} fallback={workout.media.thumbnailUrl ? undefined : workoutImage(workout)} height={height} rounded={0} autoPlay={false} style={StyleSheet.absoluteFill} />
+      <ExerciseMedia media={workout.media} muscle={workout.muscleGroups[0]} height={height} rounded={0} autoPlay={false} style={StyleSheet.absoluteFill} />
       <LinearGradient colors={['rgba(8,16,27,0.05)', 'rgba(8,16,27,0.35)', 'rgba(8,16,27,0.96)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
       <View style={styles.cardTop}>
-        <View style={styles.cardDuration}><GlyphIcon glyph={mdi('timer-outline')} size={13} color={palette.accentSoft} /><Txt variant="label" color={palette.white}>{workout.estimatedMinutes} {dictionary.common.min}</Txt></View>
+        <View style={styles.cardDuration}><GlyphIcon glyph={mdi('timer-outline')} size={13} color={scope.accentSoft} /><Txt variant="label" color={palette.white}>{workout.estimatedMinutes} {dictionary.common.min}</Txt></View>
         <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
           {workout.locked ? <LockBadge small /> : null}
           {onToggleSave ? <Pressable onPress={() => { haptics.select(); onToggleSave(); }} hitSlop={10} accessibilityRole="button" accessibilityState={{ selected: !!saved }} accessibilityLabel={saved ? dictionary.home.saved : dictionary.home.save} style={styles.bookmark}>
-            <GlyphIcon glyph={mdi(saved ? 'bookmark' : 'bookmark-outline')} size={17} color={saved ? palette.accent : palette.white} />
+            <GlyphIcon glyph={mdi(saved ? 'bookmark' : 'bookmark-outline')} size={17} color={saved ? scope.accent : palette.white} />
           </Pressable> : null}
         </View>
       </View>
@@ -183,8 +187,9 @@ export function SummaryTile({ glyph, color, value, unit, label, note, style }: {
 
 /** A body/training metric; shows an honest "not tracked" state when HealthyMe has no value. */
 export function MetricTile({ label, value, unit, note, progress, color = palette.violet, style }: { label: string; value?: string; unit?: string; note?: string; progress?: number; color?: string; style?: StyleProp<ViewStyle> }) {
+  const scope = useAccentScope();
   const { dictionary } = useI18n();
-  return <View style={[styles.metric, shadow(undefined, 0.45), style]} accessible accessibilityLabel={`${label}: ${value ?? dictionary.home.notTracked}`}>
+  return <View style={[styles.metric, scopedSurface(scope), shadow(undefined, 0.45), style]} accessible accessibilityLabel={`${label}: ${value ?? dictionary.home.notTracked}`}>
     <Txt variant="small" color={palette.inkMuted} numberOfLines={1}>{label}</Txt>
     {value ? <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}><Txt variant="metric">{value}</Txt>{unit ? <Txt variant="label" color={palette.inkMuted}>{unit}</Txt> : null}</View>
       : <View style={styles.noData}><View style={styles.noDataDot} /><Txt variant="small" color={palette.inkFaint}>{dictionary.home.notTracked}</Txt></View>}
@@ -217,7 +222,7 @@ export function WaterCard({ ml, goalMl, onAdd, onRemove }: { ml: number; goalMl:
         <PressableScale onPress={onRemove} disabled={ml <= 0} accessibilityLabel={copy.removeWater} containerStyle={{ opacity: ml <= 0 ? 0.4 : 1 }}>
           <View style={styles.waterMinus}><GlyphIcon glyph={mdi('minus')} size={18} color={palette.accentSoft} /></View>
         </PressableScale>
-        <PressableScale onPress={onAdd} accessibilityLabel={copy.addWater} containerStyle={{ flex: 1 }}>
+        <PressableScale onPress={onAdd} haptic={null} accessibilityLabel={copy.addWater} containerStyle={{ flex: 1 }}>
           <View style={styles.waterAdd}><GlyphIcon glyph={mdi('cup-water')} size={18} color={palette.onAccent} /><Txt variant="button" color={palette.onAccent}>{copy.addWater}</Txt></View>
         </PressableScale>
       </View>

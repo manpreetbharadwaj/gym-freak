@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { ptApp } from './app/pt';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/pt.ts`. */
 const firstRun: Translation = {
   common: { next: 'Seguinte', back: 'Voltar', skip: 'Saltar', done: 'Concluído', continue: 'Continuar', search: 'Pesquisar' },
   splash: { tagline: 'Treina melhor. Move-te mais forte.' },
   intro: {
-    slides: [
-      { tag: 'Personalizado', title: 'Treino feito à tua medida', body: 'Os teus objetivos, experiência e estilo de vida moldam cada treino.' },
-      { tag: 'Guiado', title: 'Vê cada movimento com clareza', body: 'Demonstrações claras com as dicas que importam.' },
-      { tag: 'Progresso', title: 'Progresso que realmente vês', body: 'Sequências, estatísticas e recordes pessoais num só lugar.' },
-      { tag: 'Consistência', title: 'Pequenas vitórias. Todas as semanas.', body: 'Desafios semanais que mantêm o teu ritmo.' },
-    ],
     start: 'Vamos lá',
-    visual: {
-      goal: 'O teu objetivo', goalValue: 'Ganhar músculo', schedule: '4 dias / semana', level: 'Intermédio',
-      exercise: 'Agachamento goblet', reps: 'Reps', sets: 'Séries', muscle: 'Grupo muscular', muscleValue: 'Glúteos · Quadríceps', technique: 'Técnica', techniqueValue: 'Desce devagar',
-      thisWeek: 'Esta semana', workouts: 'Treinos', minutes: 'Minutos', personalBest: 'Novo recorde pessoal',
-      challenge: 'Desafio semanal', challengeValue: '3 de 4 treinos', streak: 'dias seguidos', badge: 'Medalha desbloqueada', badgeValue: 'Madrugador', complete: 'Treino concluído',
-    },
   },
   language: { title: 'Escolhe o teu idioma', body: 'Podes mudá-lo quando quiseres.', search: 'Pesquisar idioma', popular: 'Populares', all: 'Todos os idiomas', results: 'Resultados', noResults: 'Nenhum idioma corresponde a “{query}”.', continueIn: 'Continuar em {language}' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const pt = mergeTranslations(firstRun, ptApp, dashboard.pt, utilities.pt, growth.pt, activity.pt);
+export const pt = mergeTranslations(firstRun, ptApp, dashboard.pt, utilities.pt, growth.pt, activity.pt, nutrition.pt, sounds.pt, support.pt, socialShare.pt);
