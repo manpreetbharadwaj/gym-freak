@@ -1,20 +1,40 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { format, useI18n } from '@/i18n';
 import { Difficulty as Experience, DurationRange as Duration, Equipment, Gender, Goal, TrainingLocation as Environment } from '@/types/domain';
 import { CheckBadge, Glyph, GlyphIcon, mdi, Txt } from '@/components';
-import { AssetImage } from '@/components/AssetImage';
+import { RemoteImage } from '@/components/RemoteImage';
+import { ResistanceBandIcon } from '@/assets/icons/ResistanceBandIcon';
+import { tileFor } from '@/api/contentTiles';
+import { useContentTiles } from '@/hooks/queries';
+import { ContentSection } from '@/types/domain';
 import { AnimatedCard, PremiumInfoBadge, PremiumSelectableSurface, firstRunTheme } from '@/components/firstRun';
 import { WheelPicker } from '@/components/pickers';
 import { HEIGHT_RANGE, heightReadout, UnitToggle, WEIGHT_RANGE, WeightRuler, weightReadout } from '@/components/bodyMetrics';
 import { cmToFeetInches, feetInchesToCm, UnitSystem } from '@/utils/units';
-import { fonts, radius, Scene, useLayout } from '@/theme';
+import { fonts, palette, radius, Scene, typography, useLayout } from '@/theme';
 
 const GAP = 12;
 
+/**
+ * Photo for an onboarding option, from the admin (Admin → Onboarding questions). The options themselves stay
+ * in the app (each saves a profile value); without a photo the option shows a neutral surface.
+ */
+function useOptionPhoto() {
+  const tiles = useContentTiles();
+  return (section: ContentSection, key: string) => { const tile = tileFor(tiles.data, section, key); return { uri: tile?.imageUrl, fit: tile?.imageFit }; };
+}
+
+/**
+ * Column width from the grid's own measured width (falls back to the screen's content width before the first
+ * layout), so the same step lays out two columns full-screen and inside a narrower bottom sheet.
+ */
 function useGridWidth(columns = 2) {
   const { contentWidth } = useLayout();
-  return (contentWidth - GAP * (columns - 1)) / columns;
+  const [measured, setMeasured] = React.useState<number | null>(null);
+  const width = Math.floor(((measured ?? contentWidth) - GAP * (columns - 1)) / columns);
+  const onLayout = (e: LayoutChangeEvent) => { const w = e.nativeEvent.layout.width; setMeasured((prev) => (prev !== null && Math.abs(prev - w) < 1 ? prev : w)); };
+  return { width, onLayout };
 }
 
 /* ───────────── Goal ───────────── */
@@ -23,13 +43,14 @@ const goals = ['build-muscle', 'lose-fat', 'get-stronger', 'stay-fit', 'improve-
 
 export function GoalStep({ value, onChange }: { value?: Goal; onChange: (value: Goal) => void }) {
   const copy = useI18n().dictionary.onboarding.goal.options;
-  const width = useGridWidth();
-  return <View style={styles.grid}>{goals.map((id, index) => {
+  const { width, onLayout } = useGridWidth();
+  const photo = useOptionPhoto();
+  return <View style={styles.grid} onLayout={onLayout}>{goals.map((id, index) => {
     const selected = value === id;
     return <AnimatedCard key={id} delay={index * 30} style={{ width }}>
       <PremiumSelectableSurface selected={selected} accent={firstRunTheme.accent} onPress={() => onChange(id)} label={copy[id].title} style={[styles.goalCard, selected && styles.selectedCard]}>
         <View style={styles.between}>
-          <AssetImage asset={`goals/${id}`} contentFit="cover" style={styles.goalPhoto} />
+          <RemoteImage uri={photo('onboarding_goal', id).uri} fit={photo('onboarding_goal', id).fit} glyph={mdi('target')} style={styles.goalPhoto} />
           <CheckBadge visible={selected} color={firstRunTheme.accent} size={22} ring dark />
         </View>
         <View style={styles.goalText}>
@@ -52,12 +73,13 @@ const levels = [
 export function ExperienceStep({ value, onChange }: { value?: Experience; onChange: (value: Experience) => void }) {
   const copy = useI18n().dictionary.onboarding.experience.options;
   const { compact } = useLayout();
-  const photo = compact ? 76 : 88;
+  const size = compact ? 76 : 88;
+  const photo = useOptionPhoto();
   return <View style={styles.stack}>{levels.map((level, index) => {
     const selected = value === level.id;
     return <AnimatedCard key={level.id} delay={index * 45}>
       <PremiumSelectableSurface selected={selected} accent={firstRunTheme.accent} onPress={() => onChange(level.id)} label={copy[level.id].title} style={[styles.levelCard, selected && styles.selectedCard]}>
-        <AssetImage asset={`levels/${level.id}`} contentFit="cover" style={{ width: photo, height: photo, borderRadius: radius.sm }} />
+        <RemoteImage uri={photo('onboarding_level', level.id).uri} fit={photo('onboarding_level', level.id).fit} glyph={mdi('signal-cellular-' + level.intensity)} style={{ width: size, height: size, borderRadius: radius.sm }} />
         <View style={styles.levelCopy}>
           <View style={styles.intensity} importantForAccessibility="no-hide-descendants">{[1, 2, 3].map((bar) => <View key={bar} style={[styles.intensityBar, { height: 4 + bar * 3, backgroundColor: bar <= level.intensity ? firstRunTheme.accent : firstRunTheme.lineStrong }]} />)}</View>
           <Txt variant="h3" color={firstRunTheme.text} style={styles.optionTitle}>{copy[level.id].title}</Txt>
@@ -76,6 +98,8 @@ export function LocationStep({ value, onChange, accent }: { value?: Environment;
   const { compact, tiny } = useLayout();
   const height = tiny ? 84 : compact ? 96 : 112;
   const options: Environment[] = ['gym', 'home', 'both'];
+  const photo = useOptionPhoto();
+  const place = (key: 'gym' | 'home', style: object) => <RemoteImage uri={photo('onboarding_location', key).uri} fit={photo('onboarding_location', key).fit} glyph={mdi(key === 'gym' ? 'dumbbell' : 'home-outline')} style={style} />;
   return <View style={styles.stack}>{options.map((id, index) => {
     const selected = value === id;
     return <AnimatedCard key={id} delay={index * 45}>
@@ -83,10 +107,10 @@ export function LocationStep({ value, onChange, accent }: { value?: Environment;
         <View style={[styles.locationPhoto, { height }]}>
           {id === 'both'
             ? <View style={styles.locationPair}>
-                <AssetImage asset="locations/gym" contentFit="cover" style={styles.locationHalf} />
-                <AssetImage asset="locations/home" contentFit="cover" style={styles.locationHalf} />
+                {place('gym', styles.locationHalf)}
+                {place('home', styles.locationHalf)}
               </View>
-            : <AssetImage asset={`locations/${id}`} contentFit="cover" style={styles.fullPhoto} />}
+            : place(id, styles.fullPhoto)}
         </View>
         <View style={styles.locationLabel}>
           <View style={styles.flexCopy}>
@@ -156,7 +180,7 @@ const durations: { id: Duration; glyph: Glyph }[] = [
 export function DurationStep({ value, onChange, scene }: { value?: Duration; onChange: (value: Duration) => void; scene: Scene }) {
   const { dictionary } = useI18n();
   const copy = dictionary.onboarding.duration;
-  const width = useGridWidth();
+  const { width, onLayout } = useGridWidth();
   return <View style={styles.dataStack}>
     <AnimatedCard style={styles.durationReadout}>
       <View style={[styles.smallIcon, { backgroundColor: `${scene.accent}20` }]}><GlyphIcon glyph={mdi('timer-outline')} size={22} color={firstRunTheme.accent} /></View>
@@ -168,7 +192,7 @@ export function DurationStep({ value, onChange, scene }: { value?: Duration; onC
         </View>
       </View>
     </AnimatedCard>
-    <View style={styles.grid}>{durations.map((item, index) => {
+    <View style={styles.grid} onLayout={onLayout}>{durations.map((item, index) => {
       const selected = item.id === value;
       return <AnimatedCard key={item.id} delay={index * 35} style={{ width }}>
         <PremiumSelectableSurface selected={selected} accent={firstRunTheme.accent} onPress={() => onChange(item.id)} label={`${item.id} ${copy.unit}`} style={[styles.durationCard, selected && styles.selectedCard]}>
@@ -189,31 +213,23 @@ export function DurationStep({ value, onChange, scene }: { value?: Duration; onC
 
 /* ───────────── Equipment ───────────── */
 
-// The stored `bands` value is intentionally separate from the photo registry key.
 const equipment = [
-  { id: 'dumbbells', asset: 'equipment/dumbbells' },
-  { id: 'barbell', asset: 'equipment/barbell' },
-  { id: 'bench', asset: 'equipment/bench' },
-  { id: 'cable-machine', asset: 'equipment/cable-machine' },
-  { id: 'bands', asset: 'equipment/resistance-bands' },
-  { id: 'smith-machine', asset: 'equipment/smith-machine' },
-  { id: 'pull-up-bar', asset: 'equipment/pull-up-bar' },
-  { id: 'machines', asset: 'equipment/machines' },
-  { id: 'bodyweight', asset: 'equipment/bodyweight' },
-  { id: 'full-gym', asset: 'equipment/full-gym' },
+  { id: 'dumbbells' }, { id: 'barbell' }, { id: 'bench' }, { id: 'cable-machine' }, { id: 'bands' },
+  { id: 'smith-machine' }, { id: 'pull-up-bar' }, { id: 'machines' }, { id: 'bodyweight' }, { id: 'full-gym' },
 ] as const;
 
 export function EquipmentStep({ selected, onToggle, scene }: { selected: Equipment[]; onToggle: (value: Equipment) => void; scene: Scene }) {
   const copy = useI18n().dictionary.onboarding.equipment;
-  const width = useGridWidth();
+  const { width, onLayout } = useGridWidth();
+  const photo = useOptionPhoto();
   return <View style={styles.equipmentStack}>
     <PremiumInfoBadge glyph={mdi('check-circle-outline')} label={format(copy.selected, { count: selected.length })} color={firstRunTheme.accent} />
-    <View style={styles.grid}>{equipment.map((item, index) => {
+    <View style={styles.grid} onLayout={onLayout}>{equipment.map((item, index) => {
       const selectedItem = selected.includes(item.id);
       return <AnimatedCard key={item.id} delay={Math.min(index * 25, 150)} style={{ width }}>
         <PremiumSelectableSurface selected={selectedItem} accent={firstRunTheme.accent} role="checkbox" onPress={() => onToggle(item.id)} label={copy.options[item.id]} style={[styles.equipCard, selectedItem && styles.selectedCard]}>
           <View style={styles.equipVisual}>
-            <AssetImage asset={item.asset} contentFit="contain" style={styles.equipPhoto} />
+            <RemoteImage uri={photo('onboarding_equipment', item.id).uri} fit={photo('onboarding_equipment', item.id).fit ?? 'contain'} glyph={mdi('dumbbell')} placeholder={item.id === 'bands' ? <ResistanceBandIcon /> : undefined} backdrop={palette.productBackdrop} style={styles.equipPhoto} />
             <View style={styles.equipCheck}><CheckBadge visible={selectedItem} color={firstRunTheme.accent} size={22} ring dark /></View>
           </View>
           <Txt variant="h3" color={firstRunTheme.text} style={styles.equipLabel}>{copy.options[item.id]}</Txt>
@@ -346,7 +362,7 @@ const styles = StyleSheet.create({
   daysReadout: { gap: 14, alignItems: 'flex-start', paddingTop: 4 },
   numberRow: { flexDirection: 'row', alignItems: 'baseline', gap: 10 },
   /** Age / height / weight pickers: the value being chosen is the screen’s focal figure. */
-  metricNumber: { fontFamily: fonts.display, fontSize: 52, lineHeight: 60, letterSpacing: -1.6, fontVariant: ['tabular-nums'] },
+  metricNumber: { ...typography.timer, lineHeight: 60 },
   metricNumberCompact: { fontFamily: fonts.display, fontSize: 42, lineHeight: 50, letterSpacing: -1.2, fontVariant: ['tabular-nums'] },
   numberUnit: { flexShrink: 1 },
   dayChoices: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },

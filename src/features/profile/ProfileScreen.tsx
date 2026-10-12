@@ -1,5 +1,6 @@
+import { logoPalette } from '@/theme/brandAccent';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -13,24 +14,29 @@ import { GradientButton } from '@/components';
 import { useUnitSystem } from '@/hooks/useUnits';
 import { formatHeight, formatWeight } from '@/utils/units';
 import { Card, Header, Screen, Section } from '@/components/layout';
-import { useAccess, usePreferences, useProfile, useUpdateBodyMetrics, useUpdatePreferences } from '@/hooks/queries';
+import { useAccess, usePreferences, useProfile, useUpdateBodyMetrics, useUpdatePreferences, useBodyFat, useNutrition } from '@/hooks/queries';
 import { format, useI18n } from '@/i18n';
 import { RootStackParamList } from '@/navigation/types';
 import { useSession } from '@/store/session';
 import { gradients, palette, radius, scenes, shadow, useLayout } from '@/theme';
 import { Access } from '@/types/domain';
 import { AssetImage } from '@/components/AssetImage';
+import { setSoundEffectsEnabled } from '@/services/sounds';
 import { AppImages } from '@/assets';
+import { useDialog } from '@/components/dialogs/DialogProvider';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export function ProfileScreen() {
+  const dialog = useDialog();
   const navigation = useNavigation<Nav>();
   const { account, signOut } = useSession();
   const { meta } = useI18n();
   const { dictionary, difficulty, equipment } = useLabels();
   const copy = dictionary.profile;
   const profile = useProfile();
+  const nutrition = useNutrition();
+  const bodyFat = useBodyFat();
   const access = useAccess();
   const prefs = usePreferences();
   const updatePrefs = useUpdatePreferences();
@@ -40,7 +46,7 @@ export function ProfileScreen() {
   const goalTitle = p?.goal ? dictionary.onboarding.goal.options[p.goal].title : '—';
   const initials = `${account?.firstName?.[0] ?? ''}${account?.lastName && account.lastName !== '-' ? account.lastName[0] : ''}`.toUpperCase() || (account?.email[0] ?? '?').toUpperCase();
 
-  const logout = () => Alert.alert(copy.logoutConfirm, undefined, [{ text: dictionary.common.cancel, style: 'cancel' }, { text: copy.logout, style: 'destructive', onPress: () => signOut() }]);
+  const logout = () => { void dialog.showDestructiveConfirm({ title: copy.logoutConfirm, cancelLabel: dictionary.common.cancel, confirmLabel: copy.logout, onConfirm: signOut }); };
 
   const unitsLabel = prefs.data?.units === 'imperial' ? dictionary.units.imperial : prefs.data?.units === 'metric' ? dictionary.units.metric : `${dictionary.units.auto} · ${system === 'imperial' ? dictionary.units.imperial : dictionary.units.metric}`;
 
@@ -84,6 +90,10 @@ export function ProfileScreen() {
           <Pref label={copy.weight} value={formatWeight(p?.weightKg ?? p?.bodyWeightKg, system)} glyph={mdi('scale-bathroom')} color={palette.pink} />
         </Card>
       </PressableScale>
+      <Card padded={false} style={[styles.menu, { marginTop: 12 }]}>
+        <LinkRow title={dictionary.nutrition.title} value={nutrition.data?.target ? `${nutrition.data.target.calories.toLocaleString()} ${dictionary.nutrition.kcal}` : undefined} glyph={mdi('fire')} color={palette.orange} onPress={() => navigation.navigate('NutritionGoals')} />
+        <LinkRow title={dictionary.bodyComp.title} value={bodyFat.data?.latest ? `${bodyFat.data.latest.percent.toFixed(1)} %` : dictionary.bodyComp.notMeasured} glyph={mdi('human')} color={palette.accent} onPress={() => navigation.navigate('BodyComposition')} />
+      </Card>
     </Section>
 
     <Section title={copy.activity}><Card padded={false} style={[styles.menu, { marginTop: 0 }]}>
@@ -100,6 +110,7 @@ export function ProfileScreen() {
         <LinkRow title={copy.notifications} glyph={mdi('bell-outline')} color={palette.orange} onPress={() => navigation.navigate('NotificationSettings')} />
         <ToggleRow title={copy.restTimer} glyph={mdi('timer-sand')} color={palette.blue} value={prefs.data?.restTimerEnabled ?? true} onChange={(restTimerEnabled) => updatePrefs.mutate({ restTimerEnabled })} />
         <ToggleRow title={copy.audioCues} subtitle={copy.audioCuesBody} glyph={mdi('volume-high')} color="#0FA89C" value={prefs.data?.audioCues ?? true} onChange={(audioCues) => updatePrefs.mutate({ audioCues })} />
+        <ToggleRow title={copy.soundEffects} subtitle={copy.soundEffectsBody} glyph={mdi('volume-high')} color={palette.orange} value={prefs.data?.soundEffects ?? true} onChange={(soundEffects) => { setSoundEffectsEnabled(soundEffects); updatePrefs.mutate({ soundEffects }); }} />
         <LinkRow title={copy.units} value={unitsLabel} glyph={mdi('ruler')} color={palette.pink} onPress={() => navigation.navigate('Units')} />
         <LinkRow title={dictionary.activity.settings} glyph={mdi('run')} color={palette.aqua} onPress={() => navigation.navigate('ActivitySettings')} />
         <LinkRow title={dictionary.activity.connectedApps} glyph={mdi('heart-pulse')} color={palette.pink} onPress={() => navigation.navigate('ConnectedHealth')} />
@@ -110,6 +121,16 @@ export function ProfileScreen() {
     <Section title={copy.utilities}><Card padded={false} style={[styles.menu, { marginTop: 0 }]}>
       <LinkRow title={copy.waterIntake} glyph={mdi('water-outline')} color={palette.sky} onPress={() => navigation.navigate('WaterIntake')} />
       <LinkRow title={copy.stopwatch} glyph={mdi('timer-outline')} color={palette.violet} onPress={() => navigation.navigate('Stopwatch')} />
+      <LinkRow title="Notes & Reminders" glyph={mdi('file-document-outline')} color={palette.yellow} onPress={() => navigation.navigate('NotesReminders')} />
+    </Card></Section>
+
+    <Section title={copy.supportFeedback}><Card padded={false} style={[styles.menu, { marginTop: 0 }]}>
+      <LinkRow title={copy.helpSupport} glyph={mdi('lifebuoy')} color={logoPalette.orange} onPress={() => navigation.navigate('HelpSupport')} />
+      <LinkRow title={copy.sendFeedback} glyph={mdi('message-outline')} color={logoPalette.amber} onPress={() => navigation.navigate('SendFeedback')} />
+    </Card></Section>
+
+    <Section title={copy.business}><Card padded={false} style={[styles.menu, { marginTop: 0 }]}>
+      <LinkRow title={copy.advertise} glyph={mdi('handshake-outline')} color={logoPalette.gold} onPress={() => navigation.navigate('PartnerWithUs')} />
     </Card></Section>
 
     <Section title={copy.support}><Card padded={false} style={[styles.menu, { marginTop: 0 }]}>

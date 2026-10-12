@@ -1,32 +1,44 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Pressable, Share, StyleSheet, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BottomBar, GlyphIcon, GradientButton, IconButton, MeshBackground, mdi, Txt } from '@/components';
 import { StatTile } from '@/components/cards';
-import { useProfile } from '@/hooks/queries';
+import { useProfile, useReferral } from '@/hooks/queries';
 import { format, useI18n } from '@/i18n';
 import { RootScreenProps } from '@/navigation/types';
 import { gradients, gutter, palette, radius, scenes, shadow } from '@/theme';
 import { haptics } from '@/utils/haptics';
+import { ShareComposer } from '@/features/sharing';
 
 const scene = scenes.lime;
 const confetti = ['#FFE27A', '#FF6FAE', '#7C4DFF', '#3FB6F5', '#9BE22D', '#FF9433', '#14C2B4', '#FFFFFF'];
 
 export function WorkoutCompleteScreen({ route, navigation }: RootScreenProps<'WorkoutComplete'>) {
   const { name, minutes, sets, exercises, newAchievements } = route.params;
-  const { dictionary } = useI18n();
+  const { dictionary, language } = useI18n();
   const copy = dictionary.complete;
   const insets = useSafeAreaInsets();
   const profile = useProfile();
+  const referral = useReferral();
+  const [sharing, setSharing] = useState(false);
   const reveal = useRef(new Animated.Value(0)).current;
   // Rough MET-based estimate (moderate resistance training ≈ 5 MET); only shown when we know body weight.
   const kcal = profile.data?.bodyWeightKg ? Math.round(5 * profile.data.bodyWeightKg * (minutes / 60)) : undefined;
 
   useEffect(() => { haptics.success(); Animated.spring(reveal, { toValue: 1, useNativeDriver: true, speed: 8, bounciness: 12 }).start(); }, [reveal]);
 
-  const share = () => Share.share({ message: format(copy.shareMessage, { name, sets, minutes }) }).catch(() => undefined);
+  const shareCard = {
+    kind: 'workout' as const, title: name, eyebrow: dictionary.socialShare.workoutEyebrow,
+    date: new Date().toLocaleDateString(language, { dateStyle: 'medium' }), statement: dictionary.socialShare.stronger,
+    metrics: [
+      { id: 'duration', label: copy.duration, value: `${minutes} ${dictionary.common.min}` },
+      { id: 'exercises', label: copy.exercises, value: String(exercises) },
+      { id: 'sets', label: copy.sets, value: String(sets) },
+      ...(kcal == null ? [] : [{ id: 'calories', label: copy.calories, value: `${kcal} kcal`, estimated: true, sensitive: true }]),
+    ],
+  };
 
   return <View style={[styles.root, { backgroundColor: scene.background }]}>
     <StatusBar style="light" />
@@ -57,10 +69,11 @@ export function WorkoutCompleteScreen({ route, navigation }: RootScreenProps<'Wo
     </View>
     <BottomBar background={scene.background}>
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        <IconButton glyph={mdi('share-variant')} size="cta" label={copy.share} onPress={share} />
+        <IconButton glyph={mdi('share-variant')} size="cta" label={copy.share} onPress={() => setSharing(true)} />
         <GradientButton label={copy.done} icon="checkmark" gradient={scene.gradient} onPress={() => navigation.popToTop()} style={{ flex: 1 }} />
       </View>
     </BottomBar>
+    <ShareComposer visible={sharing} onClose={() => setSharing(false)} card={shareCard} referral={referral.data} />
   </View>;
 }
 

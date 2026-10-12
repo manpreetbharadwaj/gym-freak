@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Linking, Platform, StyleSheet, View } from 'react-native';
+import { Linking, Platform, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { GlyphIcon, GradientButton, mdi, SecondaryButton, Txt } from '@/components';
 import { Card, Header, Screen } from '@/components/layout';
@@ -11,11 +11,13 @@ import { healthSync, useHealthSync } from '@/services/health/sync';
 import { useRepos } from '@/store/session';
 import { palette, radius, scenes } from '@/theme';
 import { HealthConnectionStatus } from '@/types/domain';
+import { useDialog } from '@/components/dialogs/DialogProvider';
 
 const STATUS_COLOR: Record<HealthConnectionStatus | 'SYNCING', string> = { CONNECTED: palette.success, NOT_CONNECTED: palette.inkMuted, PERMISSION_LIMITED: palette.orange, ERROR: palette.danger, SYNCING: palette.blue };
 
 /** Settings → Connected Health Apps. Shows only real states — never a "Connected" the platform hasn't granted. */
 export function ConnectedHealthScreen({ navigation }: RootScreenProps<'ConnectedHealth'>) {
+  const dialog = useDialog();
   const { dictionary, language } = useI18n();
   const copy = dictionary.health;
   const { gym } = useRepos();
@@ -46,10 +48,7 @@ export function ConnectedHealthScreen({ navigation }: RootScreenProps<'Connected
   const run = async (fn: () => Promise<unknown>) => { setBusy(true); try { await fn(); } finally { setBusy(false); refresh(); invalidate(); server.refetch(); } };
   const connect = () => run(() => healthSync.connect(gym));
   const syncNow = () => run(() => healthSync.run(gym, { force: true }));
-  const disconnect = () => Alert.alert(format(copy.disconnectTitle, { provider: name }), `${copy.disconnectBody}${Platform.OS === 'ios' ? `\n\n${copy.disconnectIos}` : ''}`, [
-    { text: dictionary.common.cancel, style: 'cancel' },
-    { text: copy.disconnect, style: 'destructive', onPress: () => run(() => healthSync.disconnect(gym)) },
-  ]);
+  const disconnect = () => { void dialog.showDestructiveConfirm({ title: format(copy.disconnectTitle, { provider: name }), description: `${copy.disconnectBody}${Platform.OS === 'ios' ? `\n\n${copy.disconnectIos}` : ''}`, cancelLabel: dictionary.common.cancel, confirmLabel: copy.disconnect, onConfirm: () => run(() => healthSync.disconnect(gym)) }); };
 
   return <Screen scene={scenes.violet} header={<Header title={copy.title} onBack={() => navigation.goBack()} />}>
     <Txt variant="body" color={palette.inkSoft}>{copy.explain}</Txt>

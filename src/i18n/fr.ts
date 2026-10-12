@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { frApp } from './app/fr';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/fr.ts`. */
 const firstRun: Translation = {
   common: { next: 'Suivant', back: 'Retour', skip: 'Passer', done: 'Terminé', continue: 'Continuer', search: 'Rechercher' },
   splash: { tagline: 'Entraîne-toi mieux. Bouge plus fort.' },
   intro: {
-    slides: [
-      { tag: 'Personnalisé', title: 'Un entraînement fait pour toi', body: 'Tes objectifs, ton expérience et ton rythme de vie façonnent chaque séance.' },
-      { tag: 'Guidé', title: 'Chaque mouvement, en clair', body: 'Des démos claires avec les consignes qui comptent.' },
-      { tag: 'Progrès', title: 'Des progrès que tu vois vraiment', body: 'Séries, stats et records perso au même endroit.' },
-      { tag: 'Régularité', title: 'Petites victoires. Chaque semaine.', body: 'Des défis hebdo pour garder ton élan.' },
-    ],
     start: 'C’est parti',
-    visual: {
-      goal: 'Ton objectif', goalValue: 'Prendre du muscle', schedule: '4 jours / semaine', level: 'Intermédiaire',
-      exercise: 'Goblet squat', reps: 'Reps', sets: 'Séries', muscle: 'Groupe musculaire', muscleValue: 'Fessiers · Quadriceps', technique: 'Technique', techniqueValue: 'Descends lentement',
-      thisWeek: 'Cette semaine', workouts: 'Séances', minutes: 'Minutes', personalBest: 'Nouveau record perso',
-      challenge: 'Défi de la semaine', challengeValue: '3 séances sur 4', streak: 'jours d’affilée', badge: 'Badge débloqué', badgeValue: 'Lève-tôt', complete: 'Séance terminée',
-    },
   },
   language: { title: 'Choisis ta langue', body: 'Tu peux la changer à tout moment.', search: 'Rechercher une langue', popular: 'Populaires', all: 'Toutes les langues', results: 'Résultats', noResults: 'Aucune langue ne correspond à « {query} ».', continueIn: 'Continuer en {language}' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const fr = mergeTranslations(firstRun, frApp, dashboard.fr, utilities.fr, growth.fr, activity.fr);
+export const fr = mergeTranslations(firstRun, frApp, dashboard.fr, utilities.fr, growth.fr, activity.fr, nutrition.fr, sounds.fr, support.fr, socialShare.fr);

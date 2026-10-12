@@ -140,6 +140,8 @@ export interface TrainingPlan {
   daysPerWeek: number;
   locked: boolean;
   days: { dayNumber: number; workout: Workout }[];
+  /** Admin-uploaded cover (HealthyMe plan media). */
+  media?: Media;
 }
 
 /** `not_started`: a day earlier in the week than the plan's start (never counted as missed). */
@@ -293,6 +295,8 @@ export interface DeviceRegistration {
   timezone: string;
   locale: string;
   appVersion: string;
+  /** ISO 3166-1 alpha-2 region from the device settings, for country-targeted pushes. */
+  country?: string | null;
 }
 
 /** Stored per account in HealthyMe (`/me/gym/notification-preferences`). */
@@ -316,8 +320,28 @@ export interface Preferences {
   restTimerEnabled: boolean;
   defaultRestSeconds: number;
   audioCues: boolean;
+  /** In-app sound effects (e.g. the water-added sound). Device-only; notification sounds follow the OS. */
+  soundEffects: boolean;
   notifications: NotificationPreferences;
 }
+
+export type ReminderRepeatType = 'ONCE' | 'DAILY' | 'WEEKDAYS' | 'WEEKLY' | 'MONTHLY' | 'CUSTOM';
+export type ReminderStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
+export interface ReminderCategory { id: string; userId?: string | null; systemKey?: string | null; name: string; icon: string; color: string; description?: string | null; enabled: boolean; sortOrder: number }
+export interface PersonalNote { id: string; clientId: string; categoryId?: string | null; title: string; description?: string | null; pinned: boolean; archived: boolean; revision: number; createdAt: string; updatedAt: string }
+export interface PersonalReminder {
+  id: string; clientId: string; noteId?: string | null; categoryId?: string | null; title: string; description?: string | null;
+  scheduledAt: string; timezone: string; repeatType: ReminderRepeatType; recurrence: { weekdays?: number[]; interval?: number; unit?: 'day' | 'week' | 'month' };
+  endAt?: string | null; advanceMinutes: number; notificationEnabled: boolean; hideDescriptionOnLock: boolean; status: ReminderStatus; lastCompletedAt?: string | null; revision: number; createdAt: string; updatedAt: string;
+}
+export interface ReminderCompletion { id: string; reminderId: string; occurrenceAt: string; completedAt: string; source: string }
+export interface ReminderSnooze { id: string; reminderId: string; originalScheduledAt: string; snoozedUntil: string; minutes: number; createdAt: string }
+export interface OrganizerSnapshot {
+  syncedAt: string; categories: ReminderCategory[]; notes: PersonalNote[]; reminders: PersonalReminder[]; completions: ReminderCompletion[]; snoozes: ReminderSnooze[];
+  config?: { enabled: boolean; allowedRepeatPatterns: ReminderRepeatType[]; notificationTemplates?: Record<string, unknown> };
+}
+export type NoteInput = Pick<PersonalNote, 'clientId' | 'title'> & Partial<Pick<PersonalNote, 'description' | 'categoryId' | 'pinned' | 'archived'>>;
+export type ReminderInput = Pick<PersonalReminder, 'clientId' | 'title' | 'scheduledAt' | 'timezone' | 'repeatType'> & Partial<Pick<PersonalReminder, 'description' | 'noteId' | 'categoryId' | 'recurrence' | 'endAt' | 'advanceMinutes' | 'notificationEnabled' | 'hideDescriptionOnLock' | 'status'>>;
 
 export type FavoriteTarget = 'exercise' | 'workout' | 'story';
 
@@ -373,7 +397,18 @@ export interface CheckoutResult { checkoutId: string; status: 'GRANTED' | 'PENDI
 /** Server-decided gate for an exercise (shared links never decide access). */
 export interface ExerciseAccess { exerciseId: string; access: 'FREE' | 'PREMIUM'; userHasAccess: boolean }
 
-export type ShareEventType = 'exercise_shared' | 'exercise_share_opened' | 'exercise_share_signup' | 'shared_exercise_viewed' | 'shared_exercise_premium_locked' | 'shared_exercise_upgrade_started' | 'shared_exercise_upgrade_completed';
+export type ShareEventType =
+  | 'exercise_shared' | 'exercise_share_opened' | 'exercise_share_signup'
+  | 'shared_exercise_viewed' | 'shared_exercise_premium_locked' | 'shared_exercise_upgrade_started' | 'shared_exercise_upgrade_completed'
+  | 'share_screen_opened' | 'share_card_generated' | 'share_platform_selected' | 'share_sheet_opened'
+  | 'share_link_copied' | 'share_image_saved' | 'achievement_share_initiated';
+export interface ShareEventDetails {
+  platform?: string;
+  contentType?: 'workout' | 'activity' | 'progress' | 'achievement' | 'referral';
+  contentId?: string;
+  source?: string;
+  eventId?: string;
+}
 
 /* ───────────── Activity tracking (FREE for every user) ───────────── */
 
@@ -481,3 +516,53 @@ export interface Fitness {
 /** Home "Quick Start" tile (admin-managed). `target` is what tapping opens. */
 export type QuickStartTarget = { type: 'muscle'; muscle: string } | { type: 'workout'; id: string } | { type: 'exercise'; id: string };
 export interface QuickStartTile { id: string; title: string; imageUrl?: string; target: QuickStartTarget }
+
+/**
+ * Admin-managed image tiles for fixed vocabularies (HealthyMe `GET /v1/app/content-tiles`): Explore's muscle /
+ * goal / equipment tiles and the photos on the onboarding questions. `key` is the vocabulary value the tile
+ * stands for; `title` is an admin label override (the app's own label otherwise).
+ */
+export type ContentSection = 'explore_muscle' | 'explore_goal' | 'explore_equipment' | 'onboarding_goal' | 'onboarding_level' | 'onboarding_location' | 'onboarding_equipment';
+export interface ContentTile { id: string; key: string; title?: string; imageUrl: string; imageWidth?: number; imageHeight?: number; imageFit: 'cover' | 'contain' }
+export interface ContentTiles { version: string; sections: Partial<Record<ContentSection, ContentTile[]>> }
+
+/** One admin-managed first-launch onboarding card (HealthyMe `GET /v1/app/onboarding`), already localized. */
+export interface OnboardingCard {
+  id: string;
+  tag?: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  /** Source pixel size, when known (the hero keeps the image's aspect ratio inside a fixed frame). */
+  imageWidth?: number;
+  imageHeight?: number;
+  imageFit: 'cover' | 'contain';
+  backgroundColor?: string;
+  gradient?: { colors: string[]; angle: number };
+  textColor: string;
+  accentColor?: string;
+}
+export interface OnboardingContent { version: string; locale: string; cards: OnboardingCard[] }
+
+/** Daily nutrition targets from HealthyMe (`GET /me/gym/nutrition`). Every value is an estimate from profile data. */
+export type CalcSex = 'male' | 'female';
+export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'very' | 'extra';
+export type NutritionMissing = 'weight' | 'height' | 'age' | 'sex' | 'activityLevel';
+export interface NutritionTarget { source: 'AUTO' | 'MANUAL'; calories: number; proteinG: number; carbsG: number; fatG: number; macroKcal: number; since: string; policyVersion: number | null }
+export interface NutritionSummary {
+  status: 'ready' | 'needs_input' | 'not_applicable';
+  missing?: NutritionMissing[];
+  reason?: 'under_18' | 'out_of_range';
+  target: NutritionTarget | null;
+  estimate: { calories: number; bmr: number; tdee: number; adjustmentKcal: number; proteinG: number; carbsG: number; fatG: number; proteinGPerKg: number; proteinBasisKg: number; medicalCaution: boolean } | null;
+  inputs: { weightKg: number | null; heightCm: number | null; age: number | null; sex: CalcSex | null; activityLevel: ActivityLevel | null; goal: string | null; medicalCaution: boolean };
+  policy: { version: number; source: 'database' | 'bundled'; features: { bodyComposition: boolean; healthImport: boolean } };
+  /** Gym Freak has no food log yet: intake is never shown as a number. */
+  intake: { tracked: false; consumedKcal: null };
+}
+export interface NutritionHistoryEntry { id: string; source: 'AUTO' | 'MANUAL'; calories: number; proteinG: number; carbsG: number; fatG: number; policyVersion: number | null; createdAt: string }
+
+export type BodyFatMethod = 'MANUAL' | 'NAVY' | 'HEALTH';
+export interface BodyFatMeasurement { id: string; percent: number; measuredAt: string; method: BodyFatMethod; estimated: boolean; source: string | null; notes: string | null; provider: string | null }
+export interface BodyFatSummary { enabled: boolean; healthImport: boolean; latest: BodyFatMeasurement | null; items: BodyFatMeasurement[] }
+export interface BodyFatReading { externalId: string; value: number; measuredAt: string; source?: string | null }

@@ -63,3 +63,12 @@ export function formatRelativeDay(iso: string, locale: string, now = new Date())
   }
   return date.toLocaleDateString(locale, { day: 'numeric', month: 'short' });
 }
+
+/** YYYY-MM-DD (local date) → ISO at local noon, so the day never shifts across time zones. Null if invalid or in the future. */
+export function dateInput(value: string, now = Date.now()) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!m) return null;
+  const date = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12);
+  if (Number.isNaN(date.getTime()) || date.getMonth() !== Number(m[2]) - 1 || date.getTime() > now + 86_400_000) return null;
+  return date.toISOString();
+}

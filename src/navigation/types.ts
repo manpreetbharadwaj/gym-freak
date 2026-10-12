@@ -1,3 +1,4 @@
+import type { SupportCategory } from '@/types/support';
 import { NavigatorScreenParams } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { ActivityType } from '@/types/domain';
@@ -22,6 +23,10 @@ export type RootStackParamList = {
   StoryViewer: { category?: string; startId?: string };
   Upgrade: { onboarding?: boolean } | undefined;
   TrainingPreferences: undefined;
+  /** Daily calorie / macro targets (estimates) and their calculation details. */
+  NutritionGoals: undefined;
+  /** Profile → Body composition (body fat history, manual / Navy / health entries). */
+  BodyComposition: undefined;
   NotificationSettings: undefined;
   LanguageSettings: undefined;
   Favorites: undefined;
@@ -31,6 +36,13 @@ export type RootStackParamList = {
   /** Free utilities (Settings → Utilities); never gated by Pro or trial. */
   WaterIntake: undefined;
   Stopwatch: undefined;
+  NotesReminders: { reminderId?: string } | undefined;
+  /** Profile → Support & Feedback / Business & Partnerships. */
+  HelpSupport: undefined;
+  SupportNewTicket: { category?: SupportCategory } | undefined;
+  SupportTicket: { ticketId: string };
+  SendFeedback: undefined;
+  PartnerWithUs: undefined;
   ReferEarn: undefined;
   /** Profile & settings (reached from the Home avatar and the Progress header). */
   Profile: undefined;

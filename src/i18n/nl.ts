@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { nlApp } from './app/nl';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/nl.ts`. */
 const firstRun: Translation = {
   common: { next: 'Volgende', back: 'Terug', skip: 'Overslaan', done: 'Klaar', continue: 'Doorgaan', search: 'Zoeken' },
   splash: { tagline: 'Train slimmer. Beweeg sterker.' },
   intro: {
-    slides: [
-      { tag: 'Persoonlijk', title: 'Training rond jou gebouwd', body: 'Je doelen, ervaring en levensstijl bepalen elke workout.' },
-      { tag: 'Begeleid', title: 'Zie elke beweging helder', body: 'Duidelijke demo’s met de tips die ertoe doen.' },
-      { tag: 'Vooruitgang', title: 'Vooruitgang die je echt ziet', body: 'Reeksen, statistieken en persoonlijke records op één plek.' },
-      { tag: 'Volhouden', title: 'Kleine winst. Elke week.', body: 'Wekelijkse challenges die je momentum vasthouden.' },
-    ],
     start: 'Aan de slag',
-    visual: {
-      goal: 'Je doel', goalValue: 'Spieropbouw', schedule: '4 dagen / week', level: 'Gevorderd',
-      exercise: 'Goblet squat', reps: 'Herh.', sets: 'Sets', muscle: 'Spiergroep', muscleValue: 'Bilspieren · Quadriceps', technique: 'Techniek', techniqueValue: 'Rustig zakken',
-      thisWeek: 'Deze week', workouts: 'Workouts', minutes: 'Minuten', personalBest: 'Nieuw persoonlijk record',
-      challenge: 'Weekchallenge', challengeValue: '3 van 4 workouts', streak: 'dagen op rij', badge: 'Badge ontgrendeld', badgeValue: 'Vroege vogel', complete: 'Workout voltooid',
-    },
   },
   language: { title: 'Kies je taal', body: 'Je kunt dit altijd wijzigen.', search: 'Taal zoeken', popular: 'Populair', all: 'Alle talen', results: 'Resultaten', noResults: 'Geen taal gevonden voor “{query}”.', continueIn: 'Doorgaan in het {language}' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const nl = mergeTranslations(firstRun, nlApp, dashboard.nl, utilities.nl, growth.nl, activity.nl);
+export const nl = mergeTranslations(firstRun, nlApp, dashboard.nl, utilities.nl, growth.nl, activity.nl, nutrition.nl, sounds.nl, support.nl, socialShare.nl);

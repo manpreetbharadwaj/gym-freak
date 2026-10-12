@@ -1,20 +1,21 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Platform, Pressable, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { Platform, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
-import { GlyphIcon, mdi, Txt } from '@/components';
+import { GlyphIcon, mdi, PressableScale, Txt } from '@/components';
 import { format, useI18n } from '@/i18n';
-import { palette, radius, shadow } from '@/theme';
+import { palette, pressScales, radius, shadow } from '@/theme';
 import { Activity, ActivityRoutePoint, ActivitySplit } from '@/types/domain';
 import { clock, distanceUnit, distanceValue, formatDistance, formatPace, paceValue, UnitSystem } from '@/utils/units';
 import { ACTIVITY_TYPES } from './activityTypes';
 import { timeOfDay } from './summary';
+import { activityTheme } from './theme/activityGlassTheme';
 
 /** react-native-maps needs a Google Maps key on Android; without one we draw the route ourselves. */
 export const nativeMapAvailable = Platform.OS === 'ios' || !!process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-const ROUTE = '#5B46F6';
-const START = palette.aqua;
+const ROUTE = activityTheme.route;
+const START = activityTheme.routeStart;
 
 function segments(route: Pick<ActivityRoutePoint, 'lat' | 'lng' | 'gap'>[]) {
   const out: { latitude: number; longitude: number }[][] = [];
@@ -149,7 +150,7 @@ export function SplitsList({ splits, system }: { splits: ActivitySplit[]; system
       const width = slowest > fastest ? 0.35 + 0.65 * (1 - (paces[i] - fastest) / (slowest - fastest)) : 1;
       return <View key={`${r.unit}${r.number}`} style={styles.splitRow} accessible accessibilityLabel={`${label}, ${clock(r.durationMs / 1000)}`}>
         <Txt variant="row" style={{ width: 70 }}>{label}</Txt>
-        <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: palette.grayBg, overflow: 'hidden' }}>
+        <View style={{ flex: 1, height: 8, borderRadius: 4, backgroundColor: activityTheme.glass ? activityTheme.fillStrong : palette.grayBg, overflow: 'hidden' }}>
           <View style={{ width: `${Math.round(width * 100)}%`, height: 8, borderRadius: 4, backgroundColor: paces[i] === fastest && rows.length > 1 ? START : ROUTE }} />
         </View>
         <Txt variant="row" style={[styles.tabular, { width: 64, textAlign: 'right' }]}>{clock(r.durationMs / 1000)}</Txt>
@@ -169,7 +170,7 @@ export function ActivityRow({ activity, system, onPress }: { activity: Activity;
   const date = when.toLocaleDateString(language, { weekday: 'short', day: 'numeric', month: 'short' });
   const time = when.toLocaleTimeString(language, { hour: 'numeric', minute: '2-digit' });
   const gps = ACTIVITY_TYPES[activity.type].gps;
-  return <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${title}, ${date} ${time}`} style={({ pressed }) => [styles.row, shadow(undefined, 0.45), pressed && { transform: [{ scale: 0.985 }] }]} testID={`activity-row-${activity.id}`}>
+  return <PressableScale onPress={onPress} haptic="light" scaleTo={pressScales.card} accessibilityLabel={`${title}, ${date} ${time}`} style={[styles.row, !activityTheme.glass && shadow(undefined, 0.45)]} testID={`activity-row-${activity.id}`}>
     <ActivityIcon type={activity.type} />
     <View style={{ flex: 1, gap: 4 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -185,18 +186,18 @@ export function ActivityRow({ activity, system, onPress }: { activity: Activity;
       <Txt variant="tab" color={palette.inkMuted}>{date} · {time}</Txt>
     </View>
     <GlyphIcon glyph={mdi('chevron-right')} size={20} color={palette.inkFaint} />
-  </Pressable>;
+  </PressableScale>;
 }
 
 const styles = StyleSheet.create({
-  mapBox: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: 'rgba(34,184,245,0.12)', borderWidth: 1, borderColor: palette.line },
+  mapBox: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: activityTheme.glass ? activityTheme.fill : 'rgba(34,184,245,0.12)', borderWidth: activityTheme.glass ? StyleSheet.hairlineWidth * 2 : 1, borderColor: activityTheme.glass ? activityTheme.border : palette.line },
   mapNote: { position: 'absolute', left: 10, right: 10, bottom: 8, alignItems: 'center' },
   dot: { width: 14, height: 14, borderRadius: 7, borderWidth: 3, borderColor: palette.line },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999, backgroundColor: palette.grayBg, maxWidth: 130 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 999, backgroundColor: activityTheme.glass ? activityTheme.fillStrong : palette.grayBg, maxWidth: 130 },
   value: { fontSize: 26, lineHeight: 32, letterSpacing: -0.5 },
   bigValue: { fontSize: 52, lineHeight: 58, letterSpacing: -1.5 },
   tabular: { fontVariant: ['tabular-nums'] },
   splitRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: palette.line },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: radius.lg, backgroundColor: palette.surface },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: radius.lg, backgroundColor: activityTheme.glass ? activityTheme.fill : palette.surface, ...(activityTheme.glass ? { borderWidth: StyleSheet.hairlineWidth * 2, borderColor: activityTheme.border, overflow: 'hidden' as const } : null) },
   rowStats: { flexDirection: 'row', alignItems: 'baseline', flexWrap: 'wrap', columnGap: 12, rowGap: 2 },
 });

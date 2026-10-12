@@ -2,27 +2,19 @@ import { mergeTranslations, type Translation } from './types';
 import { arApp } from './app/ar';
 import { dashboard } from './app/dashboard';
 import { utilities } from './app/utilities';
+import { support } from './app/support';
 import { growth } from './app/growth';
 import { activity } from './app/activity';
+import { nutrition } from './app/nutrition';
+import { sounds } from './app/sounds';
+import { socialShare } from './app/socialShare';
 
 /** Splash, intro, language and onboarding. App screens live in `app/ar.ts`. */
 const firstRun: Translation = {
   common: { next: 'التالي', back: 'رجوع', skip: 'تخطٍّ', done: 'تم', continue: 'متابعة', search: 'بحث' },
   splash: { tagline: 'تمرّن أفضل. تحرّك بقوة أكبر.' },
   intro: {
-    slides: [
-      { tag: 'مخصّص', title: 'تمارين مصمّمة لك', body: 'أهدافك وخبرتك وأسلوب حياتك تشكّل كل تمرين.' },
-      { tag: 'موجَّه', title: 'شاهد كل حركة بوضوح', body: 'عروض واضحة مع الإرشادات المهمة فعلًا.' },
-      { tag: 'التقدّم', title: 'تقدّم تراه فعلًا', body: 'السلاسل والإحصاءات وأرقامك القياسية في مكان واحد.' },
-      { tag: 'الاستمرارية', title: 'انتصارات صغيرة. كل أسبوع.', body: 'تحديات أسبوعية تحافظ على حماسك.' },
-    ],
     start: 'لننطلق',
-    visual: {
-      goal: 'هدفك', goalValue: 'بناء العضلات', schedule: '4 أيام / أسبوع', level: 'متوسط',
-      exercise: 'سكوات الكأس', reps: 'تكرارات', sets: 'مجموعات', muscle: 'المجموعة العضلية', muscleValue: 'الألوية · الفخذ الأمامي', technique: 'الأسلوب', techniqueValue: 'انزل ببطء',
-      thisWeek: 'هذا الأسبوع', workouts: 'تمارين', minutes: 'دقائق', personalBest: 'رقم قياسي شخصي جديد',
-      challenge: 'تحدي الأسبوع', challengeValue: '3 من 4 تمارين', streak: 'أيام متتالية', badge: 'تم فتح شارة', badgeValue: 'المبكّر', complete: 'اكتمل التمرين',
-    },
   },
   language: { title: 'اختر لغتك', body: 'يمكنك تغييرها في أي وقت.', search: 'ابحث عن لغة', popular: 'الأكثر استخدامًا', all: 'كل اللغات', results: 'النتائج', noResults: 'لا توجد لغة تطابق «{query}».', continueIn: 'المتابعة بـ{language}' },
   onboarding: {
@@ -83,4 +75,4 @@ const firstRun: Translation = {
   },
 };
 
-export const ar = mergeTranslations(firstRun, arApp, dashboard.ar, utilities.ar, growth.ar, activity.ar);
+export const ar = mergeTranslations(firstRun, arApp, dashboard.ar, utilities.ar, growth.ar, activity.ar, nutrition.ar, sounds.ar, support.ar, socialShare.ar);

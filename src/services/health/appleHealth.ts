@@ -1,7 +1,7 @@
 import { Linking } from 'react-native';
 import {
   authorizationStatusFor, AuthorizationStatus, getRequestStatusForAuthorization, AuthorizationRequestStatus, isHealthDataAvailableAsync, queryStatisticsForQuantity,
-  queryWorkoutSamples, requestAuthorization, saveWorkoutSample, WorkoutActivityType,
+  queryQuantitySamples, queryWorkoutSamples, requestAuthorization, saveWorkoutSample, WorkoutActivityType,
 } from '@kingstinct/react-native-healthkit';
 import { ActivityDetail, ActivityType, HealthDaily, ImportedWorkout } from '@/types/domain';
 import { HealthAdapter, HealthPermissionState } from './types';
@@ -16,6 +16,7 @@ const STEPS = 'HKQuantityTypeIdentifierStepCount' as const;
 const DISTANCE = 'HKQuantityTypeIdentifierDistanceWalkingRunning' as const;
 const ENERGY = 'HKQuantityTypeIdentifierActiveEnergyBurned' as const;
 const WORKOUT = 'HKWorkoutTypeIdentifier' as const;
+const BODY_FAT = 'HKQuantityTypeIdentifierBodyFatPercentage' as const;
 
 const AUTH = { toRead: [STEPS, DISTANCE, ENERGY, WORKOUT], toShare: [WORKOUT, DISTANCE, ENERGY] } as const;
 
@@ -53,6 +54,18 @@ async function state(): Promise<HealthPermissionState> {
 
 export const appleHealth: HealthAdapter = {
   provider: 'APPLE_HEALTH',
+
+  bodyFat: {
+    async connect() {
+      await requestAuthorization({ toRead: [BODY_FAT] });
+      return true;
+    },
+    /** HealthKit's "%" unit is a 0–1 fraction; the server normalises it. `uuid` deduplicates re-imports. */
+    async read(since) {
+      const samples = await queryQuantitySamples(BODY_FAT, { limit: 500, ascending: false, unit: '%', filter: { date: { startDate: since } } });
+      return samples.map((s) => ({ externalId: s.uuid, value: s.quantity, measuredAt: new Date(s.startDate).toISOString(), source: s.sourceRevision?.source?.name ?? null }));
+    },
+  },
 
   async availability() {
     return (await isHealthDataAvailableAsync().catch(() => false)) ? 'available' : 'unavailable';

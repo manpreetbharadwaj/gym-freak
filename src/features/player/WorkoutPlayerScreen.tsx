@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import Motion, { FadeIn, ReduceMotion, useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeepAwake } from 'expo-keep-awake';
 import * as Speech from 'expo-speech';
@@ -15,17 +16,19 @@ import { useExercise, useInvalidateAfterWorkout, usePreferences, useWorkout } fr
 import { format, useI18n } from '@/i18n';
 import { RootScreenProps } from '@/navigation/types';
 import { Exercise } from '@/types/domain';
-import { controls, gradients, gutter, palette, radius, scenes, shadow } from '@/theme';
+import { controls, durations, gradients, gutter, palette, pressScales, radius, scenes, shadow, springs, timings } from '@/theme';
 import { formatClock, formatRelativeDay } from '@/utils/dates';
 import { haptics } from '@/utils/haptics';
 import { AddExerciseSheet } from './AddExerciseSheet';
 import { RestOverlay } from './RestOverlay';
 import { ReplaceSheet } from './ReplaceSheet';
 import { useWorkoutRunner } from './useWorkoutRunner';
+import { useDialog } from '@/components/dialogs/DialogProvider';
 
 const scene = scenes.violet;
 
 export function WorkoutPlayerScreen({ route, navigation }: RootScreenProps<'WorkoutPlayer'>) {
+  const dialog = useDialog();
   useKeepAwake();
   const { workoutId } = route.params;
   const { dictionary, language } = useI18n();
@@ -67,10 +70,7 @@ export function WorkoutPlayerScreen({ route, navigation }: RootScreenProps<'Work
   // Warm the cache for the next exercise's media.
   useEffect(() => { const upcoming = workout.data?.exercises[cursor.exercise + 1]?.exercise.media; if (upcoming) prefetchMedia([upcoming]); }, [cursor.exercise, workout.data]);
 
-  const exitConfirm = () => Alert.alert(copy.quitTitle, copy.quitBody, [
-    { text: copy.keepGoing, style: 'cancel' },
-    { text: copy.quit, style: 'destructive', onPress: async () => { await runner.quit(); invalidate(); navigation.goBack(); } },
-  ]);
+  const exitConfirm = async () => { if (await dialog.showDestructiveConfirm({ title: copy.quitTitle, description: copy.quitBody, cancelLabel: copy.keepGoing, confirmLabel: copy.quit, onConfirm: async () => { await runner.quit(); await invalidate(); } })) navigation.goBack(); };
 
   const finish = async () => {
     try {
@@ -84,23 +84,24 @@ export function WorkoutPlayerScreen({ route, navigation }: RootScreenProps<'Work
       const sets = done.exercises.reduce((t, e) => t + e.sets.filter((s) => s.completed).length, 0);
       navigation.replace('WorkoutComplete', { sessionId: done.id, name: done.name, minutes: Math.max(1, Math.round(done.activeDurationMs / 60000)), sets, exercises: done.exercises.filter((e) => e.sets.some((s) => s.completed)).length, newAchievements: unlocked });
     } catch {
-      Alert.alert(dictionary.states.errorTitle, dictionary.states.generic);
+      void dialog.showError({ title: dictionary.states.errorTitle, description: dictionary.states.generic });
     }
   };
 
   const completeSet = () => {
     if (!set || !prescription) return;
-    haptics.success();
     const exerciseBefore = cursor.exercise;
     const hasNext = runner.completeSet(timed ? { durationSeconds: prescription.durationSeconds } : { reps, weightKg: weight || undefined });
+    // The last set's cue is the workout-complete success (once the save lands), not a second buzz here.
     if (!hasNext) { finish(); return; }
+    haptics.success();
     if (restEnabled && prescription.restSeconds > 0) runner.setPhase('rest');
     else if (runner.exercises[exerciseBefore + 1] && cursor.set === current!.sets.length - 1) speak(format(copy.speechNext, { name: runner.exercises[exerciseBefore + 1].name }));
   };
 
   const edit = async (change: () => Promise<unknown>, success: string) => {
     try { await change(); haptics.success(); setNotice(success); setTimeout(() => setNotice(undefined), 2500); }
-    catch { Alert.alert(dictionary.states.errorTitle, copy.editFailed); }
+    catch { void dialog.showError({ title: dictionary.states.errorTitle, description: copy.editFailed }); }
   };
   const pickReplacement = (e: Exercise) => { setReplacing(false); edit(() => runner.replace(e), format(copy.replaced, { name: e.name })); };
   const pickAddition = (e: Exercise) => { setAdding(false); edit(() => runner.add(e), format(copy.added, { name: e.name })); };
@@ -137,9 +138,11 @@ export function WorkoutPlayerScreen({ route, navigation }: RootScreenProps<'Work
         </View>
         <ElapsedClock activeMs={runner.activeMs} />
       </View>
-      <View style={styles.segments}>{exercises.map((e, i) => <View key={e.id} style={styles.segment}><View style={[styles.segmentFill, { width: `${(e.sets.filter((s) => s.completed).length / e.sets.length) * 100}%`, backgroundColor: i === cursor.exercise ? palette.violet : '#22C38E' }]} /></View>)}</View>
+      <View style={styles.segments}>{exercises.map((e, i) => <SegmentFill key={e.id} fraction={e.sets.filter((s) => s.completed).length / e.sets.length} color={i === cursor.exercise ? palette.violet : '#22C38E'} />)}</View>
 
       <View style={{ paddingHorizontal: gutter, marginTop: 14 }}>
+        {/* A new exercise fades in (keyed by exercise) instead of snapping; set changes within it don't remount anything. */}
+        <Motion.View key={current.id} entering={FadeIn.duration(durations.large).reduceMotion(ReduceMotion.System)}>
         <View style={shadow(palette.violet, 0.9)}><ExerciseMedia key={catalogExercise?.id ?? current.id} media={catalogExercise?.media ?? {}} muscle={catalogExercise?.primaryMuscle} height={mediaH} rounded={28} /></View>
         <View style={styles.titleRow}>
           <View style={{ flex: 1 }}>
@@ -150,11 +153,12 @@ export function WorkoutPlayerScreen({ route, navigation }: RootScreenProps<'Work
           {catalogExercise ? <IconButton glyph={mdi('share-variant-outline')} size="md" label={dictionary.share.shareExercise} onPress={() => shareExercise(catalogExercise)} /> : null}
           {lastSetOfExercise && cursor.exercise === exercises.length - 1 ? <View style={styles.lastSet}><Txt variant="label" color={palette.coral}>{copy.lastSet}</Txt></View> : null}
         </View>
+        </Motion.View>
 
         <View style={[styles.setCard, shadow(undefined, 0.5)]}>
           <View style={styles.setHeader}>
             <Txt variant="title">{format(copy.setOf, { current: cursor.set + 1, total: current.sets.length })}</Txt>
-            <View style={styles.setDots}>{current.sets.map((s, i) => <View key={s.id} style={[styles.setDot, s.completed && { backgroundColor: '#22C38E' }, i === cursor.set && !s.completed && { backgroundColor: palette.violet, width: 22 }]} />)}</View>
+            <View style={styles.setDots}>{current.sets.map((s, i) => <SetDot key={s.id} completed={s.completed} current={i === cursor.set && !s.completed} />)}</View>
           </View>
           <View style={styles.targetRow}><GlyphIcon glyph={mdi('bullseye-arrow')} size={18} color={palette.orange} /><Txt variant="label" color={palette.inkMuted}>{copy.target.toUpperCase()}</Txt><Txt variant="h3">{target}</Txt></View>
           {timed ? <TimedSet key={`${cursor.exercise}-${cursor.set}`} seconds={prescription.durationSeconds ?? 30} onDone={completeSet} copy={copy} />
@@ -164,7 +168,7 @@ export function WorkoutPlayerScreen({ route, navigation }: RootScreenProps<'Work
             </View>}
         </View>
 
-        {!timed ? <GradientButton label={copy.completeSet} icon="checkmark" gradient={gradients.primary} loading={runner.phase === 'finishing'} onPress={completeSet} style={{ marginTop: 16 }} /> : null}
+        {!timed ? <GradientButton label={copy.completeSet} icon="checkmark" gradient={gradients.primary} loading={runner.phase === 'finishing'} haptic={null} onPress={completeSet} style={{ marginTop: 16 }} /> : null}
         {runner.syncFailed ? <Txt variant="small" color={palette.orange} align="center" style={{ marginTop: 8 }}>{copy.saveFailed}</Txt> : null}
 
         <View style={styles.controls}>
@@ -199,9 +203,9 @@ function ElapsedClock({ activeMs }: { activeMs: () => number }) {
 function Stepper({ label, value, onChange, min, max, step }: { label: string; value: number; onChange: (v: number) => void; min: number; max: number; step: number }) {
   const change = (delta: number) => { haptics.select(); onChange(Math.min(max, Math.max(min, Math.round((value + delta) * 10) / 10))); };
   return <View style={styles.stepper}>
-    <Pressable onPress={() => change(-step)} style={styles.stepButton} accessibilityRole="button" accessibilityLabel={`- ${label}`}><GlyphIcon glyph={mdi('minus')} size={22} color={palette.violet} /></Pressable>
+    <PressableScale onPress={() => change(-step)} haptic={null} scaleTo={pressScales.icon} style={styles.stepButton} accessibilityLabel={`- ${label}`}><GlyphIcon glyph={mdi('minus')} size={22} color={palette.violet} /></PressableScale>
     <View style={{ alignItems: 'center', minWidth: 64 }}><Txt variant="metricLg">{value}</Txt><Txt variant="label" color={palette.inkMuted}>{label}</Txt></View>
-    <Pressable onPress={() => change(step)} style={styles.stepButton} accessibilityRole="button" accessibilityLabel={`+ ${label}`}><GlyphIcon glyph={mdi('plus')} size={22} color={palette.violet} /></Pressable>
+    <PressableScale onPress={() => change(step)} haptic={null} scaleTo={pressScales.icon} style={styles.stepButton} accessibilityLabel={`+ ${label}`}><GlyphIcon glyph={mdi('plus')} size={22} color={palette.violet} /></PressableScale>
   </View>;
 }
 
@@ -224,9 +228,31 @@ function TimedSet({ seconds, onDone, copy }: { seconds: number; onDone: () => vo
     <Ring size={150} stroke={12} progress={1 - left / seconds} gradient={gradients.ocean} id="timedRing"><Txt variant="number">{formatClock(Math.ceil(left))}</Txt></Ring>
     <View style={{ flexDirection: 'row', gap: 10, alignSelf: 'stretch' }}>
       <GradientButton label={running ? copy.pauseTimer : copy.startTimer} icon={running ? 'pause' : 'play'} gradient={gradients.ocean} onPress={() => setRunning(!running)} style={{ flex: 1 }} />
-      <GradientButton label={copy.timerDone} icon="checkmark" gradient={gradients.primary} onPress={() => { setRunning(false); onDone(); }} style={{ flex: 1 }} />
+      <GradientButton label={copy.timerDone} icon="checkmark" gradient={gradients.primary} haptic={null} onPress={() => { setRunning(false); onDone(); }} style={{ flex: 1 }} />
     </View>
   </View>;
+}
+
+/** Exercise progress segment: the fill grows to its new share instead of jumping. */
+function SegmentFill({ fraction, color }: { fraction: number; color: string }) {
+  const fill = useSharedValue(fraction);
+  useEffect(() => { fill.value = withSpring(fraction, springs.gentle); }, [fill, fraction]);
+  const fillStyle = useAnimatedStyle(() => ({ width: `${Math.max(0, Math.min(1, fill.value)) * 100}%` as `${number}%` }));
+  return <View style={styles.segment}><Motion.View style={[styles.segmentFill, { backgroundColor: color }, fillStyle]} /></View>;
+}
+
+/** Set dot: stretches into the current-set pill, and pops once when its set is completed. */
+function SetDot({ completed, current }: { completed: boolean; current: boolean }) {
+  const width = useSharedValue(current ? 22 : 10);
+  const pop = useSharedValue(1);
+  const wasCompleted = useRef(completed);
+  useEffect(() => { width.value = withTiming(current ? 22 : 10, timings.standard); }, [current, width]);
+  useEffect(() => {
+    if (completed && !wasCompleted.current) pop.value = withSequence(withTiming(1.45, timings.press), withSpring(1, springs.snappy));
+    wasCompleted.current = completed;
+  }, [completed, pop]);
+  const dotStyle = useAnimatedStyle(() => ({ width: width.value, transform: [{ scale: pop.value }] }));
+  return <Motion.View style={[styles.setDot, completed && { backgroundColor: '#22C38E' }, current && { backgroundColor: palette.violet }, dotStyle]} />;
 }
 
 function Control({ glyph, label, onPress, disabled }: { glyph: Glyph; label: string; onPress: () => void; disabled?: boolean }) {

@@ -1,0 +1,280 @@
+{
+ "note": "Reference cases computed independently (Python) from the published formulas; both repos test the engine against this file. Navy: metric equations; imperialReference = the original inch-based equations for cross-checking.",
+ "nutrition": [
+  {
+   "name": "male 80kg 180cm 30y moderate build_muscle",
+   "inputs": {
+    "weightKg": 80,
+    "heightCm": 180,
+    "age": 30,
+    "sex": "male",
+    "activityLevel": "moderate",
+    "goal": "build_muscle"
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 3030,
+    "bmr": 1780,
+    "tdee": 2759,
+    "proteinG": 144,
+    "fatG": 84,
+    "carbsG": 425,
+    "macroKcal": 3032,
+    "proteinBasisKg": 80.0
+   }
+  },
+  {
+   "name": "female 60kg 165cm 25y sedentary lose_fat",
+   "inputs": {
+    "weightKg": 60,
+    "heightCm": 165,
+    "age": 25,
+    "sex": "female",
+    "activityLevel": "sedentary",
+    "goal": "lose_fat"
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 1370,
+    "bmr": 1345,
+    "tdee": 1614,
+    "proteinG": 120,
+    "fatG": 38,
+    "carbsG": 137,
+    "macroKcal": 1370,
+    "proteinBasisKg": 60.0
+   }
+  },
+  {
+   "name": "male 120kg 175cm 40y light lose_fat (BMI 39, adjusted protein weight)",
+   "inputs": {
+    "weightKg": 120,
+    "heightCm": 175,
+    "age": 40,
+    "sex": "male",
+    "activityLevel": "light",
+    "goal": "lose_fat"
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 2450,
+    "bmr": 2099,
+    "tdee": 2886,
+    "proteinG": 188,
+    "fatG": 72,
+    "carbsG": 263,
+    "macroKcal": 2452,
+    "proteinBasisKg": 93.9
+   }
+  },
+  {
+   "name": "female 55kg 160cm 35y very endurance",
+   "inputs": {
+    "weightKg": 55,
+    "heightCm": 160,
+    "age": 35,
+    "sex": "female",
+    "activityLevel": "very",
+    "goal": "endurance"
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 2090,
+    "bmr": 1214,
+    "tdee": 2094,
+    "proteinG": 88,
+    "fatG": 58,
+    "carbsG": 304,
+    "macroKcal": 2090,
+    "proteinBasisKg": 55.0
+   }
+  },
+  {
+   "name": "male 70kg 172cm 50y extra get_stronger",
+   "inputs": {
+    "weightKg": 70,
+    "heightCm": 172,
+    "age": 50,
+    "sex": "male",
+    "activityLevel": "extra",
+    "goal": "get_stronger"
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 3050,
+    "bmr": 1530,
+    "tdee": 2907,
+    "proteinG": 126,
+    "fatG": 85,
+    "carbsG": 445,
+    "macroKcal": 3049,
+    "proteinBasisKg": 70.0
+   }
+  },
+  {
+   "name": "female 68kg 170cm 45y light mobility",
+   "inputs": {
+    "weightKg": 68,
+    "heightCm": 170,
+    "age": 45,
+    "sex": "female",
+    "activityLevel": "light",
+    "goal": "mobility"
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 1870,
+    "bmr": 1357,
+    "tdee": 1865,
+    "proteinG": 95,
+    "fatG": 52,
+    "carbsG": 256,
+    "macroKcal": 1872,
+    "proteinBasisKg": 68.0
+   }
+  },
+  {
+   "name": "male 90kg 185cm 28y moderate general_fitness",
+   "inputs": {
+    "weightKg": 90,
+    "heightCm": 185,
+    "age": 28,
+    "sex": "male",
+    "activityLevel": "moderate",
+    "goal": "general_fitness"
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 2980,
+    "bmr": 1921,
+    "tdee": 2978,
+    "proteinG": 126,
+    "fatG": 83,
+    "carbsG": 432,
+    "macroKcal": 2979,
+    "proteinBasisKg": 90.0
+   }
+  },
+  {
+   "name": "female 48kg 155cm 60y sedentary lose_fat (calorie floor)",
+   "inputs": {
+    "weightKg": 48,
+    "heightCm": 155,
+    "age": 60,
+    "sex": "female",
+    "activityLevel": "sedentary",
+    "goal": "lose_fat"
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 1200,
+    "bmr": 988,
+    "tdee": 1185,
+    "proteinG": 96,
+    "fatG": 33,
+    "carbsG": 130,
+    "macroKcal": 1201,
+    "proteinBasisKg": 48.0
+   }
+  },
+  {
+   "name": "medical caution caps protein at 0.8 g/kg",
+   "inputs": {
+    "weightKg": 80,
+    "heightCm": 180,
+    "age": 30,
+    "sex": "male",
+    "activityLevel": "moderate",
+    "goal": "build_muscle",
+    "medicalCaution": true
+   },
+   "expected": {
+    "status": "ready",
+    "calories": 3030,
+    "bmr": 1780,
+    "tdee": 2759,
+    "proteinG": 64,
+    "fatG": 84,
+    "carbsG": 505,
+    "macroKcal": 3032,
+    "proteinBasisKg": 80.0
+   }
+  },
+  {
+   "name": "17-year-old: adult equation not applicable",
+   "inputs": {
+    "weightKg": 60,
+    "heightCm": 170,
+    "age": 17,
+    "sex": "male",
+    "activityLevel": "light",
+    "goal": "build_muscle"
+   },
+   "expected": {
+    "status": "not_applicable",
+    "reason": "under_18"
+   }
+  },
+  {
+   "name": "missing sex and activity are reported, not guessed",
+   "inputs": {
+    "weightKg": 70,
+    "heightCm": 170,
+    "age": 30
+   },
+   "expected": {
+    "status": "needs_input",
+    "missing": [
+     "sex",
+     "activityLevel"
+    ]
+   }
+  }
+ ],
+ "navy": [
+  {
+   "inputs": {
+    "sex": "male",
+    "heightCm": 178,
+    "neckCm": 38,
+    "waistCm": 86,
+    "hipCm": null
+   },
+   "expectedPercent": 17.2,
+   "imperialReference": 17.28
+  },
+  {
+   "inputs": {
+    "sex": "male",
+    "heightCm": 183,
+    "neckCm": 40,
+    "waistCm": 102,
+    "hipCm": null
+   },
+   "expectedPercent": 25.9,
+   "imperialReference": 25.99
+  },
+  {
+   "inputs": {
+    "sex": "female",
+    "heightCm": 165,
+    "neckCm": 32,
+    "waistCm": 72,
+    "hipCm": 98
+   },
+   "expectedPercent": 27.4,
+   "imperialReference": 27.71
+  },
+  {
+   "inputs": {
+    "sex": "female",
+    "heightCm": 170,
+    "neckCm": 34,
+    "waistCm": 84,
+    "hipCm": 104
+   },
+   "expectedPercent": 33.9,
+   "imperialReference": 34.22
+  }
+ ]
+}

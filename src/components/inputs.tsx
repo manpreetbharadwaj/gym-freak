@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Motion, { Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useI18n } from '@/i18n';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Switch, TextInput, TextInputProps, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Glyph, GlyphIcon, mdi, Txt } from './primitives';
+import { Glyph, GlyphIcon, mdi, PressableScale, Txt } from './primitives';
 import { haptics } from '@/utils/haptics';
-import { controls, fonts, palette, radius, shadow } from '@/theme';
+import { controls, fonts, palette, radius, shadow, springs, timings, typography } from '@/theme';
 
 export function TextField({ label, error, icon, secure, ...props }: TextInputProps & { label: string; error?: string; icon?: Glyph; secure?: boolean }) {
   const [focused, setFocused] = useState(false);
@@ -22,10 +24,10 @@ export function TextField({ label, error, icon, secure, ...props }: TextInputPro
 }
 
 export function FilterChip({ label, active, onPress, color = palette.violet, glyph }: { label: string; active: boolean; onPress: () => void; color?: string; glyph?: Glyph }) {
-  return <Pressable accessibilityRole="button" accessibilityState={{ selected: active }} onPress={() => { haptics.select(); onPress(); }} style={({ pressed }) => [styles.chip, active ? [styles.chipActive, { borderColor: color, backgroundColor: `${color}1A` }, shadow(color, 0.35)] : null, { transform: [{ scale: pressed ? 0.96 : 1 }] }]}>
+  return <PressableScale haptic="selection" scaleTo={0.95} accessibilityLabel={label} accessibilityState={{ selected: active }} onPress={onPress} style={[styles.chip, active ? [styles.chipActive, { borderColor: color, backgroundColor: `${color}1A` }, shadow(color, 0.35)] : null]}>
     {glyph ? <GlyphIcon glyph={glyph} size={16} color={active ? color : palette.inkMuted} /> : null}
     <Txt variant="label" color={active ? palette.white : palette.inkSoft}>{label}</Txt>
-  </Pressable>;
+  </PressableScale>;
 }
 
 export function ToggleRow({ title, subtitle, value, onChange, glyph, color = palette.violet, testID }: { title: string; subtitle?: string; value: boolean; onChange: (value: boolean) => void; glyph?: Glyph; color?: string; testID?: string }) {
@@ -47,26 +49,64 @@ export function LinkRow({ title, value, onPress, glyph, color = palette.violet, 
 
 /** Slide-up sheet used for filters, exercise swaps and pickers. */
 /** Modal sheet that rises above the keyboard, so search fields inside it stay usable. */
+/**
+ * Modal sheet: the scrim fades while the sheet springs up from its own height. Drag the grabber/header down
+ * to dismiss (released past a third of the sheet or flicked) — the drag lives on the header only, so it never
+ * fights the sheet's scrolling content; the close button and scrim tap remain for non-gesture use.
+ */
 export function BottomSheet({ visible, onClose, title, children, footer }: { visible: boolean; onClose: () => void; title: string; children: React.ReactNode; footer?: React.ReactNode }) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const { dictionary } = useI18n();
-  return <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose} statusBarTranslucent>
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, justifyContent: 'flex-end' }}>
-      <Pressable style={styles.scrim} onPress={onClose} accessibilityLabel={dictionary.common.close} />
-      <View style={[styles.sheet, { paddingBottom: insets.bottom + 16 }]}>
-        <View style={styles.grabber} />
-        <View style={styles.sheetHeader}><Txt variant="title" style={{ flex: 1 }}>{title}</Txt><Pressable hitSlop={10} onPress={onClose} accessibilityRole="button" accessibilityLabel={dictionary.common.close}><GlyphIcon glyph={mdi('close-circle')} size={28} color={palette.inkFaint} /></Pressable></View>
-        <ScrollView style={{ maxHeight: Math.min(520, height * 0.55) }} contentContainerStyle={{ gap: 12, paddingBottom: 8 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">{children}</ScrollView>
-        {footer ? <View style={{ marginTop: 12 }}>{footer}</View> : null}
-      </View>
-    </KeyboardAvoidingView>
+  const [mounted, setMounted] = useState(visible);
+  const sheetHeight = useSharedValue(height);
+  const offset = useSharedValue(height);
+  const closing = useRef(false);
+
+  useEffect(() => {
+    if (visible) { closing.current = false; setMounted(true); offset.value = sheetHeight.value || height; offset.value = withSpring(0, springs.gentle); }
+    else if (mounted) offset.value = withTiming(sheetHeight.value || height, timings.standard, (done) => { if (done) runOnJS(setMounted)(false); });
+  }, [visible]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const dismiss = () => {
+    if (closing.current) return;
+    closing.current = true;
+    offset.value = withTiming(sheetHeight.value || height, timings.standard, (done) => { if (done) runOnJS(onClose)(); });
+  };
+
+  const drag = Gesture.Pan()
+    .activeOffsetY(8).failOffsetX([-20, 20])
+    .onUpdate((e) => { offset.value = Math.max(0, e.translationY); })
+    .onEnd((e) => {
+      if (e.translationY > sheetHeight.value / 3 || e.velocityY > 900) runOnJS(dismiss)();
+      else offset.value = withSpring(0, springs.snappy);
+    });
+
+  const sheetStyle = useAnimatedStyle(() => ({ transform: [{ translateY: offset.value }] }));
+  const scrimStyle = useAnimatedStyle(() => ({ opacity: sheetHeight.value ? interpolate(offset.value, [0, sheetHeight.value], [1, 0], Extrapolation.CLAMP) : 0 }));
+
+  return <Modal visible={mounted} transparent animationType="none" onRequestClose={dismiss} statusBarTranslucent>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, justifyContent: 'flex-end' }}>
+        <Motion.View style={[styles.scrim, scrimStyle]}><Pressable style={{ flex: 1 }} onPress={dismiss} accessibilityLabel={dictionary.common.close} /></Motion.View>
+        <Motion.View onLayout={(e) => { sheetHeight.value = e.nativeEvent.layout.height; }} style={[styles.sheet, { paddingBottom: insets.bottom + 16 }, sheetStyle]}>
+          <GestureDetector gesture={drag}>
+            <View>
+              <View style={styles.grabber} />
+              <View style={styles.sheetHeader}><Txt variant="title" style={{ flex: 1 }}>{title}</Txt><Pressable hitSlop={10} onPress={dismiss} accessibilityRole="button" accessibilityLabel={dictionary.common.close}><GlyphIcon glyph={mdi('close-circle')} size={28} color={palette.inkFaint} /></Pressable></View>
+            </View>
+          </GestureDetector>
+          <ScrollView style={{ maxHeight: Math.min(520, height * 0.55) }} contentContainerStyle={{ gap: 12, paddingBottom: 8 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">{children}</ScrollView>
+          {footer ? <View style={{ marginTop: 12 }}>{footer}</View> : null}
+        </Motion.View>
+      </KeyboardAvoidingView>
+    </GestureHandlerRootView>
   </Modal>;
 }
 
 const styles = StyleSheet.create({
   field: { minHeight: controls.input.height, borderRadius: controls.input.radius, backgroundColor: palette.surface, flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, borderWidth: 1.5, borderColor: palette.line },
-  input: { flex: 1, fontFamily: fonts.medium, fontSize: 15, color: palette.ink, paddingVertical: 12 },
+  input: { flex: 1, ...typography.input, lineHeight: undefined, color: palette.ink, paddingVertical: 12 },
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: radius.pill, backgroundColor: palette.surface, borderWidth: 1, borderColor: palette.line },
   chipActive: { borderWidth: 1 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 56, paddingHorizontal: 14, paddingVertical: 8 },

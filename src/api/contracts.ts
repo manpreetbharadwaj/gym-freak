@@ -174,7 +174,7 @@ export interface ApiPlanDay { weekday: number; date: string; status: 'completed'
 export interface ApiWeekPlan {
   timezone: string;
   assignment: { id: string; source: 'AUTO' | 'ADMIN'; assignedAt: string; startDate: string } | null;
-  plan: { id: string; slug: string; name: string; description: string | null; goal: string; difficulty: 'beginner' | 'intermediate' | 'advanced'; daysPerWeek: number; isPremium: boolean } | null;
+  plan: { id: string; slug: string; name: string; description: string | null; goal: string; difficulty: 'beginner' | 'intermediate' | 'advanced'; daysPerWeek: number; isPremium: boolean; media?: ApiMedia | null } | null;
   days: ApiPlanDay[];
   today: ApiPlanDay | null;
 }

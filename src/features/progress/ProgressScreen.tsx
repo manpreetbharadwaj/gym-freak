@@ -11,7 +11,7 @@ import { useUnitSystem } from '@/hooks/useUnits';
 import { formatWeight } from '@/utils/units';
 import { Breakdown, CombinedStreak, DistanceMetrics, Overview, Period, PeriodToggle, RunningProgress, StackedChart, TrainingTime } from './FitnessSections';
 import { visualFor } from '@/components/media';
-import { useProfile, useProgress, useWeekPlan } from '@/hooks/queries';
+import { useProfile, useProgress, useWeekPlan, useBodyFat, useReferral } from '@/hooks/queries';
 import { MetricTile, SummaryTile, estimateKcal } from '@/components/dashboard';
 import { dayKey } from '@/utils/dates';
 import { format } from '@/i18n';
@@ -19,6 +19,7 @@ import { RootStackParamList } from '@/navigation/types';
 import { gradients, palette, radius, scenes, shadow } from '@/theme';
 import { Achievement, Progress, SessionSummary } from '@/types/domain';
 import { formatDuration, parseDay } from '@/utils/dates';
+import { ShareComposer } from '@/features/sharing';
 
 export function ProgressScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -27,9 +28,12 @@ export function ProgressScreen() {
   const progress = useProgress();
   const week = useWeekPlan();
   const profile = useProfile();
+  const bodyFat = useBodyFat();
+  const referral = useReferral();
   const data = progress.data;
   const system = useUnitSystem();
   const [period, setPeriod] = useState<Period>('week');
+  const [sharing, setSharing] = useState(false);
   const fitness = data?.fitness;
   const today = dayKey(new Date());
   const monthWorkouts = data?.monthDays.filter((d) => !d.inFuture && d.date > dayKey(new Date(Date.now() - 30 * 86_400_000)) && d.date <= today).reduce((t, d) => t + d.count, 0) ?? 0;
@@ -41,6 +45,7 @@ export function ProgressScreen() {
         <Txt variant="display">{copy.title}</Txt>
         <Txt variant="body" color={palette.inkMuted} style={{ marginTop: 4 }}>{copy.subtitle}</Txt>
       </View>
+      {data ? <IconCircle glyph={mdi('share-variant')} label={dictionary.complete.share} onPress={() => setSharing(true)} /> : null}
       <IconCircle glyph={mdi('account-circle-outline')} label={dictionary.nav.Profile} onPress={() => navigation.navigate('Profile')} />
     </View>
     {progress.isLoading ? <View style={{ gap: 14, marginTop: 22 }}><Skeleton height={150} round={radius.xl} /><Skeleton height={110} round={radius.lg} /><Skeleton height={220} round={radius.lg} /></View>
@@ -83,7 +88,8 @@ export function ProgressScreen() {
         <Section title={copy.bodyTrends}>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <MetricTile label={dictionary.home.weight} value={profile.data?.weightKg ? formatWeight(profile.data.weightKg, system).split(' ')[0] : undefined} unit={system === 'imperial' ? 'lb' : 'kg'} note={profile.data?.weightKg ? dictionary.home.fromProfile : undefined} />
-            <MetricTile label={dictionary.home.bodyFat} />
+            {/* Real measurements only (Profile → Body composition); "Not measured yet" otherwise. */}
+            <MetricTile label={dictionary.home.bodyFat} value={bodyFat.data?.latest ? bodyFat.data.latest.percent.toFixed(1) : undefined} unit="%" note={bodyFat.data?.latest ? (bodyFat.data.latest.estimated ? dictionary.bodyComp.estimated : dictionary.bodyComp.measured) : dictionary.bodyComp.notMeasured} />
           </View>
           <Card style={{ marginTop: 12, flexDirection: 'row', gap: 12, alignItems: 'center' }}>
             <GlyphIcon glyph={mdi('chart-line')} size={22} color={palette.inkFaint} />
@@ -95,6 +101,14 @@ export function ProgressScreen() {
           {data.history.length ? <View style={{ gap: 10 }}>{data.history.slice(0, 4).map((h) => <HistoryRow key={h.id} item={h} />)}</View> : <EmptyState title={copy.noHistory} body={copy.noHistoryBody} glyph={mdi('history')} />}
         </Section>
       </>}
+    {data ? <ShareComposer visible={sharing} onClose={() => setSharing(false)} referral={referral.data} card={{
+      kind: 'progress', title: dictionary.socialShare.progressTitle, eyebrow: dictionary.socialShare.progressEyebrow, statement: dictionary.socialShare.journey,
+      metrics: [
+        { id: 'workouts', label: copy.completed, value: String(data.totalSessions) },
+        { id: 'minutes', label: copy.time, value: formatDuration(data.totalMinutes * 60_000) },
+        { id: 'streak', label: copy.streak, value: `${data.streak} ${data.streak === 1 ? copy.day : copy.days}` },
+      ],
+    }} /> : null}
   </Screen>;
 }
 
@@ -157,7 +171,7 @@ function Muscles({ data }: { data: Progress }) {
   })}</Card>;
 }
 
-export function Badges({ achievements }: { achievements: Achievement[] }) {
+export function Badges({ achievements, onShare }: { achievements: Achievement[]; onShare?: (achievement: Achievement) => void }) {
   const { dictionary } = useLabels();
   return <View style={styles.badges}>{achievements.map((a) => {
     const unlocked = !!a.unlockedAt;
@@ -165,18 +179,19 @@ export function Badges({ achievements }: { achievements: Achievement[] }) {
       {unlocked ? <LinearGradient colors={['#FFD166', '#FF9A3D']} style={styles.badgeIcon}><GlyphIcon glyph={mdi('medal')} size={26} color={palette.onAccent} /></LinearGradient> : <View style={[styles.badgeIcon, { backgroundColor: palette.grayBg }]}><GlyphIcon glyph={mdi('lock-outline')} size={22} color={palette.inkFaint} /></View>}
       <Txt variant="label" align="center" numberOfLines={2} color={unlocked ? palette.ink : palette.inkMuted}>{a.title}</Txt>
       <Txt variant="label" align="center" numberOfLines={2} color={palette.inkMuted}>{unlocked ? dictionary.progress.unlocked : a.description}</Txt>
+      {unlocked && onShare ? <PressableScale accessibilityRole="button" accessibilityLabel={`${dictionary.complete.share} ${a.title}`} onPress={() => onShare(a)}><GlyphIcon glyph={mdi('share-variant')} size={18} color={palette.accentSoft} /></PressableScale> : null}
     </View>;
   })}</View>;
 }
 
-export function HistoryRow({ item }: { item: SessionSummary }) {
+export function HistoryRow({ item, onShare }: { item: SessionSummary; onShare?: (item: SessionSummary) => void }) {
   const { dictionary } = useLabels();
   const date = new Date(item.completedAt);
   return <PressableScale onPress={() => undefined} scaleTo={0.99} haptic={null}>
     <View style={[styles.history, shadow(undefined, 0.4)]}>
       <View style={styles.historyDate}><Txt variant="tab" color={palette.accent}>{date.toLocaleDateString(undefined, { month: 'short' }).toUpperCase()}</Txt><Txt variant="title">{date.getDate()}</Txt></View>
       <View style={{ flex: 1 }}><Txt variant="h3" numberOfLines={1}>{item.name}</Txt><Txt variant="small" color={palette.inkMuted}>{item.minutes} {dictionary.common.min} · {format(dictionary.progress.setsCount, { count: item.sets })} · {format(dictionary.home.exercises, { count: item.exercises })}</Txt></View>
-      <GlyphIcon glyph={mdi('check-circle')} size={22} color="#22C38E" />
+      {onShare ? <PressableScale accessibilityRole="button" accessibilityLabel={`${dictionary.complete.share} ${item.name}`} onPress={() => onShare(item)}><GlyphIcon glyph={mdi('share-variant')} size={20} color={palette.accentSoft} /></PressableScale> : <GlyphIcon glyph={mdi('check-circle')} size={22} color="#22C38E" />}
     </View>
   </PressableScale>;
 }

@@ -7,6 +7,7 @@ import { GlyphIcon, PressableScale, Txt } from '@/components';
 import { HorizontalRail } from '@/components/layout';
 import { useI18n } from '@/i18n';
 import { palette } from '@/theme';
+import { useAccentScope } from '@/components/accentScope';
 import { Story } from '@/types/domain';
 import { coverStory, groupStories } from './storyGroups';
 import { storyStyle } from './storyStyle';
@@ -18,13 +19,14 @@ import { storyStyle } from './storyStyle';
 export function StoryRail({ stories, onOpen }: { stories: Story[]; onOpen: (category: string) => void }) {
   const { dictionary } = useI18n();
   const groups = groupStories(stories);
+  const scope = useAccentScope();
   return <HorizontalRail gap={14}>{groups.map((group) => {
     const look = storyStyle(group.category);
     const name = dictionary.stories.categories[group.category] ?? coverStory(group).title;
     return <PressableScale key={group.category} onPress={() => onOpen(group.category)} haptic="select" accessibilityLabel={`${name}, ${group.stories.length}`} testID={`story-group-${group.category}`} containerStyle={{ width: 78 }}>
       <View style={{ alignItems: 'center', gap: 6 }}>
-        <LinearGradient colors={group.viewed ? ['#FFFFFF29', '#FFFFFF29'] : ['#1DAEEA', '#63D8FF', '#2C7BFF']} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={[styles.ring, group.viewed && { padding: 1.5 }]}>
-          <View style={styles.gap}>
+        <LinearGradient colors={group.viewed ? ['#FFFFFF29', '#FFFFFF29'] : scope.storyRing} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={[styles.ring, group.viewed && { padding: 1.5 }]}>
+          <View style={[styles.gap, scope.canvas ? { backgroundColor: scope.canvas } : null]}>
             <LinearGradient colors={[`${look.gradient[0]}33`, `${look.gradient[look.gradient.length - 1]}14`]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.thumb}>
               <StoryCover story={coverStory(group)} fallback={<GlyphIcon glyph={look.glyph} size={26} color={look.gradient[0]} />} />
             </LinearGradient>

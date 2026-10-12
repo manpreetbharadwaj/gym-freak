@@ -1,13 +1,14 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { useReducedMotion } from '@/utils/motion';
-import { AccessibilityState, ActivityIndicator, Animated, Easing, Pressable, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle, useWindowDimensions } from 'react-native';
+import { AccessibilityState, ActivityIndicator, Platform, Animated, Easing, Pressable, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import Motion, { Easing as MotionEasing, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Motion, { ReduceMotion, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Svg, { Circle, Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { haptics } from '@/utils/haptics';
-import { controls, GradientPair, gradients, motion, palette, radius, shadow, typography, useLayout } from '@/theme';
+import { controls, durations, GradientPair, gradients, iconSizes, motion, palette, radius, shadow, springs, timings, typography, useLayout } from '@/theme';
+import { Icon, legacyGlyphs } from './Icon';
 
 /* ───────────── Type ───────────── */
 
@@ -20,7 +21,7 @@ export function Txt({ children, variant = 'body', color = palette.ink, align, st
   const { typeScale } = useLayout();
   const base = variants[variant];
   const size = scaled.has(variant) ? { fontSize: base.fontSize * typeScale, lineHeight: base.lineHeight * typeScale } : null;
-  return <Text testID={testID} maxFontSizeMultiplier={1.3} numberOfLines={numberOfLines} style={[base, size, { color, textAlign: align }, style]}>{children}</Text>;
+  return <Text testID={testID} maxFontSizeMultiplier={1.3} numberOfLines={numberOfLines} style={[styles.text, base, size, { color, textAlign: align }, style]}>{children}</Text>;
 }
 
 /* ───────────── Icons ───────────── */
@@ -29,10 +30,21 @@ export type Glyph = { set: 'mdi' | 'ion'; name: string };
 export const mdi = (name: string): Glyph => ({ set: 'mdi', name });
 export const ion = (name: string): Glyph => ({ set: 'ion', name });
 
-export function GlyphIcon({ glyph, size = 24, color = palette.ink, style }: { glyph: Glyph; size?: number; color?: string; style?: StyleProp<TextStyle> }) {
+/**
+ * Icon sizes snap to the shared scale (16 / 20 / 24 / 32) so every screen uses the same four; larger sizes are
+ * illustrations and pass through. Legacy glyph names render from the app's Lucide line set (see Icon.tsx).
+ */
+export function snapIconSize(size: number) {
+  return size >= 36 ? size : size <= 17 ? iconSizes.xs : size <= 21 ? iconSizes.sm : size <= 27 ? iconSizes.md : iconSizes.lg;
+}
+
+export function GlyphIcon({ glyph, size = 24, color = palette.ink, style, variant }: { glyph: Glyph; size?: number; color?: string; style?: StyleProp<TextStyle>; variant?: 'outline' | 'filled' }) {
+  const px = snapIconSize(size);
+  const mapped = legacyGlyphs[glyph.name];
+  if (mapped) return <Icon name={mapped} size={px} color={color} variant={variant} style={style as StyleProp<ViewStyle>} />;
   return glyph.set === 'mdi'
-    ? <MaterialCommunityIcons name={glyph.name as never} size={size} color={color} style={style} />
-    : <Ionicons name={glyph.name as never} size={size} color={color} style={style} />;
+    ? <MaterialCommunityIcons name={glyph.name as never} size={px} color={color} style={style} />
+    : <Ionicons name={glyph.name as never} size={px} color={color} style={style} />;
 }
 
 /* ───────────── Backgrounds ───────────── */
@@ -86,24 +98,34 @@ export function Blob({ color, cx, cy, r, animated = true, index = 0, opacity = 0
 
 /* ───────────── Interaction ───────────── */
 
-export function PressableScale({ onPress, children, style, containerStyle, disabled, scaleTo = motion.pressScale, pressDuration = motion.fast, haptic = 'tap', accessibilityLabel, accessibilityState, accessibilityRole = 'button', testID }: { onPress: () => void; children: React.ReactNode; style?: StyleProp<ViewStyle>; containerStyle?: StyleProp<ViewStyle>; disabled?: boolean; scaleTo?: number; pressDuration?: number; haptic?: keyof typeof haptics | null; accessibilityLabel?: string; accessibilityState?: AccessibilityState; accessibilityRole?: 'button' | 'radio' | 'checkbox'; testID?: string }) {
-  const scale = useSharedValue(1);
-  const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  const to = (value: number) => { scale.value = withTiming(value, { duration: pressDuration, easing: MotionEasing.out(MotionEasing.cubic), reduceMotion: ReduceMotion.System }); };
-  return <Pressable accessibilityRole={accessibilityRole} accessibilityLabel={accessibilityLabel} accessibilityState={{ disabled, ...accessibilityState }} disabled={disabled} testID={testID} onPressIn={() => to(scaleTo)} onPressOut={() => to(1)} onPress={() => { if (haptic) haptics[haptic](); onPress(); }} style={containerStyle}><Motion.View style={[style, animatedStyle]}>{children}</Motion.View></Pressable>;
+export type HapticKind = Exclude<keyof typeof haptics, 'setEnabled'>;
+
+/**
+ * The shared press response: scales down quickly on touch (0.97 buttons / 0.98 cards), dims a touch, and
+ * springs back on release — all on the UI thread. Disabled/loading controls never animate or buzz.
+ */
+export function PressableScale({ onPress, onLongPress, children, style, containerStyle, disabled, scaleTo = motion.pressScale, pressDuration = durations.press, haptic = 'tap', hitSlop, accessibilityLabel, accessibilityHint, accessibilityState, accessibilityRole = 'button', testID }: { onPress: () => void; hitSlop?: number; onLongPress?: () => void; children: React.ReactNode; style?: StyleProp<ViewStyle>; containerStyle?: StyleProp<ViewStyle>; disabled?: boolean; scaleTo?: number; pressDuration?: number; haptic?: HapticKind | null; accessibilityLabel?: string; accessibilityHint?: string; accessibilityState?: AccessibilityState; accessibilityRole?: 'button' | 'radio' | 'checkbox' | 'link'; testID?: string }) {
+  const pressed = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => ({ opacity: 1 - pressed.value * 0.08, transform: [{ scale: 1 - pressed.value * (1 - scaleTo) }] }));
+  return <Pressable accessibilityRole={accessibilityRole} accessibilityLabel={accessibilityLabel} accessibilityHint={accessibilityHint} accessibilityState={{ disabled, ...accessibilityState }} disabled={disabled} hitSlop={hitSlop} testID={testID}
+    onPressIn={() => { pressed.value = withTiming(1, { ...timings.press, duration: pressDuration }); }}
+    onPressOut={() => { pressed.value = withSpring(0, springs.snappy); }}
+    onPress={() => { if (haptic) haptics[haptic](); onPress(); }} onLongPress={onLongPress} style={containerStyle}>
+    <Motion.View style={[style, animatedStyle]}>{children}</Motion.View>
+  </Pressable>;
 }
 
 /**
  * Primary CTA: dark navy capsule with a cyan gradient border, a soft glow and a white label —
  * the same button as onboarding. `gradient` colours the border; `compact` is the 40 px size.
  */
-export function GradientButton({ label, onPress, icon = 'arrow-forward', gradient = gradients.primary, disabled = false, loading = false, style, textColor, size = 'regular', testID }: { label: string; onPress: () => void; icon?: string | null; gradient?: GradientPair; disabled?: boolean; loading?: boolean; style?: StyleProp<ViewStyle>; textColor?: string; size?: 'regular' | 'compact'; testID?: string }) {
+export function GradientButton({ label, onPress, icon = 'arrow-forward', gradient = gradients.primary, disabled = false, loading = false, style, textColor, size = 'regular', haptic = 'medium', testID }: { label: string; onPress: () => void; icon?: string | null; gradient?: GradientPair; disabled?: boolean; loading?: boolean; style?: StyleProp<ViewStyle>; textColor?: string; size?: 'regular' | 'compact'; /** null when the action fires its own outcome haptic (e.g. success right away). */ haptic?: HapticKind | null; testID?: string }) {
   const inactive = disabled || loading;
   const tone = gradient[0];
   const compact = size === 'compact';
   const shape = compact ? styles.buttonCompact : styles.button;
   const radiusValue = shape.borderRadius;
-  return <PressableScale onPress={onPress} disabled={inactive} haptic="press" containerStyle={style} accessibilityLabel={label} accessibilityState={{ busy: loading }} testID={testID}>
+  return <PressableScale onPress={onPress} disabled={inactive} haptic={haptic} containerStyle={style} accessibilityLabel={label} accessibilityState={{ busy: loading }} testID={testID}>
     <View style={[{ borderRadius: radiusValue }, !disabled && shadow(tone, compact ? 0.45 : 0.75)]}>
       <LinearGradient colors={disabled ? gradients.disabled : gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.buttonBorder, { borderRadius: radiusValue }]}>
         <View style={[shape, styles.buttonInner, { borderRadius: radiusValue - 1.5 }]}>
@@ -116,10 +138,10 @@ export function GradientButton({ label, onPress, icon = 'arrow-forward', gradien
 
 /** Shared label + icon/spinner row; the spinner takes the icon's slot so the width never jumps. */
 export function ButtonContent({ label, icon, loading, color, compact, iconColor, iconFirst }: { label: string; icon?: string | null; loading?: boolean; color: string; compact?: boolean; iconColor?: string; iconFirst?: boolean }) {
-  const iconSize = compact ? 16 : controls.button.iconSize;
+  const iconSize = compact ? iconSizes.xs : iconSizes.sm;
   return <View style={[styles.buttonRow, iconFirst && { flexDirection: 'row-reverse' }]}>
-    <Txt variant="button" color={color} align="center" numberOfLines={1} style={[{ flexShrink: 1 }, compact && { fontSize: 14, lineHeight: 18 }]}>{label}</Txt>
-    {loading ? <ActivityIndicator size="small" color={color} style={{ width: iconSize, height: iconSize }} /> : icon ? (icon in Ionicons.glyphMap ? <Ionicons name={icon as never} size={iconSize} color={iconColor ?? color} /> : <MaterialCommunityIcons name={icon as never} size={iconSize} color={iconColor ?? color} />) : null}
+    <Txt variant="button" color={color} align="center" numberOfLines={1} style={[{ flexShrink: 1 }, compact && styles.compactLabel]}>{label}</Txt>
+    {loading ? <ActivityIndicator size="small" color={color} style={{ width: iconSize, height: iconSize }} /> : icon ? <GlyphIcon glyph={{ set: icon in Ionicons.glyphMap ? 'ion' : 'mdi', name: icon }} size={iconSize} color={iconColor ?? color} /> : null}
   </View>;
 }
 
@@ -178,6 +200,9 @@ export function SegmentedProgress({ total, current, color }: { total: number; cu
 }
 
 const styles = StyleSheet.create({
+  // Android pads Inter with extra ascent space; removing it puts text on the same baseline as icons beside it.
+  text: Platform.OS === 'android' ? { includeFontPadding: false, textAlignVertical: 'center' } : {},
+  compactLabel: { fontSize: 14, lineHeight: 18 },
   button: { minHeight: controls.button.height - 3, borderRadius: controls.button.height / 2, paddingHorizontal: controls.button.paddingHorizontal, paddingVertical: 11, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   buttonCompact: { minHeight: controls.button.compactHeight - 3, borderRadius: controls.button.compactHeight / 2, paddingHorizontal: 14, paddingVertical: 7, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   buttonBorder: { padding: 1.5 },

@@ -3,6 +3,8 @@ import { AppState } from 'react-native';
 import { addDays, dayKey } from '@/utils/dates';
 import { clampEntry, clampGoal, DAY_MAX_ML, DEFAULT_REMINDER, prune, recentDays, suggestedGoalMl, WaterReminder } from '@/utils/water';
 import { safeStorage } from './safeStorage';
+import { playWaterAddedSound } from '@/services/sounds';
+import { haptics } from '@/utils/haptics';
 
 /**
  * Water intake is tracked on this device only: HealthyMe has no hydration API, so nothing here is
@@ -52,20 +54,22 @@ function load() {
   return loading;
 }
 
-function update(next: Partial<WaterState>, persist: Array<keyof WaterState>) {
+/** Applies the change in memory at once; resolves true once every write reached disk (false if any failed). */
+function update(next: Partial<WaterState>, persist: Array<keyof WaterState>): Promise<boolean> {
   state = { ...state, ...next };
   emit();
+  const writes: Promise<void>[] = [];
   for (const key of persist) {
-    if (key === 'log') safeStorage.set('waterLog', state.log).catch(() => undefined);
-    if (key === 'goals') safeStorage.set('waterGoals', state.goals).catch(() => undefined);
-    if (key === 'entries') safeStorage.set('waterEntries', state.entries).catch(() => undefined);
-    if (key === 'goalMl') safeStorage.set('waterGoalMl', state.goalMl).catch(() => undefined);
+    if (key === 'log') writes.push(safeStorage.set('waterLog', state.log));
+    if (key === 'goals') writes.push(safeStorage.set('waterGoals', state.goals));
+    if (key === 'entries') writes.push(safeStorage.set('waterEntries', state.entries));
+    if (key === 'goalMl') writes.push(safeStorage.set('waterGoalMl', state.goalMl));
     if (key === 'reminder') {
       const { enabled, ...times } = state.reminder;
-      safeStorage.set('waterReminders', enabled).catch(() => undefined);
-      safeStorage.set('waterReminderTimes', times).catch(() => undefined);
+      writes.push(safeStorage.set('waterReminders', enabled), safeStorage.set('waterReminderTimes', times));
     }
   }
+  return Promise.all(writes).then(() => true, () => false);
 }
 
 const todayItems = (today: string) => (state.entries.day === today ? state.entries.items : []);
@@ -99,11 +103,13 @@ export function useWater(weightKg?: number) {
     const total = Math.min(DAY_MAX_ML, (state.log[day] ?? 0) + value);
     const entry: WaterEntry = { id: `${now.getTime()}`, ml: total - (state.log[day] ?? 0), at: now.getTime() };
     if (entry.ml <= 0) return;
+    // The one place every manual addition passes through (Home card, Water screen quick-add and custom amount):
+    // the water-added sound and success haptic play once the entry is saved, never on a refused (daily cap) or failed write.
     update({
       log: prune({ ...state.log, [day]: total }, now),
       goals: prune({ ...state.goals, [day]: goalMl }, now),
       entries: { day, items: [...todayItems(day), entry].slice(-50) },
-    }, ['log', 'goals', 'entries']);
+    }, ['log', 'goals', 'entries']).then((saved) => { if (saved) { haptics.success(); playWaterAddedSound(); } });
   };
   /** Removes today’s most recent drink. */
   const undo = () => {

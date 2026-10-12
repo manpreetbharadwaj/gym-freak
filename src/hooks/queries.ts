@@ -1,6 +1,11 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRepos } from '@/store/session';
-import { ActivityType, ExerciseQuery, FavoriteTarget, OnboardingAnswers, Preferences } from '@/types/domain';
+import { Image } from 'expo-image';
+import { useRepos, useSession } from '@/store/session';
+import { CacheStore, cachedFetch } from '@/services/storage/cachedFetch';
+import { safeStorage } from '@/services/storage/safeStorage';
+
+const disk: CacheStore = { get: (key) => safeStorage.get(key, null), set: (key, value) => safeStorage.set(key, value) };
+import { ActivityType, ContentTile, ExerciseQuery, FavoriteTarget, OnboardingAnswers, Preferences } from '@/types/domain';
 import { healthAdapter } from '@/services/health';
 import { useHealthSync } from '@/services/health/sync';
 import { dayKey } from '@/utils/dates';
@@ -9,6 +14,10 @@ import { dayKey } from '@/utils/dates';
 export const keys = {
   home: ['home'] as const,
   quickStart: ['quick-start'] as const,
+  contentTiles: ['content-tiles'] as const,
+  nutrition: ['nutrition'] as const,
+  nutritionHistory: ['nutrition-history'] as const,
+  bodyFat: ['body-fat'] as const,
   week: ['week-plan'] as const,
   workouts: ['workouts'] as const,
   workout: (id: string) => ['workout', id] as const,
@@ -30,7 +39,23 @@ export const keys = {
 };
 
 /** Admin-managed Home Quick Start tiles (cached like the rest of Home; refreshed with it). */
-export const useQuickStart = () => { const { gym } = useRepos(); return useQuery({ queryKey: keys.quickStart, queryFn: () => gym.listQuickStart() }); };
+export const useQuickStart = () => { const { gym, mode } = useRepos(); return useQuery({ queryKey: keys.quickStart, queryFn: () => cachedFetch(`quickStart.${mode}.v1`, () => gym.listQuickStart(), disk).then(prefetchImages((t) => [t.imageUrl])), staleTime: 5 * 60_000 }); };
+/**
+ * Admin-managed Explore tiles and onboarding question photos (one request for all sections). Refreshed when the
+ * app returns to the foreground after 5 min; offline it serves the last good copy, never bundled photos.
+ */
+export const useContentTiles = () => {
+  const { gym, mode } = useRepos();
+  return useQuery({ queryKey: keys.contentTiles, queryFn: () => cachedFetch(`contentTiles.${mode}.v1`, () => gym.getContentTiles(), disk).then((tiles) => { prefetchImages<ContentTile>((t) => [t.imageUrl])(Object.values(tiles.sections).flat() as ContentTile[]); return tiles; }), staleTime: 5 * 60_000, retry: 1 });
+};
+/** Warms expo-image's disk cache so tiles appear without a flash (and offline later). */
+function prefetchImages<T>(urls: (item: T) => (string | undefined)[]) {
+  return (items: T[]) => {
+    const list = [...new Set(items.flatMap(urls).filter((u): u is string => !!u))];
+    if (list.length) Image.prefetch(list, 'memory-disk').catch(() => undefined);
+    return items;
+  };
+}
 
 /** Home also seeds the stories list, so the Stories & Tips cards and the viewer always hold the same stories. */
 export const useHome = () => {
@@ -98,7 +123,7 @@ export function useUpdateProfile() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (patch: Partial<OnboardingAnswers>) => gym.updateProfile(patch),
-    onSuccess: (profile) => { client.setQueryData(keys.profile, profile); client.invalidateQueries({ queryKey: keys.week }); client.invalidateQueries({ queryKey: keys.home }); },
+    onSuccess: (profile) => { client.setQueryData(keys.profile, profile); client.invalidateQueries({ queryKey: keys.week }); client.invalidateQueries({ queryKey: keys.home }); client.invalidateQueries({ queryKey: keys.nutrition }); },
   });
 }
 
@@ -107,7 +132,7 @@ export function useUpdateBodyMetrics() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (patch: { heightCm?: number; weightKg?: number }) => gym.updateBodyMetrics(patch),
-    onSuccess: (profile) => { client.setQueryData(keys.profile, profile); client.invalidateQueries({ queryKey: keys.home }); },
+    onSuccess: (profile) => { client.setQueryData(keys.profile, profile); client.invalidateQueries({ queryKey: keys.home }); client.invalidateQueries({ queryKey: keys.nutrition }); },
   });
 }
 
@@ -161,4 +186,28 @@ export function useHealthToday() {
 export function useInvalidateActivities() {
   const client = useQueryClient();
   return () => Promise.all([['activities'], keys.progress, keys.home, keys.healthToday, keys.healthConnections].map((queryKey) => client.invalidateQueries({ queryKey })));
+}
+
+/**
+ * Daily calorie / macro targets (server-calculated). Offline it serves the last good copy for this account
+ * (per account); never an invented number.
+ */
+export const useNutrition = () => {
+  const { gym, mode } = useRepos();
+  const account = useSession().account?.id ?? 'anon';
+  // Cached per account, so switching accounts offline never shows someone else's targets.
+  return useQuery({ queryKey: keys.nutrition, queryFn: () => cachedFetch(`nutrition.${mode}.${account}.v1`, () => gym.getNutrition(), disk), staleTime: 60_000, retry: 1 });
+};
+export const useNutritionHistory = (enabled = true) => { const { gym } = useRepos(); return useQuery({ queryKey: keys.nutritionHistory, queryFn: () => gym.getNutritionHistory(), enabled }); };
+export const useBodyFat = () => { const { gym } = useRepos(); return useQuery({ queryKey: keys.bodyFat, queryFn: () => gym.getBodyFat(), retry: 1 }); };
+
+/** Writes that change targets refresh the summary and history. */
+export function useNutritionMutation<T>(fn: (input: T) => Promise<unknown>) {
+  const client = useQueryClient();
+  return useMutation({ mutationFn: fn, onSuccess: (data) => { if (data && typeof data === 'object' && 'status' in data) client.setQueryData(keys.nutrition, data); client.invalidateQueries({ queryKey: keys.nutritionHistory }); } });
+}
+
+export function useBodyFatMutation<T>(fn: (input: T) => Promise<unknown>) {
+  const client = useQueryClient();
+  return useMutation({ mutationFn: fn, onSuccess: () => client.invalidateQueries({ queryKey: keys.bodyFat }) });
 }

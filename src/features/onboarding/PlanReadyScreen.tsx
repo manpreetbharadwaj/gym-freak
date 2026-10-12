@@ -6,7 +6,9 @@ import Svg, { Circle } from 'react-native-svg';
 import { format, useI18n } from '@/i18n';
 import { OnboardingAnswers } from '@/types/domain';
 import { BottomBar, CheckBadge, Glyph, GlyphIcon, mdi, Txt } from '@/components';
-import { AssetImage } from '@/components/AssetImage';
+import { RemoteImage } from '@/components/RemoteImage';
+import { tileFor } from '@/api/contentTiles';
+import { useContentTiles } from '@/hooks/queries';
 import { AnimatedCard, FirstRunBackground, PremiumCTA, PremiumScreenHeader, firstRunTheme } from '@/components/firstRun';
 import { haptics } from '@/utils/haptics';
 import { useReducedMotion } from '@/utils/motion';
@@ -104,6 +106,8 @@ function Ready({ profile, topInset, bottomInset }: { profile: OnboardingAnswers;
   const copy = ob.complete;
   const { compact } = useLayout();
   const goalKey = profile.goal;
+  const contentTiles = useContentTiles();
+  const goalPhoto = goalKey ? tileFor(contentTiles.data, 'onboarding_goal', goalKey) : undefined;
   const locationKey = profile.location;
   const tiles: { label: string; value: string; glyph: Glyph }[] = [
     { label: copy.schedule, value: format(copy.perWeek, { count: profile.daysPerWeek ?? 3 }), glyph: mdi('calendar-check-outline') },
@@ -118,7 +122,7 @@ function Ready({ profile, topInset, bottomInset }: { profile: OnboardingAnswers;
     </AnimatedCard>
 
     <AnimatedCard delay={60} style={styles.goalCard}>
-      <AssetImage asset={`goals/${goalKey || 'build-muscle'}`} contentFit="cover" style={{ width: compact ? 86 : 100, height: compact ? 104 : 118, borderRadius: radius.sm }} />
+      <RemoteImage uri={goalPhoto?.imageUrl} fit={goalPhoto?.imageFit} glyph={mdi('target')} style={{ width: compact ? 86 : 100, height: compact ? 104 : 118, borderRadius: radius.sm }} />
       <View style={styles.goalCopy}>
         <Txt variant="label" color={firstRunTheme.muted}>{copy.goal}</Txt>
         <Txt variant="h3" color={firstRunTheme.text} style={styles.goalTitle}>{goalKey ? ob.goal.options[goalKey].title : '—'}</Txt>

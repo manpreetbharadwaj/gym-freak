@@ -1,15 +1,18 @@
 import type { TextStyle } from 'react-native';
 
-/** Plus Jakarta Sans weights used throughout the interface. */
+/** Digits all share one width, so timers, counters and metrics never jitter as values change. */
+const tabular: TextStyle['fontVariant'] = ['tabular-nums'];
+
+/** Inter weights used throughout the interface. Keep all font selection centralized here. */
 export const fonts = {
-  regular: 'PlusJakartaSans_400Regular',
-  medium: 'PlusJakartaSans_500Medium',
-  semibold: 'PlusJakartaSans_600SemiBold',
-  bold: 'PlusJakartaSans_700Bold',
-  extrabold: 'PlusJakartaSans_800ExtraBold',
-  /** First-run display face (onboarding/auth headlines and hero numbers). */
-  display: 'Sora_700Bold',
-  displaySemibold: 'Sora_600SemiBold',
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semibold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  extrabold: 'Inter_800ExtraBold',
+  /** Display aliases preserve each role's existing weight while using the same family. */
+  display: 'Inter_700Bold',
+  displaySemibold: 'Inter_600SemiBold',
 } as const;
 
 /**
@@ -42,18 +45,24 @@ export const typography = {
   /** Bottom tab labels. */
   tab: { fontFamily: fonts.semibold, fontSize: 11, lineHeight: 14 },
   /** Card metrics (tiles, set counters, water). */
-  metric: { fontFamily: fonts.display, fontSize: 21, lineHeight: 27, letterSpacing: -0.5 },
+  metric: { fontFamily: fonts.display, fontSize: 21, lineHeight: 27, letterSpacing: -0.5, fontVariant: tabular },
   /** Live set values (reps / kg steppers). */
-  metricLg: { fontFamily: fonts.display, fontSize: 27, lineHeight: 33, letterSpacing: -0.7 },
+  metricLg: { fontFamily: fonts.display, fontSize: 27, lineHeight: 33, letterSpacing: -0.7, fontVariant: tabular },
   /** The one large figure on a screen (streak, timers, pickers). */
-  number: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, letterSpacing: -1.2 },
+  number: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, letterSpacing: -1.2, fontVariant: tabular },
+  /** Running timers and big pickers (rest timer, body metrics). */
+  timer: { fontFamily: fonts.display, fontSize: 52, lineHeight: 58, letterSpacing: -1.5, fontVariant: tabular },
+  /** The 3-2-1 countdown. */
+  countdown: { fontFamily: fonts.display, fontSize: 96, lineHeight: 104, letterSpacing: -2, fontVariant: tabular },
+  /** Text typed into fields (inputs set this directly on TextInput). */
+  input: { fontFamily: fonts.medium, fontSize: 15, lineHeight: 20 },
 } satisfies Record<string, TextStyle>;
 
 export type TypographyRole = keyof typeof typography;
 
 /** Interactive control sizes, shared by every button and icon button. */
 export const controls = {
-  button: { height: 52, compactHeight: 40, radius: 16, compactRadius: 12, paddingHorizontal: 20, iconGap: 8, iconSize: 18 },
+  button: { height: 52, compactHeight: 40, radius: 16, compactRadius: 12, paddingHorizontal: 20, iconGap: 8, iconSize: 20 },
   /** sm/md/lg for toolbars and headers; `cta` only beside a full-height button (Previous / Next). */
   iconButton: { sm: 36, md: 40, lg: 44, cta: 52 },
   input: { height: 50, radius: 14 },

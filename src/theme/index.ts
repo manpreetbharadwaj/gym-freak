@@ -55,6 +55,8 @@ export const palette = {
   card: '#0B1220',
   glass: '#141822B8',
   glassStrong: '#101826',
+  /** Neutral studio backdrop behind product shots shown whole (equipment); matches typical white-background photos. */
+  productBackdrop: '#EEF2F6',
   line: '#FFFFFF1A',
   lineStrong: '#FFFFFF29',
 } as const;
@@ -97,10 +99,21 @@ export const scenes = {
 
 export { fonts, typography, controls } from './typography';
 export type { TypographyRole } from './typography';
+export { durations, easings, timings, springs, pressScales, workoutTabCharacter, calendarFlip } from './motion';
 
-export const radius = { sm: 14, md: 18, lg: 22, xl: 24, pill: 999 } as const;
+export const radius = { xs: 10, sm: 14, md: 18, lg: 22, xl: 24, pill: 999 } as const;
 export const gutter = 20;
-export const motion = { fast: 220, normal: 300, slow: 400, pressScale: 0.97 } as const;
+/** 4-pt spacing scale. New layout code uses these rather than ad-hoc numbers. */
+export const space = { xxs: 4, xs: 8, sm: 12, md: 16, lg: 20, xl: 24, xxl: 32 } as const;
+/** The only icon sizes: 16 inline/metadata, 20 controls and rows, 24 navigation and headers, 32 feature marks. */
+export const iconSizes = { xs: 16, sm: 20, md: 24, lg: 32 } as const;
+export type IconSize = keyof typeof iconSizes;
+/** Stroke per icon size: a constant ~1.75 px line reads the same at every size and screen density. */
+export const iconStroke = { xs: 1.6, sm: 1.75, md: 1.85, lg: 2 } as const;
+/** Durations (ms) and the shared press scale. `instant` for state colour changes, `fast` for presses and selection. */
+export const motion = { instant: 120, fast: 220, normal: 300, slow: 400, pressScale: 0.97 } as const;
+/** Hairline borders that stay visible on high-density screens (2 physical px). */
+export const border = { hairline: 1, strong: 1.5 } as const;
 
 /** Depth on navy: a soft dark drop (tinted shadows only for glowing accents). */
 export function shadow(color = '#000000', strength = 1) {

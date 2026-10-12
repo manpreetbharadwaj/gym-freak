@@ -1,14 +1,13 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { GlyphIcon, mdi, Txt } from '@/components';
+import { StyleSheet, View } from 'react-native';
+import { GlyphIcon, mdi, PressableScale, Txt } from '@/components';
 import { Header, Screen } from '@/components/layout';
 import { format, useI18n } from '@/i18n';
 import { usePreferences, useUpdatePreferences } from '@/hooks/queries';
 import { deviceUnitSystem } from '@/hooks/useUnits';
 import { RootScreenProps } from '@/navigation/types';
-import { palette, radius, scenes, shadow } from '@/theme';
+import { palette, pressScales, radius, scenes, shadow } from '@/theme';
 import { UnitPreference } from '@/utils/units';
-import { haptics } from '@/utils/haptics';
 
 /**
  * Settings → Units. A display preference only: height stays in cm, weight in kg and distance in
@@ -30,15 +29,15 @@ export function UnitsScreen({ navigation }: RootScreenProps<'Units'>) {
     <View style={{ gap: 10 }}>
       {options.map((o) => {
         const selected = o.id === current;
-        return <Pressable key={o.id} testID={`units-${o.id}`} accessibilityRole="radio" accessibilityState={{ selected }} accessibilityLabel={`${o.title}, ${o.body}`} onPress={() => { haptics.select(); update.mutate({ units: o.id }); }}
-          style={({ pressed }) => [styles.row, selected && styles.selected, shadow(undefined, selected ? 0.6 : 0.3), pressed && { transform: [{ scale: 0.985 }] }]}>
+        return <PressableScale key={o.id} testID={`units-${o.id}`} haptic="selection" scaleTo={pressScales.card} accessibilityRole="radio" accessibilityState={{ selected }} accessibilityLabel={`${o.title}, ${o.body}`} onPress={() => update.mutate({ units: o.id })}
+          style={[styles.row, selected && styles.selected, shadow(undefined, selected ? 0.6 : 0.3)]}>
           <View style={[styles.icon, selected && { backgroundColor: palette.violet }]}><GlyphIcon glyph={mdi(o.glyph)} size={20} color={selected ? palette.white : palette.violet} /></View>
           <View style={{ flex: 1 }}>
             <Txt variant="row">{o.title}</Txt>
             <Txt variant="small" color={palette.inkMuted}>{o.body}</Txt>
           </View>
           {selected ? <GlyphIcon glyph={mdi('check-circle')} size={22} color={palette.violet} /> : null}
-        </Pressable>;
+        </PressableScale>;
       })}
     </View>
   </Screen>;

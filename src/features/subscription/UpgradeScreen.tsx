@@ -11,7 +11,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRepos } from '@/store/session';
 import { format, useI18n } from '@/i18n';
 import { purchases, StoreProduct } from '@/services/purchases';
-import { gutter, palette, radius, shadow } from '@/theme';
+import { fonts, gutter, palette, radius, shadow } from '@/theme';
 import { Access, CouponReason, Quote } from '@/types/domain';
 import { discountLabel, formatMoney } from '@/utils/money';
 import { haptics } from '@/utils/haptics';
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   checkout: { marginTop: 22, backgroundColor: palette.surface, borderRadius: radius.lg, padding: 16, gap: 12 },
   firstRunCheckout: { backgroundColor: firstRunTheme.surface, borderWidth: 1, borderColor: firstRunTheme.line },
   couponRow: { flexDirection: 'row', gap: 8 },
-  couponInput: { flex: 1, height: 48, borderRadius: 14, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#C9C0FF', paddingHorizontal: 14, fontSize: 15, letterSpacing: 1, color: palette.ink, backgroundColor: palette.surfaceRaised },
+  couponInput: { flex: 1, height: 48, borderRadius: 14, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#C9C0FF', paddingHorizontal: 14, fontFamily: fonts.medium, fontSize: 15, letterSpacing: 1, color: palette.ink, backgroundColor: palette.surfaceRaised },
   firstRunCouponInput: { borderColor: firstRunTheme.lineStrong, color: firstRunTheme.text, backgroundColor: firstRunTheme.surfaceRaised },
   applyButton: { height: 48, paddingHorizontal: 18, borderRadius: 14, backgroundColor: palette.violet, alignItems: 'center', justifyContent: 'center' },
   firstRunApplyButton: { backgroundColor: firstRunTheme.accentAlt },
